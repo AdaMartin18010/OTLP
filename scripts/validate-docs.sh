@@ -1,6 +1,43 @@
 #!/usr/bin/env bash
 set -euo pipefail
-DOC_PATH=${1:-docs}
+
+print_help() {
+  cat <<'EOF'
+用法: ./scripts/validate-docs.sh [--path <dir>] [--strict] [--no-nav] [--help]
+
+选项:
+  --path <dir>   指定文档目录（默认 docs）
+  --strict       将所有警告视为错误（非零退出）
+  --no-nav       不要求“文档导航”提示块
+  -h, --help     显示帮助
+EOF
+}
+
+DOC_PATH="docs"
+STRICT=0
+CHECK_NAV=1
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --path)
+      DOC_PATH=${2:-}
+      if [[ -z "$DOC_PATH" ]]; then echo "--path 需要一个目录" >&2; exit 2; fi
+      shift 2 ;;
+    --strict)
+      STRICT=1; shift ;;
+    --no-nav)
+      CHECK_NAV=0; shift ;;
+    -h|--help)
+      print_help; exit 0 ;;
+    *)
+      echo "未知参数: $1" >&2; print_help; exit 2 ;;
+  esac
+done
+
+if [[ ! -d "$DOC_PATH" ]]; then
+  echo "文档目录不存在: $DOC_PATH" >&2
+  exit 1
+fi
 
 warns=()
 errors=()
@@ -33,9 +70,11 @@ for f in "${files[@]}"; do
     warns+=("File $(basename "$f") is missing main title")
   fi
 
-  # navigation links
-  if ! grep -qE '^>\s+📚 \*\*文档导航\*\*:' "$f"; then
-    warns+=("File $(basename "$f") is missing navigation links")
+  # navigation links（可选）
+  if (( CHECK_NAV==1 )); then
+    if ! grep -qE '^>\s+📚 \*\*文档导航\*\*:' "$f"; then
+      warns+=("File $(basename "$f") is missing navigation links")
+    fi
   fi
 
   # update date
@@ -99,5 +138,14 @@ for f in "${files[@]}"; do
 done
 
 print_results
-# exit non-zero only on errors
-((${#errors[@]}>0)) && exit 1 || exit 0
+
+# exit strategy
+if (( ${#errors[@]} > 0 )); then
+  exit 1
+fi
+
+if (( STRICT==1 && ${#warns[@]} > 0 )); then
+  exit 2
+fi
+
+exit 0

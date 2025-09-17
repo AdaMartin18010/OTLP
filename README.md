@@ -1,5 +1,47 @@
 # OpenTelemetry 完整学习与实践平台
 
+> 快速入口： [文档索引](docs/INDEX.md) · [快速开始](docs/QUICK_START.md) · [Collector 最小配置](implementations/collector/minimal.yaml) · [示例代码](examples/) · [规范总览](spec/OTLP_OVERVIEW.md)
+
+<!-- Badges（可替换为真实仓库状态徽章）
+[![Build](https://img.shields.io/badge/build-passing-brightgreen)](#)
+[![Docs](https://img.shields.io/badge/docs-100%25-blue)](#)
+[![License](https://img.shields.io/badge/license-MIT-black)](#)
+-->
+
+## 目录（快速导航）
+
+<!-- markdownlint-disable MD051 -->
+- [OpenTelemetry 完整学习与实践平台](#opentelemetry-完整学习与实践平台)
+  - [目录（快速导航）](#目录快速导航)
+  - [项目概述](#项目概述)
+  - [项目结构](#项目结构)
+  - [服务端口与访问](#服务端口与访问)
+    - [验证服务状态](#验证服务状态)
+    - [文档校验与统计](#文档校验与统计)
+    - [常见问题](#常见问题)
+  - [性能基准测试](#性能基准测试)
+    - [运行基准测试](#运行基准测试)
+    - [性能指标](#性能指标)
+    - [测试报告](#测试报告)
+  - [四大理念](#四大理念)
+  - [学习路径](#学习路径)
+    - [初学者路径](#初学者路径)
+    - [进阶路径](#进阶路径)
+  - [项目特色](#项目特色)
+    - [1. 完整性](#1-完整性)
+    - [2. 实用性](#2-实用性)
+    - [3. 理论性](#3-理论性)
+  - [四大信号维度](#四大信号维度)
+    - [traces / metrics / logs / baggage](#traces--metrics--logs--baggage)
+  - [贡献指南](#贡献指南)
+    - [如何贡献](#如何贡献)
+    - [贡献类型](#贡献类型)
+  - [许可证](#许可证)
+  - [致谢](#致谢)
+  - [联系方式](#联系方式)
+  - [总结](#总结)
+<!-- markdownlint-enable MD051 -->
+
 ## 项目概述
 
 本项目是一个完整的OpenTelemetry学习和实践平台，涵盖了从基础概念到高级应用的各个方面。项目提供了完整的文档体系、可运行的示例代码、性能基准测试和治理框架。
@@ -86,27 +128,57 @@ OTLP/
 
 ### 5分钟快速体验
 
-1. **启动 Collector**:
-   ```bash
-   # 最小配置
-   ./scripts/run-collector.ps1
-   
-   # 或启动完整栈
-   ./scripts/run-compose.ps1
-   ```
+1. **启动 Collector**
 
-1. **运行示例**:
+    - Windows (PowerShell)
+     ```powershell
+    # 最小配置
+    ./scripts/run-collector.ps1
 
-   ```bash
-   # Rust (推荐，性能最佳)
-   cd examples/minimal-rust && cargo run
-   
-   # Go
-   cd examples/minimal-go && go run .
-   
-   # Python
-   cd examples/minimal-python && pip install -r requirements.txt && python main.py
-   ```
+    # 指定配置文件
+    ./scripts/run-collector.ps1 -ConfigPath implementations/collector/minimal.yaml
+
+    # 仅进行配置校验（不启动）
+    ./scripts/run-collector.ps1 -DryRun
+
+     # 或启动完整栈（包含 Prometheus/Grafana/Jaeger/Loki 等）
+     ./scripts/run-compose.ps1
+
+    # 停止并清理完整栈
+    ./scripts/run-compose.ps1 -Down
+     ```
+
+   - Linux/macOS (bash)
+     ```bash
+    # 最小配置
+    ./scripts/run-collector.sh
+
+    # 指定配置文件
+    ./scripts/run-collector.sh --config implementations/collector/minimal.yaml
+
+    # 仅进行配置校验（不启动）
+    ./scripts/run-collector.sh --dry-run
+
+    # 或启动完整栈
+     ./scripts/run-compose.sh
+
+    # 停止并清理完整栈
+    ./scripts/run-compose.sh --down
+     ```
+
+1. **运行示例**
+
+   - Windows / Linux / macOS
+     ```bash
+     # Rust (推荐，性能最佳)
+     cd examples/minimal-rust && cargo run
+
+     # Go
+     cd examples/minimal-go && go run .
+
+     # Python
+     cd examples/minimal-python && pip install -r requirements.txt && python main.py
+     ```
 
 2. **查看结果**:
    - **Jaeger UI**: <http://localhost:16686>
@@ -118,6 +190,21 @@ OTLP/
 - **PowerShell 执行策略**: `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass`
 - **端口冲突**: 修改配置文件中的端口设置
 - **权限问题**: 使用管理员权限运行脚本
+
+### 环境自检与文档生成
+
+- 环境自检（bash）：
+
+  ```bash
+  ./scripts/env-check.sh
+  ```
+
+- 生成文档统计与目录（bash）：
+
+  ```bash
+  ./scripts/generate-docs.sh docs
+  # 输出文件：docs/STATS.md 与 docs/TOC.md
+  ```
 
 ## 服务端口与访问
 
@@ -144,6 +231,34 @@ curl http://localhost:9090/targets
 # 查看 Collector 指标
 curl http://localhost:8888/metrics
 ```
+
+### 文档校验与统计
+
+- 使用 bash 版本（Linux/macOS）：
+
+  ```bash
+  # 运行文档校验（默认宽松模式）
+  ./scripts/validate-docs.sh --path docs
+
+  # 严格模式（将警告视为失败，CI 可用）
+  ./scripts/validate-docs.sh --path docs --strict
+
+  # 不检查“文档导航”提示块
+  ./scripts/validate-docs.sh --path docs --no-nav
+  ```
+
+- 使用 PowerShell 版本（Windows）：
+
+  ```powershell
+  # 运行文档校验（默认宽松模式）
+  ./scripts/validate-docs.ps1 -DocPath docs
+
+  # 严格模式（将警告视为失败）
+  ./scripts/validate-docs.ps1 -DocPath docs -Strict
+
+  # 不检查“文档导航”提示块
+  ./scripts/validate-docs.ps1 -DocPath docs -NoNav
+  ```
 
 ### 常见问题
 
@@ -480,6 +595,8 @@ OTLP 就是 OpenTelemetry 的"普通话"：
 - **测试用例**: 添加测试覆盖
 - **翻译工作**: 多语言支持
 
+> 提示：README 中的 Issues/Discussions/邮件等链接当前为占位，请在将本项目迁移到你的实际仓库后，替换为真实的仓库与联系信息。
+
 ## 许可证
 
 本项目采用 MIT 许可证，详见 [LICENSE](LICENSE) 文件。
@@ -498,6 +615,8 @@ OTLP 就是 OpenTelemetry 的"普通话"：
 - **Issues**: [GitHub Issues](https://github.com/your-repo/issues)
 - **讨论**: [GitHub Discussions](https://github.com/your-repo/discussions)
 - **邮件**: <your-email@example.com>
+
+> 将以上占位链接替换为你仓库的真实地址与联系邮箱，以便社区参与。
 
 ## 总结
 

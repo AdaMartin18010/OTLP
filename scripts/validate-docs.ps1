@@ -3,8 +3,16 @@ param(
     [switch]$CheckFormat,
     [switch]$CheckContent,
     [switch]$All,
-    [string]$DocPath = "docs"
+    [string]$DocPath = "docs",
+    [switch]$Strict,
+    [switch]$NoNav,
+    [switch]$Help
 )
+
+if ($Help) {
+    Write-Host "用法: .\\scripts\\validate-docs.ps1 [-All] [-CheckLinks] [-CheckFormat] [-CheckContent] [-DocPath <dir>] [-Strict] [-NoNav]" -ForegroundColor Yellow
+    exit 0
+}
 
 # If -All is specified, check all items
 if ($All) {
@@ -52,9 +60,11 @@ if ($CheckFormat) {
             $warnings += "File $($file.Name) is missing main title"
         }
         
-        # Check navigation links
-        if ($content -notmatch "> 📚 \*\*文档导航\*\*:") {
-            $warnings += "File $($file.Name) is missing navigation links"
+        # Check navigation links (optional)
+        if (-not $NoNav) {
+            if ($content -notmatch "> 📚 \*\*文档导航\*\*:") {
+                $warnings += "File $($file.Name) is missing navigation links"
+            }
         }
         
         # Check code block language markers (only opening fences)
@@ -199,8 +209,6 @@ Write-Host "• Fix all errors to ensure document usability" -ForegroundColor Wh
 Write-Host "• Handle warnings to improve document quality" -ForegroundColor White
 Write-Host "• Run this script regularly to maintain document quality" -ForegroundColor White
 
-if ($errors.Count -gt 0) {
-    exit 1
-} else {
-    exit 0
-}
+if ($errors.Count -gt 0) { exit 1 }
+if ($Strict -and $warnings.Count -gt 0) { exit 2 }
+exit 0
