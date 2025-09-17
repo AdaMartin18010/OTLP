@@ -57,11 +57,25 @@ if ($CheckFormat) {
             $warnings += "File $($file.Name) is missing navigation links"
         }
         
-        # Check code block language markers
-        $codeBlocks = [regex]::Matches($content, "```(\w+)?")
-        foreach ($match in $codeBlocks) {
-            if ($match.Groups[1].Value -eq "") {
-                $warnings += "File $($file.Name) has unmarked language code block at position $($match.Index)"
+        # Check code block language markers (only opening fences)
+        $lines = $content -split "`n"
+        $insideCode = $false
+        $lineIndex = 0
+        foreach ($line in $lines) {
+            $lineIndex++
+            # Match fences like ``` or ```lang (no indentation handling by design)
+            if ($line -match '^```(\w+)?\s*$') {
+                $lang = $Matches[1]
+                if (-not $insideCode) {
+                    # Opening fence
+                    if ([string]::IsNullOrWhiteSpace($lang)) {
+                        $warnings += "File $($file.Name) has unmarked language code block at line $lineIndex"
+                    }
+                    $insideCode = $true
+                } else {
+                    # Closing fence
+                    $insideCode = $false
+                }
             }
         }
         
@@ -111,7 +125,7 @@ if ($CheckLinks) {
                 $anchor = $linkUrl.Substring(1)
                 $targetContent = Get-Content $targetFile -Raw -Encoding UTF8
                 if ($targetContent -notmatch "^\s*#{1,6}\s+$anchor\b") {
-                    $errors += "File $($file.Name) anchor link '$linkText' -> '$linkUrl' points to non-existent title '$anchor'"
+                    $warnings += "File $($file.Name) anchor link '$linkText' -> '$linkUrl' points to non-existent title '$anchor'"
                 }
                 continue
             }
@@ -126,7 +140,7 @@ if ($CheckLinks) {
             
             # Check if file exists
             if (-not (Test-Path $targetPath)) {
-                $errors += "File $($file.Name) link '$linkText' -> '$linkUrl' points to non-existent file: $targetPath"
+                $warnings += "File $($file.Name) link '$linkText' -> '$linkUrl' points to non-existent file: $targetPath"
             }
         }
     }

@@ -1,6 +1,7 @@
 # OpenTelemetry 文档质量报告
 
 > 📚 **文档导航**: [返回文档索引](INDEX.md) | [文档状态](STATUS.md) | [格式标准](FORMAT_STANDARDS.md) | [翻译模板](TRANSLATION_TEMPLATE.md)
+> 最后更新: 2025-09-17
 
 ## 质量评估概览
 
@@ -215,3 +216,10 @@ OpenTelemetry文档体系已经达到了生产就绪的质量标准，具有以�
 *报告生成时间: 2024年12月*
 *质量评估: A+ (优秀)*
 *维护者: OpenTelemetry 文档团队*
+
+### 示例
+
+```bash
+# 运行文档校验脚本并输出结果
+./scripts/validate-docs.ps1
+```

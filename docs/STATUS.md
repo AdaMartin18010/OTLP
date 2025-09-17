@@ -1,4 +1,7 @@
 # OpenTelemetry 文档状态概览
+>
+> 📚 **文档导航**: [返回文档索引](INDEX.md) | [格式标准](FORMAT_STANDARDS.md) | [质量报告](QUALITY_REPORT.md) | [快速开始](QUICK_START.md)
+> 最后更新: 2025-09-17
 
 ## 目录
 

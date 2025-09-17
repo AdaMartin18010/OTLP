@@ -1,6 +1,7 @@
 # OpenTelemetry 集成指南
 
 > 📚 **文档导航**: [返回文档索引](INDEX.md) | [API参考](API_REFERENCE.md) | [部署指南](DEPLOYMENT_GUIDE.md) | [性能优化](PERFORMANCE_GUIDE.md)
+> 最后更新: 2025-09-17
 
 ## 后端系统集成
 

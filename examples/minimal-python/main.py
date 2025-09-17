@@ -21,17 +21,17 @@ resource = Resource.create({"service.name": service_name})
 
 tp = TracerProvider(resource=resource)
 if protocol.startswith("http"):
-    span_exporter = HttpSpanExporter(endpoint=endpoint, insecure=insecure)
+    span_exporter = HttpSpanExporter(endpoint=endpoint, insecure=insecure, timeout=1)
 else:
-    span_exporter = GrpcSpanExporter(endpoint=endpoint, insecure=insecure)
+    span_exporter = GrpcSpanExporter(endpoint=endpoint, insecure=insecure, timeout=1)
 tp.add_span_processor(BatchSpanProcessor(span_exporter))
 trace.set_tracer_provider(tp)
 
 if protocol.startswith("http"):
-    metric_exporter = HttpMetricExporter(endpoint=endpoint, insecure=insecure)
+    metric_exporter = HttpMetricExporter(endpoint=endpoint, insecure=insecure, timeout=1)
 else:
-    metric_exporter = GrpcMetricExporter(endpoint=endpoint, insecure=insecure)
-reader = PeriodicExportingMetricReader(metric_exporter)
+    metric_exporter = GrpcMetricExporter(endpoint=endpoint, insecure=insecure, timeout=1)
+reader = PeriodicExportingMetricReader(metric_exporter, export_interval_millis=5000)
 mp = MeterProvider(resource=resource, metric_readers=[reader])
 metrics.set_meter_provider(mp)
 
@@ -46,3 +46,9 @@ with tracer.start_as_current_span("demo-span", kind=SpanKind.SERVER) as span:
 
 print(f"sent one span and one metric via OTLP to {endpoint} using {protocol}")
 
+# 优雅关闭，避免在无 Collector 时长时间重试
+try:
+    trace.get_tracer_provider().shutdown()
+    metrics.get_meter_provider().shutdown()
+except Exception:
+    pass

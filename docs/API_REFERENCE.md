@@ -1,6 +1,7 @@
 # OpenTelemetry API 参考
 
 > 📚 **文档导航**: [返回文档索引](INDEX.md) | [快速开始](QUICK_START.md) | [架构设计](ARCHITECTURE.md) | [故障排除](TROUBLESHOOTING.md)
+> 最后更新: 2025-09-17
 
 ## 核心API
 

@@ -1,10 +1,32 @@
 # 大学课程对齐指南
 
 > 📚 **文档导航**: [返回文档索引](INDEX.md) | [教程与学习路径](TUTORIALS.md) | [形式化证明](FORMAL_PROOFS.md) | [快速开始](QUICK_START.md)
+> 最后更新: 2025-09-17
 
 ## 概述
 
 本文档提供了OpenTelemetry与大学计算机科学课程的对应关系，帮助教育工作者将OpenTelemetry集成到现有课程中。
+
+示例代码（用于课堂快速演示）：
+
+```go
+// 在课堂演示中发送一个 Span（Go）
+package main
+import (
+    "context"
+    "log"
+    "go.opentelemetry.io/otel"
+    sdktrace "go.opentelemetry.io/otel/sdk/trace"
+)
+func main() {
+    tp := sdktrace.NewTracerProvider()
+    otel.SetTracerProvider(tp)
+    tr := otel.Tracer("course-demo")
+    ctx, span := tr.Start(context.Background(), "demo-span")
+    defer span.End()
+    log.Println("span recorded", ctx)
+}
+```
 
 ## 课程映射
 

@@ -1,6 +1,7 @@
 # OpenTelemetry 术语与语义约定索引
 
 > 📚 **文档导航**: [返回文档索引](INDEX.md) | [语义约定](SEMANTIC_CONVENTIONS.md) | [快速开始](QUICK_START.md) | [架构设计](ARCHITECTURE.md)
+> 最后更新: 2025-09-17
 
 ## 核心概念
 
@@ -114,3 +115,10 @@
 - [OpenTelemetry 官方语义约定](https://opentelemetry.io/docs/specs/semantic_conventions/)
 - [OpenTelemetry 规范文档](https://opentelemetry.io/docs/specs/)
 - [各语言SDK文档](https://opentelemetry.io/docs/languages/)
+
+### 示例
+
+```bash
+# 查询 Collector 指标以验证术语中提到的关键指标存在
+curl -s http://localhost:13133/metrics | grep -E "otelcol_receiver_accepted_spans|otelcol_exporter_sent_spans" | head -n 5
+```

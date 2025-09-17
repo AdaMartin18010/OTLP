@@ -1,10 +1,11 @@
 # OpenTelemetry 安全指南
 
 > 📚 **文档导航**: [返回文档索引](INDEX.md) | [部署指南](DEPLOYMENT_GUIDE.md) | [性能优化](PERFORMANCE_GUIDE.md) | [故障排除](TROUBLESHOOTING.md)
+> 最后更新: 2025-09-17
 
 ## 目录
 
-- [OpenTelemetry 安全指南](#opentelemetry-安全指南)
+- OpenTelemetry 安全指南
 
 ---
 

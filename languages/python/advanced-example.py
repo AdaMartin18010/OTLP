@@ -16,10 +16,8 @@ from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader
 from opentelemetry.exporter.otlp.proto.grpc.metric_exporter import OTLPMetricExporter as GrpcMetricExporter
 from opentelemetry.exporter.otlp.proto.http.metric_exporter import OTLPMetricExporter as HttpMetricExporter
 from opentelemetry.trace import SpanKind
-from opentelemetry.semantic_conventions.resource import ResourceAttributes
-from opentelemetry.semantic_conventions.trace import SpanAttributes
-from opentelemetry.semantic_conventions.db import DbSystemValues
-from opentelemetry.semantic_conventions.http import HttpMethodValues
+from opentelemetry.semconv.resource import ResourceAttributes
+from opentelemetry.semconv.trace import SpanAttributes
 import os
 
 @dataclass
@@ -72,15 +70,13 @@ class AdvancedOpenTelemetryExample:
             span_exporter = HttpSpanExporter(
                 endpoint=self.endpoint,
                 insecure=self.insecure,
-                timeout=10,
-                headers={"Authorization": "Bearer token"}
+                timeout=1,
             )
         else:
             span_exporter = GrpcSpanExporter(
                 endpoint=self.endpoint,
                 insecure=self.insecure,
-                timeout=10,
-                headers={"Authorization": "Bearer token"}
+                timeout=1,
             )
         
         # 配置TracerProvider
@@ -105,15 +101,13 @@ class AdvancedOpenTelemetryExample:
             metric_exporter = HttpMetricExporter(
                 endpoint=self.endpoint,
                 insecure=self.insecure,
-                timeout=10,
-                headers={"Authorization": "Bearer token"}
+                timeout=1,
             )
         else:
             metric_exporter = GrpcMetricExporter(
                 endpoint=self.endpoint,
                 insecure=self.insecure,
-                timeout=10,
-                headers={"Authorization": "Bearer token"}
+                timeout=1,
             )
         
         # 配置MeterProvider
@@ -199,7 +193,7 @@ class AdvancedOpenTelemetryExample:
         """模拟数据库查询"""
         with self.tracer.start_as_current_span("query_user_data", kind=SpanKind.CLIENT) as span:
             span.set_attributes({
-                SpanAttributes.DB_SYSTEM: DbSystemValues.POSTGRESQL,
+                SpanAttributes.DB_SYSTEM: "postgresql",
                 SpanAttributes.DB_OPERATION: "SELECT",
                 SpanAttributes.DB_SQL_TABLE: "users",
                 "user.id": user_id,
@@ -262,7 +256,7 @@ class AdvancedOpenTelemetryExample:
         """模拟外部API调用"""
         with self.tracer.start_as_current_span("call_external_api", kind=SpanKind.CLIENT) as span:
             span.set_attributes({
-                SpanAttributes.HTTP_METHOD: HttpMethodValues.POST,
+                SpanAttributes.HTTP_METHOD: "POST",
                 SpanAttributes.HTTP_URL: "https://api.example.com/process",
                 SpanAttributes.HTTP_SCHEME: "https",
                 SpanAttributes.HTTP_HOST: "api.example.com",
@@ -294,6 +288,12 @@ async def main():
     """主函数"""
     example = AdvancedOpenTelemetryExample()
     await example.simulate_business_logic()
+    # 优雅关闭，避免退出后后台重试
+    try:
+        trace.get_tracer_provider().shutdown()
+        metrics.get_meter_provider().shutdown()
+    except Exception:
+        pass
 
 if __name__ == "__main__":
     asyncio.run(main())

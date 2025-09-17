@@ -1,6 +1,7 @@
 # OpenTelemetry 部署指南
 
 > 📚 **文档导航**: [返回文档索引](INDEX.md) | [架构设计](ARCHITECTURE.md) | [安全指南](SECURITY_GUIDE.md) | [故障排除](TROUBLESHOOTING.md)
+> 最后更新: 2025-09-17
 
 ## 部署方式选择
 

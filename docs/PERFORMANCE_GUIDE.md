@@ -1,6 +1,7 @@
 # OpenTelemetry 性能优化指南
 
 > 📚 **文档导航**: [返回文档索引](INDEX.md) | [架构设计](ARCHITECTURE.md) | [集成指南](INTEGRATION_GUIDE.md) | [故障排除](TROUBLESHOOTING.md)
+> 最后更新: 2025-09-17
 
 ## 性能基准
 

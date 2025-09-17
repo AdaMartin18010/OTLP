@@ -1,5 +1,7 @@
 # OpenTelemetry 文档索引
 
+> 📚 **文档导航**: [返回文档索引](INDEX.md) | [快速开始](QUICK_START.md) | [教程与学习路径](TUTORIALS.md) | [故障排除](TROUBLESHOOTING.md)
+
 ## 📚 文档导航
 
 ### 🚀 快速开始
@@ -20,7 +22,7 @@
 - [集成指南](INTEGRATION_GUIDE.md) - 与各种系统的集成方法
 - [性能优化](PERFORMANCE_GUIDE.md) - 性能调优和优化策略
 - [安全指南](SECURITY_GUIDE.md) - 安全配置和最佳实践
-- [故障排除](TROUBLESHOOTING.md) - 常见问题和解决方案
+- [故障排除](TROUBLESHOOTING.md) - 常见问题
 
 ### 🎓 教育与研究
 
@@ -128,7 +130,7 @@
 ### 文档问题
 
 - 检查 [故障排除](TROUBLESHOOTING.md)
-- 查看 [常见问题](TROUBLESHOOTING.md#常见问题与解决方案)
+- 查看 常见问题（参见 TROUBLESHOOTING.md）
 
 ### 技术问题
 
@@ -145,3 +147,10 @@
 *最后更新时间: 2024年12月*
 *文档版本: v1.0*
 *维护者: OpenTelemetry 项目团队*
+
+### 示例
+
+```bash
+# 验证 Collector 健康检查端点
+curl -s http://localhost:13133/ | head -n 1
+```

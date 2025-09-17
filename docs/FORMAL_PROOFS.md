@@ -1,10 +1,19 @@
 # OpenTelemetry 形式化证明与理论分析
 
 > 📚 **文档导航**: [返回文档索引](INDEX.md) | [架构设计](ARCHITECTURE.md) | [术语定义](TERMS.md) | [课程对齐](COURSE_ALIGNMENT.md)
+> 最后更新: 2025-09-17
 
 ## 概述
 
 本文档从形式化角度分析OpenTelemetry的核心概念和设计原理，提供数学证明和理论分析，确保系统的正确性和可靠性。
+
+示例（用于复现实验参数与结论记录）：
+
+```text
+Theorem: Trace graph G is a DAG.
+Sketch: Assume cycle exists -> contradicts temporal ordering.
+Params: sampling_rate=p, batch_size=512, timeout=1s
+```
 
 ## 数学基础
 

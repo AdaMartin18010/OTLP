@@ -1,6 +1,7 @@
 # OpenTelemetry 故障排除指南
 
 > 📚 **文档导航**: [返回文档索引](INDEX.md) | [快速开始](QUICK_START.md) | [API参考](API_REFERENCE.md) | [性能优化](PERFORMANCE_GUIDE.md)
+> 最后更新: 2025-09-17
 
 ## 常见问题与解决方案
 

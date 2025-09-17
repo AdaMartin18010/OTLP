@@ -1,9 +1,6 @@
 # OpenTelemetry 文档生成脚本
 # 用于生成文档索引、更新统计信息等
 
-Set-StrictMode -Version Latest
-$ErrorActionPreference = "Stop"
-
 param(
     [switch]$UpdateIndex,
     [switch]$UpdateStats,
@@ -11,6 +8,9 @@ param(
     [switch]$All,
     [string]$OutputPath = "docs"
 )
+
+Set-StrictMode -Version Latest
+$ErrorActionPreference = "Stop"
 
 # 如果指定了 -All，则执行所有操作
 if ($All) {
@@ -61,6 +61,9 @@ if ($UpdateStats) {
     $statsContent = @"
 # 文档统计信息
 
+> 📚 **文档导航**: [返回文档索引](INDEX.md) | [文档状态](STATUS.md) | [格式标准](FORMAT_STANDARDS.md)
+> 最后更新: $(Get-Date -Format "yyyy-MM-dd")
+
 ## 总体统计
 
 - **文档数量**: $($markdownFiles.Count) 个
@@ -90,6 +93,13 @@ if ($UpdateStats) {
 
 *统计生成时间: $(Get-Date -Format "yyyy-MM-dd HH:mm:ss")*
 
+### 示例
+
+```bash
+# 重新生成统计与目录
+./scripts/generate-docs.ps1
+```
+
 ---
 
 *此文件由文档生成工具自动创建，请勿手动编辑*
@@ -106,6 +116,9 @@ if ($GenerateTOC) {
     
     $tocContent = @"
 # 文档目录
+
+> 📚 **文档导航**: [返回文档索引](INDEX.md) | [文档状态](STATUS.md)
+> 最后更新: $(Get-Date -Format "yyyy-MM-dd")
 
 ## 核心文档
 
@@ -194,6 +207,13 @@ if ($GenerateTOC) {
     }
     
     $tocContent += @"
+
+### 示例
+
+```bash
+# 验证目录中的文档是否存在
+ls docs | findstr /c:".md"
+```
 
 ---
 
