@@ -1,4 +1,4 @@
-# OpenTelemetry 形式化证明与理论分析
+﻿# OpenTelemetry 形式化证明与理论分析
 
 > 📚 **文档导航**: [返回文档索引](INDEX.md) | [架构设计](ARCHITECTURE.md) | [术语定义](TERMS.md) | [课程对齐](COURSE_ALIGNMENT.md)
 > 最后更新: 2025-09-17

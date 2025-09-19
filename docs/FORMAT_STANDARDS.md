@@ -1,4 +1,4 @@
-# OpenTelemetry 文档格式标准
+﻿# OpenTelemetry 文档格式标准
 
 > 📚 **文档导航**: [返回文档索引](INDEX.md) | [文档状态](STATUS.md) | [快速开始](QUICK_START.md) | [API参考](API_REFERENCE.md)
 

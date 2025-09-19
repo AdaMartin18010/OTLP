@@ -1,4 +1,4 @@
-# OpenTelemetry 语义约定规范
+﻿# OpenTelemetry 语义约定规范
 
 > 📚 **文档导航**: [返回文档索引](INDEX.md) | [术语定义](TERMS.md) | [API参考](API_REFERENCE.md) | [架构设计](ARCHITECTURE.md)
 > 最后更新: 2025-09-17

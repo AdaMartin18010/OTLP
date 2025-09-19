@@ -1,8 +1,9 @@
 # OpenTelemetry OTLP 2025年全面知识框架与技术方案
 
-## 📋 目录
+## 目录
 
-- [OpenTelemetry OTLP 2025年全面知识框架与技术方案](#)
+- [OpenTelemetry OTLP 2025年全面知识框架与技术方案](#opentelemetry-otlp-2025年全面知识框架与技术方案)
+  - [目录](#-目录)
 
 ---
 

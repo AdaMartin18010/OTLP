@@ -1,4 +1,4 @@
-# OpenTelemetry 文档翻译模板
+﻿# OpenTelemetry 文档翻译模板
 
 > 📚 **文档导航**: [返回文档索引](INDEX.md) | [格式标准](FORMAT_STANDARDS.md) | [文档状态](STATUS.md) | [快速开始](QUICK_START.md)
 

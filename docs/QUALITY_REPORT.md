@@ -1,4 +1,4 @@
-# OpenTelemetry 文档质量报告
+﻿# OpenTelemetry 文档质量报告
 
 > 📚 **文档导航**: [返回文档索引](INDEX.md) | [文档状态](STATUS.md) | [格式标准](FORMAT_STANDARDS.md) | [翻译模板](TRANSLATION_TEMPLATE.md)
 > 最后更新: 2025-09-17

@@ -1,8 +1,16 @@
-# OpenTelemetry 文档索引
+﻿# OpenTelemetry 知识经验梳理与形式化证明文档索引
 
-> 📚 **文档导航**: [返回文档索引](INDEX.md) | [快速开始](QUICK_START.md) | [教程与学习路径](TUTORIALS.md) | [故障排除](TROUBLESHOOTING.md)
+> **项目重新定位**: 知识经验梳理与形式化证明学术研究项目  
+> 📚 **文档导航**: [国际对标分析](../OTLP_2025_INTERNATIONAL_BENCHMARK_ANALYSIS.md) | [知识框架重设计](../OTLP_2025_KNOWLEDGE_FRAMEWORK_REDESIGN.md) | [快速开始](QUICK_START.md) | [形式化证明](FORMAL_PROOFS.md)
 
-## 📚 文档导航
+## 📚 知识体系导航
+
+### 🎯 项目核心文档
+
+- [国际对标分析](../OTLP_2025_INTERNATIONAL_BENCHMARK_ANALYSIS.md) - 基于国际2025年最新标准的全面对标分析
+- [知识框架重设计](../OTLP_2025_KNOWLEDGE_FRAMEWORK_REDESIGN.md) - 六层架构知识框架设计
+- [知识框架文档](../OTLP_2025_KNOWLEDGE_FRAMEWORK.md) - 完整的知识体系构建
+- [理论基础文档](../OTLP_THEORETICAL_FOUNDATION.md) - 数学理论和形式化证明
 
 ### 🚀 快速开始
 

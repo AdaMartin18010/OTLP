@@ -1,4 +1,4 @@
-# OpenTelemetry 教程与课程对齐
+﻿# OpenTelemetry 教程与课程对齐
 
 > 📚 **文档导航**: [返回文档索引](INDEX.md) | [快速开始](QUICK_START.md) | [课程对齐](COURSE_ALIGNMENT.md) | [API参考](API_REFERENCE.md)
 > 最后更新: 2025-09-17

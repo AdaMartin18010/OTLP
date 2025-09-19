@@ -1,4 +1,4 @@
-# OpenTelemetry 术语与语义约定索引
+﻿# OpenTelemetry 术语与语义约定索引
 
 > 📚 **文档导航**: [返回文档索引](INDEX.md) | [语义约定](SEMANTIC_CONVENTIONS.md) | [快速开始](QUICK_START.md) | [架构设计](ARCHITECTURE.md)
 > 最后更新: 2025-09-17
