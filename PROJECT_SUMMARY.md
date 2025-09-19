@@ -198,3 +198,10 @@ python governance/semantic-validator.py data.json
 5. **社区贡献**: 将项目贡献给OpenTelemetry社区
 
 通过持续的努力和改进，这个项目将成为OpenTelemetry领域的重要资源，为社区的发展做出贡献。
+
+## 2025 对齐说明（权威与中性）
+
+- OTLP 传输维持 gRPC:4317 与 HTTP/1.1+Protobuf:4318；遵循官方可重试错误、指数退避与压缩/分块建议。
+- 语义约定分组持续演进，字段命名与资源属性以 opentelemetry.io 与规范仓库为准，确保跨语言一致。
+- Collector 与各语言 SDK 保持稳定节奏发布；升级前阅读 Release/CHANGELOG 并在测试环境回归验证。
+- 建议在生产中固定次要版本并启用配置版本化，关注安全与兼容性公告。

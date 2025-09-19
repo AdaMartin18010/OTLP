@@ -515,3 +515,21 @@ OpenTelemetry Metrics提供了强大的指标收集和监控能力，通过合�
 - **容量规划**: 基于历史数据预测容量需求
 
 选择合适的指标类型、设计合理的属性结构、配置适当的聚合策略，是成功实施指标监控的关键。
+
+---
+
+## 2025 指标标准对齐（权威与中性）
+
+- **指标名称长度**: 最大 255 字符（由 63 提升，2025 对齐）。在命名中保持小写+下划线/点号的约定，并结合命名空间（如 `http.request.duration` 或 `http_request_duration_seconds`）确保跨生态可读性。
+- **聚合时序（Temporality）**: 建议遵循默认时序选择器（Delta/Cumulative）与后端一致；跨 Prometheus 场景需明确 Delta→Rate、Histogram→*_bucket 的映射关系。
+- **直方图策略**: 优先使用常规 Histogram 配合业务自定义边界；高基数、宽量级分布时评估 ExponentialHistogram 的空间效率与查询适配。
+- **视图（Views）与属性基数**: 用 Views 限制属性维度与重命名流（Stream），在高基数标签前置做白/黑名单；为热点路径准备降维视图以保护采样与成本。
+- **单位标准**: 采用 UCUM（如 `s`, `ms`, `By`, `1`）；名称后缀与 `unit` 保持一致性（例如 `*_seconds` 与 `unit: s`）。
+- **示例值（Exemplars）**: 在高阶分析/关联 traces 时启用 Exemplars；注意与采样策略、压缩与导出成本的权衡。
+- **导出与重试**: 指标导出遵循 OTLP 可重试/不可重试错误语义，仅对瞬态错误指数退避。
+- **成熟实现与建议**:
+  - SDK: Go / Java / Python / .NET / Rust 均提供稳定的 Metrics API/SDK 与 OTLP metric exporter（gRPC/HTTP）。
+  - Collector: 建议使用稳定版本的 `otlp` receiver + `prometheusremotewrite`/`otlp` exporter；按需启用 `transformprocessor`/`filterprocessor` 控制维度与速率。
+  - Prometheus: 通过 Collector 执行 OTLP→Prometheus 的一致性映射；或在边车模式暴露 `:9464`/Prometheus exporter。
+
+权威来源：`opentelemetry.io` 与 GitHub `open-telemetry/*`（specification、proto、collector、各语言 SDK）发布与变更日志。

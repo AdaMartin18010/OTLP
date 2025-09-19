@@ -175,6 +175,13 @@
 
 ### 4. 安全考虑
 
+### 2025 对齐说明（权威与中性）
+
+- OTLP 仍以 gRPC:4317 与 HTTP/1.1+Protobuf:4318 为主要传输；遵循官方指数退避与可重试错误语义，HTTP 模式常见 429/503 与 Retry-After 头语义保持不变。
+- 语义约定（Semantic Conventions）持续分组演进；请以规范仓库与网站为准维护字段名与资源属性，避免语义漂移。
+- OpenTelemetry Collector 与各语言 SDK 均按稳定节奏演进；建议跟随稳定版本并阅读 Release Notes 以处理弃用与 Breaking 变更。
+- 权威来源：opentelemetry.io；GitHub open-telemetry/specification、collector、proto、各语言 SDK 发布与变更日志。
+
 - 数据脱敏机制
 - 传输加密配置
 - 访问控制设计

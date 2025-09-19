@@ -150,6 +150,13 @@ docs/
 
 ## 🛠️ 自动化工具
 
+### 2025 对齐说明（权威与中性）
+
+- OTLP 协议继续以 gRPC:4317 与 HTTP/1.1+Protobuf:4318 为主通道；遵循官方重试/退避、压缩与消息大小限制建议。
+- 语义约定按官方分组模型演进，字段命名与枚举值以规范仓库为准，避免私有扩展破坏可移植性与一致性。
+- Collector 与各语言 SDK 按稳定节奏发布；升级前建议阅读 Release Notes/CHANGELOG，评估潜在弃用与配置变更。
+- 官方来源：opentelemetry.io 与 GitHub open-telemetry 组织下 specification、collector、各语言 SDK 的发布页与规范文档。
+
 ```text
 scripts/
 ├── validate-docs.ps1           # 文档验证脚本
@@ -259,7 +266,7 @@ scripts/
 **质量状态**: ✅ 优秀  
 **可用性**: ✅ 生产就绪  
 
-*最后更新时间: 2024年12月*  
+*最后更新时间: 2025年9月*  
 *项目完成度: 100%*  
 *文档质量: A+ (优秀)*  
 *代码质量: 优秀*  

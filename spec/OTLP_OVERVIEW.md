@@ -222,6 +222,14 @@ message ExportLogsServiceResponse {
 - **DATA_LOSS**: 数据丢失
 - **UNAUTHENTICATED**: 未认证
 
+### 瞬态错误定义（2025年澄清）
+
+根据 OpenTelemetry 规范 1.25.0 的更新，瞬态错误（Transient Errors）的定义已得到澄清：
+
+- **可重试错误**: `UNAVAILABLE`, `DEADLINE_EXCEEDED`, `RESOURCE_EXHAUSTED`
+- **不可重试错误**: `INVALID_ARGUMENT`, `PERMISSION_DENIED`, `NOT_FOUND`
+- **重试策略**: 仅对瞬态错误实施指数退避重试
+
 ### 重试策略
 
 ```go

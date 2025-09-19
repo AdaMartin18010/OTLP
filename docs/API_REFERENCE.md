@@ -44,6 +44,8 @@ gauge, _ := meter.Float64Gauge("memory_usage")
 gauge.Record(ctx, 1024.0, attribute.String("type", "heap"))
 ```
 
+**注意**: 指标名称最大长度为 255 字符（2025年更新，原为63字符）
+
 ### 3. Logger API
 
 ```go

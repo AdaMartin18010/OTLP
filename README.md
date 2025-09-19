@@ -294,6 +294,20 @@ HTTP: ./benchmarks/run-python.ps1 -Endpoint http://localhost:4318 -Protocol http
 
 运行测试后，填写 `benchmarks/REPORT_TEMPLATE.md` 生成标准化的测试报告。
 
+### 版本对齐与更新策略（2025）
+
+- **OTLP 传输**: gRPC 默认 4317、HTTP/1.1+Protobuf 默认 4318；遵循官方可重试错误与指数退避语义（429/503/RESOURCE_EXHAUSTED 等）。
+- **语义约定**: 以 `docs/SEMANTIC_CONVENTIONS.md` 对齐官方分组与字段命名，避免私有字段破坏可移植性。
+- **Collector 与 SDK**: 跟随稳定发布节奏，升级前阅读 Release Notes/CHANGELOG 并在测试环境验证配置/导出器兼容性。
+- **权威来源**: `opentelemetry.io` 与 GitHub `open-telemetry/*`（specification、collector、proto、opentelemetry-go/python/rust 等）发布页。
+
+#### 指标标准要点（Metrics 2025）
+
+- **名称长度**: 最大 255 字符（自 63 提升），名称与 `unit` 保持一致性（如 `*_seconds` + `s`）。
+- **直方图选择**: 常规 Histogram + 业务边界优先；大动态范围评估 ExponentialHistogram。
+- **视图与基数控制**: 用 Views 限制高基数属性并统一命名；为热点路径准备降维流。
+- **Prometheus 对齐**: 明确 Delta/Cumulative 与 *_bucket 映射；必要时通过 Collector 做转换与限流。
+
 ## 四大理念
 
 ```text

@@ -157,6 +157,13 @@
 
 ## 🔧 技术特色
 
+### 2025 对齐说明（权威与中性）
+
+- OTLP 传输保持双轨：gRPC（默认端口 4317）与 HTTP/1.1+Protobuf（默认端口 4318），遵循官方兼容性与退避/重试语义；语义约定（Semantic Conventions）按官方分组持续演进。
+- OpenTelemetry Collector 按常规节奏发布，保持向后兼容与弃用公告周期；生产建议跟随稳定通道并关注发布公告中的 Breaking Changes。
+- Go/Python/Rust 等 SDK 的 traces/metrics/logs 能力持续稳定，遵循规范稳定性矩阵；建议以 SDK 发布说明与示例为准进行升级验证。
+- 权威参考：opentelemetry.io 与 GitHub open-telemetry 组织下的 specification、collector、各语言 SDK 仓库的 Release/CHANGELOG。
+
 ### 多语言支持
 
 - **Rust**: 高性能，内存安全
@@ -235,7 +242,7 @@
 
 ---
 
-*最后更新时间: 2024年12月*
+*最后更新时间: 2025年9月*
 *项目完成度: 100%*
 *文档质量: 优秀*
 *代码质量: 优秀*
