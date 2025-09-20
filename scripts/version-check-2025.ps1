@@ -40,6 +40,15 @@ function Check-RustVersions {
                 Write-ColorOutput "📦 OpenTelemetry Rust: $($match.Groups[1].Value)" "Yellow"
             }
         }
+        
+        # 检查 Tracezip 技术集成
+        if (Test-Path "technologies/tracezip/Cargo.toml") {
+            $tracezipToml = Get-Content "technologies/tracezip/Cargo.toml" -Raw
+            $tracezipVersions = [regex]::Matches($tracezipToml, 'opentelemetry[^"]*"([^"]*)"')
+            foreach ($match in $tracezipVersions) {
+                Write-ColorOutput "🔧 Tracezip Integration: $($match.Groups[1].Value)" "Magenta"
+            }
+        }
     } catch {
         Write-ColorOutput "❌ Rust 检查失败: $($_.Exception.Message)" "Red"
     }
@@ -94,6 +103,15 @@ function Check-JavaScriptVersions {
                 if ($dep.Name -like "*opentelemetry*") {
                     Write-ColorOutput "📦 $($dep.Name): $($dep.Value)" "Yellow"
                 }
+            }
+        }
+        
+        # 检查 Java 示例依赖
+        if (Test-Path "examples/minimal-java/pom.xml") {
+            $pomXml = Get-Content "examples/minimal-java/pom.xml" -Raw
+            $javaVersions = [regex]::Matches($pomXml, '<opentelemetry[^>]*>([^<]+)</opentelemetry[^>]*>')
+            foreach ($match in $javaVersions) {
+                Write-ColorOutput "☕ OpenTelemetry Java: $($match.Groups[1].Value)" "Yellow"
             }
         }
     } catch {

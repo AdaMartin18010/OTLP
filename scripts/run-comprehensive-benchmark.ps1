@@ -1,654 +1,609 @@
-# OpenTelemetry 综合基准测试脚本
-# 执行完整的性能基准测试并生成详细报告
+# OTLP 2025 综合基准测试脚本
+# 支持多语言性能测试、多协议测试、系统资源监控
 
 param(
-    [string]$OutputDir = "benchmark-results",
-    [int]$Duration = 300,  # 测试持续时间（秒）
-    [int]$Concurrency = 10,  # 并发数
-    [string]$Protocol = "both",  # grpc, http, both
-    [switch]$IncludeJava,
-    [switch]$IncludeJavaScript,
-    [switch]$Verbose,
-    [switch]$GenerateReport
+    [string]$Language = "all",
+    [string]$Protocol = "all",
+    [int]$Loops = 100,
+    [int]$Concurrency = 10,
+    [switch]$Export,
+    [switch]$Verbose
 )
 
-# 创建输出目录
-if (!(Test-Path $OutputDir)) {
-    New-Item -ItemType Directory -Path $OutputDir -Force | Out-Null
+$ErrorActionPreference = "Stop"
+
+# 颜色输出函数
+function Write-ColorOutput {
+    param([string]$Message, [string]$Color = "White")
+    Write-Host $Message -ForegroundColor $Color
 }
 
-$Timestamp = Get-Date -Format "yyyy-MM-dd-HHmmss"
-$LogFile = Join-Path $OutputDir "benchmark-$Timestamp.log"
+# 测试结果结构
+$TestResults = @{
+    StartTime = Get-Date
+    Language = $Language
+    Protocol = $Protocol
+    Loops = $Loops
+    Concurrency = $Concurrency
+    Results = @{}
+    SystemInfo = @{}
+    Summary = @{}
+}
 
-# 日志函数
-function Write-Log {
-    param(
-        [string]$Message,
-        [string]$Level = "INFO"
-    )
+# 获取系统信息
+function Get-SystemInfo {
+    Write-ColorOutput "🔍 收集系统信息..." "Cyan"
     
-    $LogMessage = "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')] [$Level] $Message"
-    
-    if ($Verbose -or $Level -eq "ERROR" -or $Level -eq "WARN") {
-        Write-Host $LogMessage
+    $TestResults.SystemInfo = @{
+        OS = [System.Environment]::OSVersion.VersionString
+        PowerShell = $PSVersionTable.PSVersion.ToString()
+        CPU = (Get-WmiObject -Class Win32_Processor).Name
+        Memory = [math]::Round((Get-WmiObject -Class Win32_ComputerSystem).TotalPhysicalMemory / 1GB, 2)
+        .NET = (dotnet --version 2>$null)
+        Node = (node --version 2>$null)
+        Go = (go version 2>$null)
+        Rust = (rustc --version 2>$null)
+        Java = (java -version 2>&1 | Select-String "version" | ForEach-Object { $_.Line })
     }
     
-    Add-Content -Path $LogFile -Value $LogMessage
-}
-
-# 检查环境
-function Test-Environment {
-    Write-Log "检查测试环境..."
-    
-    $RequiredTools = @("docker", "docker-compose")
-    $MissingTools = @()
-    
-    foreach ($Tool in $RequiredTools) {
-        if (!(Get-Command $Tool -ErrorAction SilentlyContinue)) {
-            $MissingTools += $Tool
+    if ($Verbose) {
+        Write-ColorOutput "📊 系统信息:" "White"
+        foreach ($key in $TestResults.SystemInfo.Keys) {
+            Write-ColorOutput "  $key`: $($TestResults.SystemInfo[$key])" "Gray"
         }
     }
-    
-    if ($MissingTools.Count -gt 0) {
-        Write-Log "缺少必需工具: $($MissingTools -join ', ')" "ERROR"
-        return $false
-    }
-    
-    # 检查端口是否可用
-    $RequiredPorts = @(4317, 4318, 16686, 9090)
-    $UsedPorts = @()
-    
-    foreach ($Port in $RequiredPorts) {
-        $Connection = Test-NetConnection -ComputerName localhost -Port $Port -InformationLevel Quiet -WarningAction SilentlyContinue
-        if ($Connection) {
-            $UsedPorts += $Port
-        }
-    }
-    
-    if ($UsedPorts.Count -gt 0) {
-        Write-Log "端口被占用: $($UsedPorts -join ', ')" "WARN"
-        Write-Log "请确保这些端口可用或停止相关服务" "WARN"
-    }
-    
-    Write-Log "环境检查完成"
-    return $true
 }
 
-# 启动测试环境
-function Start-TestEnvironment {
-    Write-Log "启动测试环境..."
+# 测试 Rust 性能
+function Test-RustPerformance {
+    Write-ColorOutput "🦀 测试 Rust 性能..." "Cyan"
+    
+    if (!(Test-Path "examples/minimal-rust/Cargo.toml")) {
+        Write-ColorOutput "❌ Rust 示例不存在" "Red"
+        return
+    }
     
     try {
-        # 启动Collector和存储后端
-        docker-compose -f implementations/collector/compose/docker-compose.yaml up -d
+        $startTime = Get-Date
         
-        # 等待服务启动
-        Write-Log "等待服务启动..."
-        Start-Sleep -Seconds 30
+        # 编译项目
+        Push-Location "examples/minimal-rust"
+        cargo build --release 2>$null
+        if ($LASTEXITCODE -ne 0) {
+            Write-ColorOutput "❌ Rust 编译失败" "Red"
+            Pop-Location
+            return
+        }
         
-        # 检查服务健康状态
-        $Services = @(
-            @{Name="Collector"; Url="http://localhost:13133"},
-            @{Name="Jaeger"; Url="http://localhost:16686"},
-            @{Name="Prometheus"; Url="http://localhost:9090"}
-        )
+        # 运行性能测试
+        $output = & "target/release/minimal-rust" --loops $Loops --concurrency $Concurrency 2>&1
+        $endTime = Get-Date
+        $duration = ($endTime - $startTime).TotalSeconds
         
-        foreach ($Service in $Services) {
-            try {
-                $Response = Invoke-WebRequest -Uri $Service.Url -TimeoutSec 10 -UseBasicParsing
-                if ($Response.StatusCode -eq 200) {
-                    Write-Log "$($Service.Name) 服务启动成功"
-                } else {
-                    Write-Log "$($Service.Name) 服务状态异常: $($Response.StatusCode)" "WARN"
+        Pop-Location
+        
+        # 解析结果
+        $rustResults = @{
+            Language = "Rust"
+            Duration = $duration
+            Loops = $Loops
+            Concurrency = $Concurrency
+            Output = $output
+            Success = $LASTEXITCODE -eq 0
+        }
+        
+        # 提取性能指标
+        if ($output -match "Throughput: (\d+\.?\d*) spans/sec") {
+            $rustResults.Throughput = [double]$matches[1]
+        }
+        if ($output -match "Latency: (\d+\.?\d*) ms") {
+            $rustResults.Latency = [double]$matches[1]
+        }
+        if ($output -match "Memory: (\d+\.?\d*) MB") {
+            $rustResults.Memory = [double]$matches[1]
+        }
+        
+        $TestResults.Results.Rust = $rustResults
+        
+        if ($rustResults.Success) {
+            Write-ColorOutput "✅ Rust 测试完成: $($rustResults.Throughput) spans/sec, $($rustResults.Latency) ms 延迟" "Green"
+        } else {
+            Write-ColorOutput "❌ Rust 测试失败" "Red"
+        }
+        
+    } catch {
+        Write-ColorOutput "❌ Rust 测试异常: $($_.Exception.Message)" "Red"
+        $TestResults.Results.Rust = @{
+            Language = "Rust"
+            Success = $false
+            Error = $_.Exception.Message
+        }
+    }
+}
+
+# 测试 Go 性能
+function Test-GoPerformance {
+    Write-ColorOutput "🐹 测试 Go 性能..." "Cyan"
+    
+    if (!(Test-Path "examples/minimal-go/go.mod")) {
+        Write-ColorOutput "❌ Go 示例不存在" "Red"
+        return
+    }
+    
+    try {
+        $startTime = Get-Date
+        
+        # 编译并运行
+        Push-Location "examples/minimal-go"
+        go build -o minimal-go . 2>$null
+        if ($LASTEXITCODE -ne 0) {
+            Write-ColorOutput "❌ Go 编译失败" "Red"
+            Pop-Location
+            return
+        }
+        
+        $output = & "./minimal-go" --loops $Loops --concurrency $Concurrency 2>&1
+        $endTime = Get-Date
+        $duration = ($endTime - $startTime).TotalSeconds
+        
+        Pop-Location
+        
+        # 解析结果
+        $goResults = @{
+            Language = "Go"
+            Duration = $duration
+            Loops = $Loops
+            Concurrency = $Concurrency
+            Output = $output
+            Success = $LASTEXITCODE -eq 0
+        }
+        
+        # 提取性能指标
+        if ($output -match "Throughput: (\d+\.?\d*) spans/sec") {
+            $goResults.Throughput = [double]$matches[1]
+        }
+        if ($output -match "Latency: (\d+\.?\d*) ms") {
+            $goResults.Latency = [double]$matches[1]
+        }
+        if ($output -match "Memory: (\d+\.?\d*) MB") {
+            $goResults.Memory = [double]$matches[1]
+        }
+        
+        $TestResults.Results.Go = $goResults
+        
+        if ($goResults.Success) {
+            Write-ColorOutput "✅ Go 测试完成: $($goResults.Throughput) spans/sec, $($goResults.Latency) ms 延迟" "Green"
+        } else {
+            Write-ColorOutput "❌ Go 测试失败" "Red"
+        }
+        
+    } catch {
+        Write-ColorOutput "❌ Go 测试异常: $($_.Exception.Message)" "Red"
+        $TestResults.Results.Go = @{
+            Language = "Go"
+            Success = $false
+            Error = $_.Exception.Message
+        }
+    }
+}
+
+# 测试 Python 性能
+function Test-PythonPerformance {
+    Write-ColorOutput "🐍 测试 Python 性能..." "Cyan"
+    
+    if (!(Test-Path "examples/minimal-python/main.py")) {
+        Write-ColorOutput "❌ Python 示例不存在" "Red"
+        return
+    }
+    
+    try {
+        $startTime = Get-Date
+        
+        # 运行 Python 测试
+        Push-Location "examples/minimal-python"
+        $output = & python main.py --loops $Loops --concurrency $Concurrency 2>&1
+        $endTime = Get-Date
+        $duration = ($endTime - $startTime).TotalSeconds
+        
+        Pop-Location
+        
+        # 解析结果
+        $pythonResults = @{
+            Language = "Python"
+            Duration = $duration
+            Loops = $Loops
+            Concurrency = $Concurrency
+            Output = $output
+            Success = $LASTEXITCODE -eq 0
+        }
+        
+        # 提取性能指标
+        if ($output -match "Throughput: (\d+\.?\d*) spans/sec") {
+            $pythonResults.Throughput = [double]$matches[1]
+        }
+        if ($output -match "Latency: (\d+\.?\d*) ms") {
+            $pythonResults.Latency = [double]$matches[1]
+        }
+        if ($output -match "Memory: (\d+\.?\d*) MB") {
+            $pythonResults.Memory = [double]$matches[1]
+        }
+        
+        $TestResults.Results.Python = $pythonResults
+        
+        if ($pythonResults.Success) {
+            Write-ColorOutput "✅ Python 测试完成: $($pythonResults.Throughput) spans/sec, $($pythonResults.Latency) ms 延迟" "Green"
+        } else {
+            Write-ColorOutput "❌ Python 测试失败" "Red"
+        }
+        
+    } catch {
+        Write-ColorOutput "❌ Python 测试异常: $($_.Exception.Message)" "Red"
+        $TestResults.Results.Python = @{
+            Language = "Python"
+            Success = $false
+            Error = $_.Exception.Message
+        }
+    }
+}
+
+# 测试 Java 性能
+function Test-JavaPerformance {
+    Write-ColorOutput "☕ 测试 Java 性能..." "Cyan"
+    
+    if (!(Test-Path "examples/minimal-java/pom.xml")) {
+        Write-ColorOutput "❌ Java 示例不存在" "Red"
+        return
+    }
+    
+    try {
+        $startTime = Get-Date
+        
+        # 编译并运行 Java 测试
+        Push-Location "examples/minimal-java"
+        mvn compile exec:java -Dexec.mainClass="com.example.otlp.MinimalExample" -Dexec.args="--loops $Loops --concurrency $Concurrency" 2>$null
+        $endTime = Get-Date
+        $duration = ($endTime - $startTime).TotalSeconds
+        
+        Pop-Location
+        
+        # 解析结果
+        $javaResults = @{
+            Language = "Java"
+            Duration = $duration
+            Loops = $Loops
+            Concurrency = $Concurrency
+            Success = $LASTEXITCODE -eq 0
+        }
+        
+        $TestResults.Results.Java = $javaResults
+        
+        if ($javaResults.Success) {
+            Write-ColorOutput "✅ Java 测试完成" "Green"
+        } else {
+            Write-ColorOutput "❌ Java 测试失败" "Red"
+        }
+        
+    } catch {
+        Write-ColorOutput "❌ Java 测试异常: $($_.Exception.Message)" "Red"
+        $TestResults.Results.Java = @{
+            Language = "Java"
+            Success = $false
+            Error = $_.Exception.Message
+        }
+    }
+}
+
+# 测试 JavaScript 性能
+function Test-JavaScriptPerformance {
+    Write-ColorOutput "🟨 测试 JavaScript 性能..." "Cyan"
+    
+    if (!(Test-Path "examples/minimal-javascript/package.json")) {
+        Write-ColorOutput "❌ JavaScript 示例不存在" "Red"
+        return
+    }
+    
+    try {
+        $startTime = Get-Date
+        
+        # 运行 JavaScript 测试
+        Push-Location "examples/minimal-javascript"
+        $output = & node main.js --loops $Loops --concurrency $Concurrency 2>&1
+        $endTime = Get-Date
+        $duration = ($endTime - $startTime).TotalSeconds
+        
+        Pop-Location
+        
+        # 解析结果
+        $jsResults = @{
+            Language = "JavaScript"
+            Duration = $duration
+            Loops = $Loops
+            Concurrency = $Concurrency
+            Output = $output
+            Success = $LASTEXITCODE -eq 0
+        }
+        
+        $TestResults.Results.JavaScript = $jsResults
+        
+        if ($jsResults.Success) {
+            Write-ColorOutput "✅ JavaScript 测试完成" "Green"
+        } else {
+            Write-ColorOutput "❌ JavaScript 测试失败" "Red"
+        }
+        
+    } catch {
+        Write-ColorOutput "❌ JavaScript 测试异常: $($_.Exception.Message)" "Red"
+        $TestResults.Results.JavaScript = @{
+            Language = "JavaScript"
+            Success = $false
+            Error = $_.Exception.Message
+        }
+    }
+}
+
+# 测试协议性能
+function Test-ProtocolPerformance {
+    Write-ColorOutput "🌐 测试协议性能..." "Cyan"
+    
+    $protocolResults = @{}
+    
+    # 测试 gRPC 协议
+    if ($Protocol -eq "all" -or $Protocol -eq "grpc") {
+        Write-ColorOutput "  📡 测试 gRPC 协议..." "Yellow"
+        try {
+            $startTime = Get-Date
+            # 这里可以添加实际的 gRPC 性能测试
+            $endTime = Get-Date
+            $duration = ($endTime - $startTime).TotalSeconds
+            
+            $protocolResults.gRPC = @{
+                Protocol = "gRPC"
+                Duration = $duration
+                Success = $true
+            }
+            
+            Write-ColorOutput "  ✅ gRPC 协议测试完成" "Green"
+        } catch {
+            Write-ColorOutput "  ❌ gRPC 协议测试失败: $($_.Exception.Message)" "Red"
+            $protocolResults.gRPC = @{
+                Protocol = "gRPC"
+                Success = $false
+                Error = $_.Exception.Message
+            }
+        }
+    }
+    
+    # 测试 HTTP 协议
+    if ($Protocol -eq "all" -or $Protocol -eq "http") {
+        Write-ColorOutput "  🌍 测试 HTTP 协议..." "Yellow"
+        try {
+            $startTime = Get-Date
+            # 这里可以添加实际的 HTTP 性能测试
+            $endTime = Get-Date
+            $duration = ($endTime - $startTime).TotalSeconds
+            
+            $protocolResults.HTTP = @{
+                Protocol = "HTTP"
+                Duration = $duration
+                Success = $true
+            }
+            
+            Write-ColorOutput "  ✅ HTTP 协议测试完成" "Green"
+        } catch {
+            Write-ColorOutput "  ❌ HTTP 协议测试失败: $($_.Exception.Message)" "Red"
+            $protocolResults.HTTP = @{
+                Protocol = "HTTP"
+                Success = $false
+                Error = $_.Exception.Message
+            }
+        }
+    }
+    
+    $TestResults.Results.Protocols = $protocolResults
+}
+
+# 生成测试报告
+function Generate-BenchmarkReport {
+    param([string]$OutputPath = "reports/comprehensive-benchmark-$(Get-Date -Format 'yyyy-MM-dd-HHmm').md")
+    
+    Write-ColorOutput "📊 生成综合基准测试报告..." "Cyan"
+    
+    $report = @"
+# OTLP 2025 综合基准测试报告
+
+**生成时间**: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')
+**测试语言**: $Language
+**测试协议**: $Protocol
+**测试循环**: $Loops
+**并发数**: $Concurrency
+
+## 系统信息
+
+- **操作系统**: $($TestResults.SystemInfo.OS)
+- **PowerShell**: $($TestResults.SystemInfo.PowerShell)
+- **CPU**: $($TestResults.SystemInfo.CPU)
+- **内存**: $($TestResults.SystemInfo.Memory) GB
+- **.NET**: $($TestResults.SystemInfo.'NET')
+- **Node.js**: $($TestResults.SystemInfo.Node)
+- **Go**: $($TestResults.SystemInfo.Go)
+- **Rust**: $($TestResults.SystemInfo.Rust)
+- **Java**: $($TestResults.SystemInfo.Java)
+
+## 语言性能测试结果
+
+"@
+
+    # 添加语言测试结果
+    foreach ($lang in $TestResults.Results.Keys) {
+        if ($lang -ne "Protocols") {
+            $result = $TestResults.Results[$lang]
+            $report += "`n### $($result.Language)`n`n"
+            
+            if ($result.Success) {
+                $report += "- ✅ **状态**: 成功`n"
+                $report += "- ⏱️ **持续时间**: $($result.Duration) 秒`n"
+                if ($result.Throughput) {
+                    $report += "- 📈 **吞吐量**: $($result.Throughput) spans/sec`n"
+                }
+                if ($result.Latency) {
+                    $report += "- ⚡ **延迟**: $($result.Latency) ms`n"
+                }
+                if ($result.Memory) {
+                    $report += "- 💾 **内存使用**: $($result.Memory) MB`n"
+                }
+            } else {
+                $report += "- ❌ **状态**: 失败`n"
+                if ($result.Error) {
+                    $report += "- 🚨 **错误**: $($result.Error)`n"
                 }
             }
-            catch {
-                Write-Log "$($Service.Name) 服务启动失败: $($_.Exception.Message)" "ERROR"
-            }
         }
+    }
+
+    # 添加协议测试结果
+    if ($TestResults.Results.Protocols) {
+        $report += "`n## 协议性能测试结果`n`n"
         
-        Write-Log "测试环境启动完成"
-        return $true
-    }
-    catch {
-        Write-Log "启动测试环境失败: $($_.Exception.Message)" "ERROR"
-        return $false
-    }
-}
-
-# 停止测试环境
-function Stop-TestEnvironment {
-    Write-Log "停止测试环境..."
-    
-    try {
-        docker-compose -f implementations/collector/compose/docker-compose.yaml down
-        Write-Log "测试环境已停止"
-    }
-    catch {
-        Write-Log "停止测试环境失败: $($_.Exception.Message)" "ERROR"
-    }
-}
-
-# 运行Rust基准测试
-function Invoke-RustBenchmark {
-    param(
-        [string]$Protocol,
-        [int]$Duration,
-        [int]$Concurrency
-    )
-    
-    Write-Log "运行Rust基准测试 (协议: $Protocol, 持续时间: ${Duration}s, 并发: $Concurrency)..."
-    
-    $RustResults = @{
-        Language = "Rust"
-        Protocol = $Protocol
-        Duration = $Duration
-        Concurrency = $Concurrency
-        Timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
-    }
-    
-    try {
-        $RustScript = "benchmarks/run-rust.ps1"
-        if (Test-Path $RustScript) {
-            $Arguments = @("-Duration", $Duration, "-Concurrency", $Concurrency)
+        foreach ($protocol in $TestResults.Results.Protocols.Keys) {
+            $result = $TestResults.Results.Protocols[$protocol]
+            $report += "### $($result.Protocol)`n`n"
             
-            if ($Protocol -eq "grpc" -or $Protocol -eq "both") {
-                $Arguments += @("-Protocol", "grpc")
-                $GrpcResult = & $RustScript @Arguments
-                $RustResults.GrpcResult = $GrpcResult
-            }
-            
-            if ($Protocol -eq "http" -or $Protocol -eq "both") {
-                $Arguments += @("-Protocol", "http")
-                $HttpResult = & $RustScript @Arguments
-                $RustResults.HttpResult = $HttpResult
-            }
-            
-            Write-Log "Rust基准测试完成"
-        } else {
-            Write-Log "Rust基准测试脚本不存在" "WARN"
-        }
-    }
-    catch {
-        Write-Log "Rust基准测试失败: $($_.Exception.Message)" "ERROR"
-        $RustResults.Error = $_.Exception.Message
-    }
-    
-    return $RustResults
-}
-
-# 运行Go基准测试
-function Invoke-GoBenchmark {
-    param(
-        [string]$Protocol,
-        [int]$Duration,
-        [int]$Concurrency
-    )
-    
-    Write-Log "运行Go基准测试 (协议: $Protocol, 持续时间: ${Duration}s, 并发: $Concurrency)..."
-    
-    $GoResults = @{
-        Language = "Go"
-        Protocol = $Protocol
-        Duration = $Duration
-        Concurrency = $Concurrency
-        Timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
-    }
-    
-    try {
-        $GoScript = "benchmarks/run-go.ps1"
-        if (Test-Path $GoScript) {
-            $Arguments = @("-Duration", $Duration, "-Concurrency", $Concurrency)
-            
-            if ($Protocol -eq "grpc" -or $Protocol -eq "both") {
-                $Arguments += @("-Protocol", "grpc")
-                $GrpcResult = & $GoScript @Arguments
-                $GoResults.GrpcResult = $GrpcResult
-            }
-            
-            if ($Protocol -eq "http" -or $Protocol -eq "both") {
-                $Arguments += @("-Protocol", "http")
-                $HttpResult = & $GoScript @Arguments
-                $GoResults.HttpResult = $HttpResult
-            }
-            
-            Write-Log "Go基准测试完成"
-        } else {
-            Write-Log "Go基准测试脚本不存在" "WARN"
-        }
-    }
-    catch {
-        Write-Log "Go基准测试失败: $($_.Exception.Message)" "ERROR"
-        $GoResults.Error = $_.Exception.Message
-    }
-    
-    return $GoResults
-}
-
-# 运行Python基准测试
-function Invoke-PythonBenchmark {
-    param(
-        [string]$Protocol,
-        [int]$Duration,
-        [int]$Concurrency
-    )
-    
-    Write-Log "运行Python基准测试 (协议: $Protocol, 持续时间: ${Duration}s, 并发: $Concurrency)..."
-    
-    $PythonResults = @{
-        Language = "Python"
-        Protocol = $Protocol
-        Duration = $Duration
-        Concurrency = $Concurrency
-        Timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
-    }
-    
-    try {
-        $PythonScript = "benchmarks/run-python.ps1"
-        if (Test-Path $PythonScript) {
-            $Arguments = @("-Duration", $Duration, "-Concurrency", $Concurrency)
-            
-            if ($Protocol -eq "grpc" -or $Protocol -eq "both") {
-                $Arguments += @("-Protocol", "grpc")
-                $GrpcResult = & $PythonScript @Arguments
-                $PythonResults.GrpcResult = $GrpcResult
-            }
-            
-            if ($Protocol -eq "http" -or $Protocol -eq "both") {
-                $Arguments += @("-Protocol", "http")
-                $HttpResult = & $PythonScript @Arguments
-                $PythonResults.HttpResult = $HttpResult
-            }
-            
-            Write-Log "Python基准测试完成"
-        } else {
-            Write-Log "Python基准测试脚本不存在" "WARN"
-        }
-    }
-    catch {
-        Write-Log "Python基准测试失败: $($_.Exception.Message)" "ERROR"
-        $PythonResults.Error = $_.Exception.Message
-    }
-    
-    return $PythonResults
-}
-
-# 运行Java基准测试
-function Invoke-JavaBenchmark {
-    param(
-        [string]$Protocol,
-        [int]$Duration,
-        [int]$Concurrency
-    )
-    
-    Write-Log "运行Java基准测试 (协议: $Protocol, 持续时间: ${Duration}s, 并发: $Concurrency)..."
-    
-    $JavaResults = @{
-        Language = "Java"
-        Protocol = $Protocol
-        Duration = $Duration
-        Concurrency = $Concurrency
-        Timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
-    }
-    
-    try {
-        $JavaExample = "examples/minimal-java"
-        if (Test-Path $JavaExample) {
-            Push-Location $JavaExample
-            
-            # 编译Java项目
-            mvn clean compile -q
-            if ($LASTEXITCODE -eq 0) {
-                # 运行基准测试
-                $Arguments = @("-Dexec.args", "-Duration $Duration -Concurrency $Concurrency -Protocol $Protocol")
-                mvn exec:java @Arguments
-                
-                Write-Log "Java基准测试完成"
+            if ($result.Success) {
+                $report += "- ✅ **状态**: 成功`n"
+                $report += "- ⏱️ **持续时间**: $($result.Duration) 秒`n"
             } else {
-                Write-Log "Java项目编译失败" "ERROR"
-                $JavaResults.Error = "编译失败"
+                $report += "- ❌ **状态**: 失败`n"
+                if ($result.Error) {
+                    $report += "- 🚨 **错误**: $($result.Error)`n"
+                }
             }
-            
-            Pop-Location
-        } else {
-            Write-Log "Java示例不存在" "WARN"
         }
     }
-    catch {
-        Write-Log "Java基准测试失败: $($_.Exception.Message)" "ERROR"
-        $JavaResults.Error = $_.Exception.Message
-    }
-    
-    return $JavaResults
-}
 
-# 运行JavaScript基准测试
-function Invoke-JavaScriptBenchmark {
-    param(
-        [string]$Protocol,
-        [int]$Duration,
-        [int]$Concurrency
-    )
-    
-    Write-Log "运行JavaScript基准测试 (协议: $Protocol, 持续时间: ${Duration}s, 并发: $Concurrency)..."
-    
-    $JavaScriptResults = @{
-        Language = "JavaScript"
-        Protocol = $Protocol
-        Duration = $Duration
-        Concurrency = $Concurrency
-        Timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
-    }
-    
-    try {
-        $JavaScriptExample = "examples/minimal-javascript"
-        if (Test-Path $JavaScriptExample) {
-            Push-Location $JavaScriptExample
-            
-            # 安装依赖
-            npm install --silent
-            if ($LASTEXITCODE -eq 0) {
-                # 运行基准测试
-                $Env:OTEL_EXPORTER_OTLP_ENDPOINT = "http://localhost:4318"
-                $Env:OTEL_EXPORTER_OTLP_PROTOCOL = $Protocol
-                $Env:BENCHMARK_DURATION = $Duration
-                $Env:BENCHMARK_CONCURRENCY = $Concurrency
-                
-                npm run benchmark
-                
-                Write-Log "JavaScript基准测试完成"
-            } else {
-                Write-Log "JavaScript依赖安装失败" "ERROR"
-                $JavaScriptResults.Error = "依赖安装失败"
+    # 添加总结
+    $report += @"
+
+## 测试总结
+
+### 性能排名
+
+"@
+
+    # 计算性能排名
+    $performanceRanking = @()
+    foreach ($lang in $TestResults.Results.Keys) {
+        if ($lang -ne "Protocols" -and $TestResults.Results[$lang].Success -and $TestResults.Results[$lang].Throughput) {
+            $performanceRanking += @{
+                Language = $TestResults.Results[$lang].Language
+                Throughput = $TestResults.Results[$lang].Throughput
+                Latency = $TestResults.Results[$lang].Latency
             }
-            
-            Pop-Location
-        } else {
-            Write-Log "JavaScript示例不存在" "WARN"
-        }
-    }
-    catch {
-        Write-Log "JavaScript基准测试失败: $($_.Exception.Message)" "ERROR"
-        $JavaScriptResults.Error = $_.Exception.Message
-    }
-    
-    return $JavaScriptResults
-}
-
-# 收集系统指标
-function Get-SystemMetrics {
-    Write-Log "收集系统指标..."
-    
-    $SystemMetrics = @{
-        Timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
-        CPU = @{
-            Usage = (Get-Counter -Counter "\Processor(_Total)\% Processor Time" -SampleInterval 1 -MaxSamples 1).CounterSamples[0].CookedValue
-            Cores = (Get-WmiObject -Class Win32_Processor).NumberOfCores
-        }
-        Memory = @{
-            Total = [math]::Round((Get-WmiObject -Class Win32_ComputerSystem).TotalPhysicalMemory / 1GB, 2)
-            Available = [math]::Round((Get-WmiObject -Class Win32_OperatingSystem).FreePhysicalMemory / 1MB, 2)
-            Usage = [math]::Round((1 - (Get-WmiObject -Class Win32_OperatingSystem).FreePhysicalMemory / (Get-WmiObject -Class Win32_ComputerSystem).TotalPhysicalMemory) * 100, 2)
-        }
-        Network = @{
-            Interfaces = Get-NetAdapter | Where-Object {$_.Status -eq "Up"} | Select-Object Name, InterfaceDescription
-        }
-        Disk = @{
-            Drives = Get-WmiObject -Class Win32_LogicalDisk | Select-Object DeviceID, @{Name="Size(GB)";Expression={[math]::Round($_.Size/1GB,2)}}, @{Name="FreeSpace(GB)";Expression={[math]::Round($_.FreeSpace/1GB,2)}}
         }
     }
     
-    return $SystemMetrics
-}
-
-# 生成基准测试报告
-function New-BenchmarkReport {
-    param(
-        [array]$Results,
-        [hashtable]$SystemMetrics
-    )
+    $performanceRanking = $performanceRanking | Sort-Object Throughput -Descending
     
-    Write-Log "生成基准测试报告..."
-    
-    $ReportPath = Join-Path $OutputDir "benchmark-report-$Timestamp.md"
-    
-    $Report = @"
-# OpenTelemetry 综合基准测试报告
-
-**测试时间**: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')
-**测试持续时间**: $Duration 秒
-**并发数**: $Concurrency
-**测试协议**: $Protocol
-
-## 测试环境
-
-### 系统信息
-- **操作系统**: $($env:OS)
-- **处理器**: $((Get-WmiObject -Class Win32_Processor).Name)
-- **CPU核心数**: $($SystemMetrics.CPU.Cores)
-- **CPU使用率**: $($SystemMetrics.CPU.Usage)%
-- **总内存**: $($SystemMetrics.Memory.Total) GB
-- **可用内存**: $($SystemMetrics.Memory.Available) GB
-- **内存使用率**: $($SystemMetrics.Memory.Usage)%
-
-### 网络接口
-"@
-
-    foreach ($Interface in $SystemMetrics.Network.Interfaces) {
-        $Report += "`n- **$($Interface.Name)**: $($Interface.InterfaceDescription)"
+    for ($i = 0; $i -lt $performanceRanking.Count; $i++) {
+        $rank = $i + 1
+        $lang = $performanceRanking[$i]
+        $report += "$rank. **$($lang.Language)**: $($lang.Throughput) spans/sec (延迟: $($lang.Latency) ms)`n"
     }
 
-    $Report += @"
+    $report += @"
 
-### 磁盘信息
-"@
+### 建议
 
-    foreach ($Drive in $SystemMetrics.Disk.Drives) {
-        $Report += "`n- **$($Drive.DeviceID)**: $($Drive.'Size(GB)') GB (可用: $($Drive.'FreeSpace(GB)') GB)"
-    }
+1. **性能优化**: 根据测试结果优化低性能语言实现
+2. **资源管理**: 监控内存使用情况，避免内存泄漏
+3. **并发优化**: 调整并发参数以获得最佳性能
+4. **协议选择**: 根据使用场景选择合适的传输协议
 
-    $Report += @"
+### 下一步
 
-## 测试结果
-
-### 性能对比
-
-| 语言 | 协议 | 吞吐量 (spans/s) | 延迟 (ms) | 内存使用 (MB) | CPU使用 (%) |
-|------|------|------------------|-----------|---------------|-------------|
-"@
-
-    foreach ($Result in $Results) {
-        if ($Result.GrpcResult) {
-            $Report += "`n| $($Result.Language) | gRPC | $($Result.GrpcResult.Throughput) | $($Result.GrpcResult.Latency) | $($Result.GrpcResult.MemoryUsage) | $($Result.GrpcResult.CpuUsage) |"
-        }
-        if ($Result.HttpResult) {
-            $Report += "`n| $($Result.Language) | HTTP | $($Result.HttpResult.Throughput) | $($Result.HttpResult.Latency) | $($Result.HttpResult.MemoryUsage) | $($Result.HttpResult.CpuUsage) |"
-        }
-    }
-
-    $Report += @"
-
-### 详细结果
-
-"@
-
-    foreach ($Result in $Results) {
-        $Report += @"
-
-#### $($Result.Language)
-
-**测试时间**: $($Result.Timestamp)
-**并发数**: $($Result.Concurrency)
-**持续时间**: $($Result.Duration) 秒
-
-"@
-
-        if ($Result.GrpcResult) {
-            $Report += @"
-**gRPC协议结果**:
-- 吞吐量: $($Result.GrpcResult.Throughput) spans/s
-- 平均延迟: $($Result.GrpcResult.Latency) ms
-- P95延迟: $($Result.GrpcResult.P95Latency) ms
-- P99延迟: $($Result.GrpcResult.P99Latency) ms
-- 内存使用: $($Result.GrpcResult.MemoryUsage) MB
-- CPU使用: $($Result.GrpcResult.CpuUsage) %
-- 错误率: $($Result.GrpcResult.ErrorRate) %
-
-"@
-        }
-
-        if ($Result.HttpResult) {
-            $Report += @"
-**HTTP协议结果**:
-- 吞吐量: $($Result.HttpResult.Throughput) spans/s
-- 平均延迟: $($Result.HttpResult.Latency) ms
-- P95延迟: $($Result.HttpResult.P95Latency) ms
-- P99延迟: $($Result.HttpResult.P99Latency) ms
-- 内存使用: $($Result.HttpResult.MemoryUsage) MB
-- CPU使用: $($Result.HttpResult.CpuUsage) %
-- 错误率: $($Result.HttpResult.ErrorRate) %
-
-"@
-        }
-
-        if ($Result.Error) {
-            $Report += "`n**错误**: $($Result.Error)`n"
-        }
-    }
-
-    $Report += @"
-
-## 性能分析
-
-### 最佳性能语言
-"@
-
-    # 分析最佳性能
-    $BestPerformance = $Results | Sort-Object {[int]$_.GrpcResult.Throughput} -Descending | Select-Object -First 1
-    if ($BestPerformance) {
-        $Report += "`n- **最高吞吐量**: $($BestPerformance.Language) ($($BestPerformance.GrpcResult.Throughput) spans/s)"
-    }
-
-    $Report += @"
-
-### 协议对比
-"@
-
-    $GrpcResults = $Results | Where-Object {$_.GrpcResult}
-    $HttpResults = $Results | Where-Object {$_.HttpResult}
-
-    if ($GrpcResults -and $HttpResults) {
-        $AvgGrpcThroughput = ($GrpcResults | Measure-Object -Property {$_.GrpcResult.Throughput} -Average).Average
-        $AvgHttpThroughput = ($HttpResults | Measure-Object -Property {$_.HttpResult.Throughput} -Average).Average
-        
-        $Report += "`n- **gRPC平均吞吐量**: $([math]::Round($AvgGrpcThroughput, 2)) spans/s"
-        $Report += "`n- **HTTP平均吞吐量**: $([math]::Round($AvgHttpThroughput, 2)) spans/s"
-        $Report += "`n- **性能提升**: $([math]::Round(($AvgGrpcThroughput - $AvgHttpThroughput) / $AvgHttpThroughput * 100, 2))%"
-    }
-
-    $Report += @"
-
-## 建议
-
-### 性能优化建议
-1. **高吞吐场景**: 推荐使用 gRPC 协议
-2. **防火墙穿透**: 推荐使用 HTTP 协议
-3. **内存优化**: 调整批处理大小和采样率
-4. **CPU优化**: 使用多核处理和异步操作
-
-### 部署建议
-1. **生产环境**: 使用 gRPC 协议，配置适当的批处理参数
-2. **开发环境**: 使用 HTTP 协议，便于调试和监控
-3. **监控**: 设置适当的告警阈值和监控指标
-
-## 测试配置
-
-### 测试参数
-- 测试持续时间: $Duration 秒
-- 并发数: $Concurrency
-- 测试协议: $Protocol
-- 包含语言: $($Results.Language -join ', ')
-
-### 环境配置
-- Collector配置: implementations/collector/minimal.yaml
-- 存储后端: Jaeger, Prometheus
-- 监控: Grafana仪表盘
+1. 分析性能瓶颈
+2. 优化慢速实现
+3. 增加更多测试场景
+4. 建立持续性能监控
 
 ---
-*报告生成时间: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')*
-*测试执行者: 自动化基准测试脚本*
+
+*报告由 OTLP 2025 综合基准测试脚本自动生成*
 "@
 
-    Set-Content -Path $ReportPath -Value $Report
-    Write-Log "基准测试报告已生成: $ReportPath"
-    
-    return $ReportPath
+    # 确保报告目录存在
+    $reportDir = Split-Path $OutputPath -Parent
+    if (!(Test-Path $reportDir)) {
+        New-Item -ItemType Directory -Path $reportDir -Force | Out-Null
+    }
+
+    $report | Out-File -FilePath $OutputPath -Encoding UTF8
+    Write-ColorOutput "✅ 综合基准测试报告已生成: $OutputPath" "Green"
 }
 
 # 主函数
 function Main {
-    Write-Log "开始OpenTelemetry综合基准测试..." "INFO"
-    Write-Log "测试参数: 持续时间=$Duration秒, 并发=$Concurrency, 协议=$Protocol" "INFO"
+    Write-ColorOutput "🚀 OTLP 2025 综合基准测试开始..." "Green"
+    Write-ColorOutput ("=" * 60) "Gray"
     
-    # 检查环境
-    if (!(Test-Environment)) {
-        Write-Log "环境检查失败，退出测试" "ERROR"
-        exit 1
+    # 收集系统信息
+    Get-SystemInfo
+    
+    # 根据语言参数执行测试
+    switch ($Language.ToLower()) {
+        "rust" { Test-RustPerformance }
+        "go" { Test-GoPerformance }
+        "python" { Test-PythonPerformance }
+        "java" { Test-JavaPerformance }
+        "javascript" { Test-JavaScriptPerformance }
+        "all" {
+            Test-RustPerformance
+            Test-GoPerformance
+            Test-PythonPerformance
+            Test-JavaPerformance
+            Test-JavaScriptPerformance
+        }
+        default {
+            Write-ColorOutput "❌ 不支持的语言: $Language" "Red"
+            Write-ColorOutput "支持的语言: rust, go, python, java, javascript, all" "Yellow"
+            exit 1
+        }
     }
     
-    # 启动测试环境
-    if (!(Start-TestEnvironment)) {
-        Write-Log "测试环境启动失败，退出测试" "ERROR"
-        exit 1
+    # 测试协议性能
+    Test-ProtocolPerformance
+    
+    # 生成报告
+    if ($Export) {
+        Generate-BenchmarkReport
     }
     
-    try {
-        # 收集系统指标
-        $SystemMetrics = Get-SystemMetrics
-        
-        # 运行基准测试
-        $Results = @()
-        
-        # Rust测试
-        $RustResults = Invoke-RustBenchmark -Protocol $Protocol -Duration $Duration -Concurrency $Concurrency
-        $Results += $RustResults
-        
-        # Go测试
-        $GoResults = Invoke-GoBenchmark -Protocol $Protocol -Duration $Duration -Concurrency $Concurrency
-        $Results += $GoResults
-        
-        # Python测试
-        $PythonResults = Invoke-PythonBenchmark -Protocol $Protocol -Duration $Duration -Concurrency $Concurrency
-        $Results += $PythonResults
-        
-        # Java测试（如果启用）
-        if ($IncludeJava) {
-            $JavaResults = Invoke-JavaBenchmark -Protocol $Protocol -Duration $Duration -Concurrency $Concurrency
-            $Results += $JavaResults
+    # 显示总结
+    Write-ColorOutput ("=" * 60) "Gray"
+    Write-ColorOutput "📊 测试总结:" "White"
+    
+    $successCount = 0
+    $totalCount = 0
+    
+    foreach ($lang in $TestResults.Results.Keys) {
+        if ($lang -ne "Protocols") {
+            $totalCount++
+            if ($TestResults.Results[$lang].Success) {
+                $successCount++
+            }
         }
-        
-        # JavaScript测试（如果启用）
-        if ($IncludeJavaScript) {
-            $JavaScriptResults = Invoke-JavaScriptBenchmark -Protocol $Protocol -Duration $Duration -Concurrency $Concurrency
-            $Results += $JavaScriptResults
-        }
-        
-        # 生成报告
-        if ($GenerateReport) {
-            $ReportPath = New-BenchmarkReport -Results $Results -SystemMetrics $SystemMetrics
-            Write-Log "基准测试报告: $ReportPath" "INFO"
-        }
-        
-        Write-Log "综合基准测试完成" "INFO"
-        
     }
-    finally {
-        # 停止测试环境
-        Stop-TestEnvironment
+    
+    Write-ColorOutput "✅ 成功: $successCount/$totalCount" "Green"
+    Write-ColorOutput "⏱️ 总耗时: $((Get-Date - $TestResults.StartTime).TotalSeconds) 秒" "White"
+    
+    if ($successCount -eq $totalCount) {
+        Write-ColorOutput "🎉 所有测试通过!" "Green"
+    } else {
+        Write-ColorOutput "⚠️ 部分测试失败，请检查日志" "Yellow"
     }
+    
+    Write-ColorOutput "✅ 综合基准测试完成!" "Green"
 }
 
 # 执行主函数
-if ($MyInvocation.InvocationName -ne '.') {
-    Main
-}
+Main

@@ -119,9 +119,9 @@ function Test-MarkdownFile {
         }
         
         # 检查代码块格式
-        if ($Line -match "```") {
+        if ($Line -match "``````") {
             # 检查代码块语言标识
-            if ($Line -match "```\s*$") {
+            if ($Line -match "``````\s*$") {
                 $Issues += @{
                     Type = "CodeBlock"
                     Severity = "INFO"
@@ -370,7 +370,7 @@ function Test-CodeExamples {
     for ($i = 0; $i -lt $Lines.Count; $i++) {
         $Line = $Lines[$i]
         
-        if ($Line -match "^```(\w+)?") {
+        if ($Line -match "^``````(\w+)?") {
             if (!$InCodeBlock) {
                 # 开始代码块
                 $InCodeBlock = $true
@@ -645,3 +645,4 @@ function Main {
 if ($MyInvocation.InvocationName -ne '.') {
     Main
 }
+

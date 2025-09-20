@@ -1,634 +1,507 @@
-#!/usr/bin/env node
-
 /**
  * OpenTelemetry JavaScript 最小示例
- * 
- * 演示如何使用OpenTelemetry JavaScript SDK进行：
- * 1. 分布式追踪 (Distributed Tracing)
- * 2. 指标监控 (Metrics)
- * 3. 资源检测 (Resource Detection)
- * 4. 数据导出 (Data Export)
- * 
- * 支持协议：
- * - gRPC (默认端口 4317)
- * - HTTP/Protobuf (默认端口 4318)
- * 
- * @author OpenTelemetry JavaScript Team
- * @version 1.0.0
- * @since 2025-09-17
+ * 演示如何使用 OpenTelemetry Node.js SDK 进行分布式追踪、指标监控和日志记录
  */
 
 import { NodeSDK } from '@opentelemetry/sdk-node';
 import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node';
+import { OTLPTraceExporter } from '@opentelemetry/exporter-otlp-http';
+import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
+import { OTLPLogExporter } from '@opentelemetry/exporter-logs-otlp-http';
 import { Resource } from '@opentelemetry/resources';
 import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
-import { trace, metrics, context, SpanKind, SpanStatusCode } from '@opentelemetry/api';
-import { OTLPTraceExporter } from '@opentelemetry/exporter-otlp-http';
-import { OTLPMetricExporter } from '@opentelemetry/exporter-otlp-http';
-import { PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
-import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base';
+import { trace, metrics, logs } from '@opentelemetry/api';
+import { MeterProvider } from '@opentelemetry/sdk-metrics';
+import { LoggerProvider, SimpleLogRecordProcessor } from '@opentelemetry/sdk-logs';
 import express from 'express';
 import axios from 'axios';
-import winston from 'winston';
 
-// 配置参数
-const CONFIG = {
-  serviceName: 'minimal-javascript-service',
-  serviceVersion: '1.0.0',
-  otlpEndpoint: process.env.OTEL_EXPORTER_OTLP_ENDPOINT || 'http://localhost:4318',
-  otlpProtocol: process.env.OTEL_EXPORTER_OTLP_PROTOCOL || 'http/protobuf',
-  logLevel: process.env.LOG_LEVEL || 'info'
-};
+// 服务配置
+const SERVICE_NAME = 'minimal-javascript-service';
+const SERVICE_VERSION = '1.0.0';
+const SERVICE_ENVIRONMENT = 'development';
 
-// 创建日志记录器
-const logger = winston.createLogger({
-  level: CONFIG.logLevel,
-  format: winston.format.combine(
-    winston.format.timestamp(),
-    winston.format.errors({ stack: true }),
-    winston.format.json()
-  ),
-  transports: [
-    new winston.transports.Console({
-      format: winston.format.combine(
-        winston.format.colorize(),
-        winston.format.simple()
-      )
-    })
-  ]
-});
+/**
+ * 创建 OpenTelemetry SDK
+ */
+function createOpenTelemetrySDK() {
+    console.log('🔧 初始化 OpenTelemetry SDK...');
+    
+    // 创建资源
+    const resource = new Resource({
+        [SemanticResourceAttributes.SERVICE_NAME]: SERVICE_NAME,
+        [SemanticResourceAttributes.SERVICE_VERSION]: SERVICE_VERSION,
+        [SemanticResourceAttributes.DEPLOYMENT_ENVIRONMENT]: SERVICE_ENVIRONMENT,
+        [SemanticResourceAttributes.SERVICE_INSTANCE_ID]: process.env.HOSTNAME || 'localhost',
+    });
+    
+    // 创建 OTLP 导出器
+    const traceExporter = new OTLPTraceExporter({
+        url: 'http://localhost:4318/v1/traces',
+        headers: {
+            'Content-Type': 'application/x-protobuf',
+        },
+    });
+    
+    const metricExporter = new OTLPMetricExporter({
+        url: 'http://localhost:4318/v1/metrics',
+        headers: {
+            'Content-Type': 'application/x-protobuf',
+        },
+    });
+    
+    const logExporter = new OTLPLogExporter({
+        url: 'http://localhost:4318/v1/logs',
+        headers: {
+            'Content-Type': 'application/x-protobuf',
+        },
+    });
+    
+    // 创建 NodeSDK
+    const sdk = new NodeSDK({
+        resource,
+        traceExporter,
+        instrumentations: [
+            getNodeAutoInstrumentations({
+                // 启用所有自动检测
+                '@opentelemetry/instrumentation-fs': {
+                    enabled: true,
+                },
+                '@opentelemetry/instrumentation-http': {
+                    enabled: true,
+                },
+                '@opentelemetry/instrumentation-express': {
+                    enabled: true,
+                },
+                '@opentelemetry/instrumentation-dns': {
+                    enabled: true,
+                },
+                '@opentelemetry/instrumentation-net': {
+                    enabled: true,
+                },
+            }),
+        ],
+    });
+    
+    // 创建 MeterProvider
+    const meterProvider = new MeterProvider({
+        resource,
+        readers: [metricExporter],
+    });
+    
+    // 创建 LoggerProvider
+    const loggerProvider = new LoggerProvider({
+        resource,
+        processors: [new SimpleLogRecordProcessor(logExporter)],
+    });
+    
+    // 注册全局提供者
+    metrics.setGlobalMeterProvider(meterProvider);
+    logs.setGlobalLoggerProvider(loggerProvider);
+    
+    return { sdk, meterProvider, loggerProvider };
+}
 
-// 初始化OpenTelemetry
-function initializeOpenTelemetry() {
-  logger.info('初始化 OpenTelemetry SDK...');
-  logger.info(`服务名称: ${CONFIG.serviceName}`);
-  logger.info(`服务版本: ${CONFIG.serviceVersion}`);
-  logger.info(`OTLP端点: ${CONFIG.otlpEndpoint}`);
-  logger.info(`OTLP协议: ${CONFIG.otlpProtocol}`);
-
-  // 创建资源
-  const resource = new Resource({
-    [SemanticResourceAttributes.SERVICE_NAME]: CONFIG.serviceName,
-    [SemanticResourceAttributes.SERVICE_VERSION]: CONFIG.serviceVersion,
-    [SemanticResourceAttributes.SERVICE_NAMESPACE]: 'opentelemetry-examples',
-    [SemanticResourceAttributes.DEPLOYMENT_ENVIRONMENT]: 'development'
-  });
-
-  // 创建OTLP导出器
-  const traceExporter = new OTLPTraceExporter({
-    url: `${CONFIG.otlpEndpoint}/v1/traces`,
-    headers: {
-      'Content-Type': 'application/x-protobuf'
+/**
+ * 业务逻辑类
+ */
+class BusinessService {
+    constructor() {
+        this.tracer = trace.getTracer(SERVICE_NAME, SERVICE_VERSION);
+        this.meter = metrics.getMeter(SERVICE_NAME, SERVICE_VERSION);
+        this.logger = logs.getLogger(SERVICE_NAME, SERVICE_VERSION);
+        
+        // 创建指标
+        this.requestCounter = this.meter.createCounter('requests_total', {
+            description: 'Total number of requests',
+            unit: '1',
+        });
+        
+        this.requestDuration = this.meter.createHistogram('request_duration_ms', {
+            description: 'Request duration in milliseconds',
+            unit: 'ms',
+        });
+        
+        this.activeConnections = this.meter.createUpDownCounter('active_connections', {
+            description: 'Number of active connections',
+            unit: '1',
+        });
     }
-  });
-
-  const metricExporter = new OTLPMetricExporter({
-    url: `${CONFIG.otlpEndpoint}/v1/metrics`,
-    headers: {
-      'Content-Type': 'application/x-protobuf'
-    }
-  });
-
-  // 创建SDK
-  const sdk = new NodeSDK({
-    resource,
-    traceExporter,
-    spanProcessor: new BatchSpanProcessor(traceExporter, {
-      maxExportBatchSize: 512,
-      exportTimeoutMillis: 30000,
-      scheduledDelayMillis: 1000
-    }),
-    metricReader: new PeriodicExportingMetricReader({
-      exporter: metricExporter,
-      exportIntervalMillis: 10000
-    }),
-    instrumentations: [
-      getNodeAutoInstrumentations({
-        '@opentelemetry/instrumentation-fs': {
-          enabled: false
+    
+    /**
+     * 模拟业务操作
+     */
+    async performBusinessOperation(operationName, durationMs = 100) {
+        const span = this.tracer.startSpan(operationName, {
+            attributes: {
+                'operation.type': 'business',
+                'operation.duration_ms': durationMs,
+                'service.name': SERVICE_NAME,
+            },
+        });
+        
+        try {
+            // 记录日志
+            this.logger.info('开始执行业务操作', {
+                operationName,
+                durationMs,
+                timestamp: new Date().toISOString(),
+            });
+            
+            // 增加计数器
+            this.requestCounter.add(1, {
+                operation: operationName,
+                status: 'success',
+            });
+            
+            // 记录开始时间
+            const startTime = Date.now();
+            
+            // 模拟业务处理
+            await this.simulateProcessing(durationMs);
+            
+            // 记录持续时间
+            const duration = Date.now() - startTime;
+            this.requestDuration.record(duration, {
+                operation: operationName,
+                status: 'success',
+            });
+            
+            // 添加事件
+            span.addEvent('业务操作完成', {
+                result: 'success',
+                duration_ms: duration,
+            });
+            
+            // 设置状态
+            span.setStatus({ code: 1 }); // OK
+            
+            this.logger.info('业务操作完成', {
+                operationName,
+                duration,
+                result: 'success',
+            });
+            
+        } catch (error) {
+            // 设置错误状态
+            span.setStatus({ code: 2, message: error.message }); // ERROR
+            span.recordException(error);
+            
+            // 记录错误日志
+            this.logger.error('业务操作失败', {
+                operationName,
+                error: error.message,
+                stack: error.stack,
+            });
+            
+            // 增加错误计数器
+            this.requestCounter.add(1, {
+                operation: operationName,
+                status: 'error',
+            });
+            
+            throw error;
+        } finally {
+            span.end();
         }
-      })
-    ]
-  });
-
-  // 启动SDK
-  sdk.start();
-
-  logger.info('OpenTelemetry SDK 初始化完成');
-  return sdk;
-}
-
-// 获取Tracer和Meter
-const tracer = trace.getTracer('minimal-javascript', '1.0.0');
-const meter = metrics.getMeter('minimal-javascript', '1.0.0');
-
-// 创建指标
-const requestCounter = meter.createCounter('http_requests_total', {
-  description: 'Total number of HTTP requests',
-  unit: '1'
-});
-
-const errorCounter = meter.createCounter('http_errors_total', {
-  description: 'Total number of HTTP errors',
-  unit: '1'
-});
-
-const responseTimeHistogram = meter.createHistogram('http_request_duration_ms', {
-  description: 'HTTP request duration in milliseconds',
-  unit: 'ms'
-});
-
-// 基本追踪示例
-async function runBasicTracingExample() {
-  logger.info('运行基本追踪示例...');
-
-  const span = tracer.startSpan('basic-operation', {
-    kind: SpanKind.INTERNAL
-  });
-
-  try {
-    await context.with(trace.setSpan(context.active(), span), async () => {
-      // 模拟业务逻辑
-      await new Promise(resolve => setTimeout(resolve, 100));
-
-      // 记录属性
-      span.setAttributes({
-        'operation.type': 'basic',
-        'operation.duration_ms': 100,
-        'operation.success': true
-      });
-
-      logger.info('基本操作完成');
-    });
-  } catch (error) {
-    span.recordException(error);
-    span.setStatus({ code: SpanStatusCode.ERROR, message: error.message });
-    logger.error('基本操作失败', error);
-  } finally {
-    span.end();
-  }
-}
-
-// 嵌套追踪示例
-async function runNestedTracingExample() {
-  logger.info('运行嵌套追踪示例...');
-
-  const parentSpan = tracer.startSpan('parent-operation', {
-    kind: SpanKind.INTERNAL
-  });
-
-  try {
-    await context.with(trace.setSpan(context.active(), parentSpan), async () => {
-      // 记录父级属性
-      parentSpan.setAttributes({
-        'operation.type': 'parent',
-        'operation.level': 'parent'
-      });
-
-      // 创建子级Span
-      const childSpan = tracer.startSpan('child-operation', {
-        kind: SpanKind.INTERNAL
-      });
-
-      try {
-        await context.with(trace.setSpan(context.active(), childSpan), async () => {
-          // 记录子级属性
-          childSpan.setAttributes({
-            'operation.type': 'child',
-            'operation.level': 'child',
-            'operation.parent_id': parentSpan.spanContext().spanId
-          });
-
-          // 模拟子级操作
-          await new Promise(resolve => setTimeout(resolve, 50));
-
-          logger.info('子级操作完成');
-        });
-      } finally {
-        childSpan.end();
-      }
-
-      // 模拟父级操作
-      await new Promise(resolve => setTimeout(resolve, 50));
-
-      logger.info('父级操作完成');
-    });
-  } catch (error) {
-    parentSpan.recordException(error);
-    parentSpan.setStatus({ code: SpanStatusCode.ERROR, message: error.message });
-    logger.error('嵌套操作失败', error);
-  } finally {
-    parentSpan.end();
-  }
-}
-
-// 错误追踪示例
-async function runErrorTracingExample() {
-  logger.info('运行错误追踪示例...');
-
-  const span = tracer.startSpan('error-operation', {
-    kind: SpanKind.INTERNAL
-  });
-
-  try {
-    await context.with(trace.setSpan(context.active(), span), async () => {
-      // 记录属性
-      span.setAttributes({
-        'operation.type': 'error',
-        'operation.expected_error': true
-      });
-
-      // 模拟错误
-      try {
-        throw new Error('模拟的业务错误');
-      } catch (error) {
-        // 记录异常
-        span.recordException(error);
-        span.setStatus({ code: SpanStatusCode.ERROR, message: '业务操作失败' });
-
-        // 记录错误指标
-        errorCounter.add(1, {
-          'error.type': 'business_error',
-          'error.message': error.message
-        });
-
-        logger.warn('捕获到预期错误', { error: error.message });
-      }
-    });
-  } finally {
-    span.end();
-  }
-}
-
-// 指标记录示例
-async function runMetricsExample() {
-  logger.info('运行指标记录示例...');
-
-  // 记录请求指标
-  for (let i = 0; i < 10; i++) {
-    requestCounter.add(1, {
-      'http.method': 'GET',
-      'http.status_code': 200,
-      'endpoint': '/api/example'
-    });
-
-    // 模拟一些错误请求
-    if (i % 3 === 0) {
-      requestCounter.add(1, {
-        'http.method': 'GET',
-        'http.status_code': 500,
-        'endpoint': '/api/example'
-      });
-
-      errorCounter.add(1, {
-        'error.type': 'server_error',
-        'endpoint': '/api/example'
-      });
     }
-  }
-
-  // 记录一些延迟数据
-  for (let i = 0; i < 20; i++) {
-    const duration = 50 + Math.random() * 200; // 50-250ms
-    responseTimeHistogram.record(duration, {
-      'http.method': 'GET',
-      'endpoint': '/api/example'
-    });
-  }
-
-  logger.info('指标记录完成');
-}
-
-// 属性记录示例
-async function runAttributesExample() {
-  logger.info('运行属性记录示例...');
-
-  const span = tracer.startSpan('attributes-operation', {
-    kind: SpanKind.INTERNAL
-  });
-
-  try {
-    await context.with(trace.setSpan(context.active(), span), async () => {
-      // 记录各种类型的属性
-      span.setAttributes({
-        // 字符串属性
-        'user.id': 'user123',
-        'user.name': '张三',
-        'user.email': 'zhangsan@example.com',
-
-        // 数值属性
-        'request.size_bytes': 1024,
-        'response.size_bytes': 2048,
-        'cpu.usage_percent': 75.5,
-
-        // 布尔属性
-        'request.cached': true,
-        'response.compressed': false,
-
-        // 数组属性
-        'request.headers': 'Content-Type: application/json, User-Agent: JavaScript-Client',
-        'response.cookies': 'session_id=abc123, csrf_token=xyz789'
-      });
-
-      // 模拟操作
-      await new Promise(resolve => setTimeout(resolve, 100));
-
-      logger.info('属性记录完成');
-    });
-  } catch (error) {
-    span.recordException(error);
-    span.setStatus({ code: SpanStatusCode.ERROR, message: error.message });
-    logger.error('属性记录失败', error);
-  } finally {
-    span.end();
-  }
-}
-
-// 事件记录示例
-async function runEventsExample() {
-  logger.info('运行事件记录示例...');
-
-  const span = tracer.startSpan('events-operation', {
-    kind: SpanKind.INTERNAL
-  });
-
-  try {
-    await context.with(trace.setSpan(context.active(), span), async () => {
-      // 记录开始事件
-      span.addEvent('operation.started', {
-        timestamp: Date.now(),
-        'operation.id': 'op_001'
-      });
-
-      // 模拟处理步骤
-      await new Promise(resolve => setTimeout(resolve, 50));
-
-      // 记录中间事件
-      span.addEvent('operation.processing', {
-        step: 'validation',
-        'progress_percent': 25
-      });
-
-      await new Promise(resolve => setTimeout(resolve, 50));
-
-      span.addEvent('operation.processing', {
-        step: 'business_logic',
-        'progress_percent': 50
-      });
-
-      await new Promise(resolve => setTimeout(resolve, 50));
-
-      span.addEvent('operation.processing', {
-        step: 'data_persistence',
-        'progress_percent': 75
-      });
-
-      await new Promise(resolve => setTimeout(resolve, 50));
-
-      // 记录完成事件
-      span.addEvent('operation.completed', {
-        timestamp: Date.now(),
-        'operation.id': 'op_001',
-        result: 'success',
-        'total_duration_ms': 200
-      });
-
-      logger.info('事件记录完成');
-    });
-  } catch (error) {
-    span.recordException(error);
-    span.setStatus({ code: SpanStatusCode.ERROR, message: error.message });
-    logger.error('事件记录失败', error);
-  } finally {
-    span.end();
-  }
-}
-
-// HTTP请求示例
-async function runHttpRequestExample() {
-  logger.info('运行HTTP请求示例...');
-
-  const span = tracer.startSpan('http-request-operation', {
-    kind: SpanKind.CLIENT
-  });
-
-  try {
-    await context.with(trace.setSpan(context.active(), span), async () => {
-      const startTime = Date.now();
-
-      // 记录请求属性
-      span.setAttributes({
-        'http.method': 'GET',
-        'http.url': 'https://httpbin.org/json',
-        'http.scheme': 'https',
-        'http.host': 'httpbin.org',
-        'http.target': '/json'
-      });
-
-      // 发送HTTP请求
-      const response = await axios.get('https://httpbin.org/json', {
-        timeout: 5000
-      });
-
-      const duration = Date.now() - startTime;
-
-      // 记录响应属性
-      span.setAttributes({
-        'http.status_code': response.status,
-        'http.response.size_bytes': JSON.stringify(response.data).length,
-        'http.request.duration_ms': duration
-      });
-
-      // 记录指标
-      requestCounter.add(1, {
-        'http.method': 'GET',
-        'http.status_code': response.status,
-        'http.host': 'httpbin.org'
-      });
-
-      responseTimeHistogram.record(duration, {
-        'http.method': 'GET',
-        'http.host': 'httpbin.org'
-      });
-
-      logger.info('HTTP请求完成', {
-        status: response.status,
-        duration: duration
-      });
-    });
-  } catch (error) {
-    span.recordException(error);
-    span.setStatus({ code: SpanStatusCode.ERROR, message: error.message });
-
-    // 记录错误指标
-    errorCounter.add(1, {
-      'error.type': 'http_error',
-      'error.message': error.message
-    });
-
-    logger.error('HTTP请求失败', error);
-  } finally {
-    span.end();
-  }
-}
-
-// Express应用示例
-function createExpressApp() {
-  const app = express();
-
-  // 中间件
-  app.use(express.json());
-
-  // 路由
-  app.get('/health', (req, res) => {
-    res.json({ status: 'healthy', timestamp: new Date().toISOString() });
-  });
-
-  app.get('/api/example', async (req, res) => {
-    const span = tracer.startSpan('api-example', {
-      kind: SpanKind.SERVER
-    });
-
-    try {
-      await context.with(trace.setSpan(context.active(), span), async () => {
-        // 记录请求属性
-        span.setAttributes({
-          'http.method': req.method,
-          'http.url': req.url,
-          'http.user_agent': req.get('User-Agent') || 'unknown'
+    
+    /**
+     * 模拟嵌套操作
+     */
+    async performNestedOperation() {
+        const parentSpan = this.tracer.startSpan('parent-operation', {
+            attributes: {
+                'operation.type': 'parent',
+                'service.name': SERVICE_NAME,
+            },
         });
-
-        // 模拟业务逻辑
-        await new Promise(resolve => setTimeout(resolve, 100));
-
-        // 记录响应
-        span.setAttributes({
-          'http.status_code': 200
+        
+        try {
+            this.logger.info('开始执行父操作');
+            
+            // 执行子操作
+            await this.performChildOperation('child-operation-1', 50);
+            await this.performChildOperation('child-operation-2', 100);
+            await this.performChildOperation('child-operation-3', 75);
+            
+            parentSpan.setStatus({ code: 1 }); // OK
+            this.logger.info('父操作完成');
+            
+        } catch (error) {
+            parentSpan.setStatus({ code: 2, message: error.message }); // ERROR
+            parentSpan.recordException(error);
+            this.logger.error('父操作失败', { error: error.message });
+            throw error;
+        } finally {
+            parentSpan.end();
+        }
+    }
+    
+    /**
+     * 执行子操作
+     */
+    async performChildOperation(operationName, durationMs) {
+        const childSpan = this.tracer.startSpan(operationName, {
+            attributes: {
+                'operation.type': 'child',
+                'operation.duration_ms': durationMs,
+            },
         });
+        
+        try {
+            this.logger.debug(`开始执行子操作: ${operationName}`);
+            
+            // 模拟处理时间
+            await this.simulateProcessing(durationMs);
+            
+            // 添加属性
+            childSpan.setAttributes({
+                'operation.result': 'success',
+                'operation.completed_at': new Date().toISOString(),
+            });
+            
+            childSpan.setStatus({ code: 1 }); // OK
+            this.logger.debug(`子操作完成: ${operationName}`);
+            
+        } catch (error) {
+            childSpan.setStatus({ code: 2, message: error.message }); // ERROR
+            childSpan.recordException(error);
+            this.logger.error(`子操作失败: ${operationName}`, { error: error.message });
+            throw error;
+        } finally {
+            childSpan.end();
+        }
+    }
+    
+    /**
+     * 模拟异步处理
+     */
+    async simulateProcessing(durationMs) {
+        return new Promise((resolve) => {
+            setTimeout(resolve, durationMs);
+        });
+    }
+    
+    /**
+     * 模拟HTTP请求
+     */
+    async performHttpRequest(url) {
+        const span = this.tracer.startSpan('http-request', {
+            attributes: {
+                'http.method': 'GET',
+                'http.url': url,
+                'service.name': SERVICE_NAME,
+            },
+        });
+        
+        try {
+            this.logger.info('发起HTTP请求', { url });
+            
+            const response = await axios.get(url, {
+                timeout: 5000,
+            });
+            
+            span.setAttributes({
+                'http.status_code': response.status,
+                'http.response.size': response.data.length,
+            });
+            
+            span.setStatus({ code: 1 }); // OK
+            this.logger.info('HTTP请求成功', {
+                url,
+                status: response.status,
+                size: response.data.length,
+            });
+            
+            return response.data;
+            
+        } catch (error) {
+            span.setStatus({ code: 2, message: error.message }); // ERROR
+            span.recordException(error);
+            
+            this.logger.error('HTTP请求失败', {
+                url,
+                error: error.message,
+            });
+            
+            throw error;
+        } finally {
+            span.end();
+        }
+    }
+}
 
+/**
+ * 创建Express应用
+ */
+function createExpressApp(businessService) {
+    const app = express();
+    
+    // 中间件
+    app.use(express.json());
+    
+    // 健康检查端点
+    app.get('/health', (req, res) => {
         res.json({
-          message: 'Hello from OpenTelemetry JavaScript!',
-          timestamp: new Date().toISOString(),
-          traceId: span.spanContext().traceId
+            status: 'healthy',
+            service: SERVICE_NAME,
+            version: SERVICE_VERSION,
+            timestamp: new Date().toISOString(),
         });
-      });
-    } catch (error) {
-      span.recordException(error);
-      span.setStatus({ code: SpanStatusCode.ERROR, message: error.message });
-      res.status(500).json({ error: error.message });
-    } finally {
-      span.end();
-    }
-  });
-
-  return app;
+    });
+    
+    // 业务操作端点
+    app.get('/api/operation/:name', async (req, res) => {
+        try {
+            const operationName = req.params.name;
+            const duration = parseInt(req.query.duration) || 100;
+            
+            await businessService.performBusinessOperation(operationName, duration);
+            
+            res.json({
+                success: true,
+                operation: operationName,
+                duration,
+                timestamp: new Date().toISOString(),
+            });
+        } catch (error) {
+            res.status(500).json({
+                success: false,
+                error: error.message,
+                timestamp: new Date().toISOString(),
+            });
+        }
+    });
+    
+    // 嵌套操作端点
+    app.get('/api/nested', async (req, res) => {
+        try {
+            await businessService.performNestedOperation();
+            
+            res.json({
+                success: true,
+                operation: 'nested',
+                timestamp: new Date().toISOString(),
+            });
+        } catch (error) {
+            res.status(500).json({
+                success: false,
+                error: error.message,
+                timestamp: new Date().toISOString(),
+            });
+        }
+    });
+    
+    // HTTP请求端点
+    app.get('/api/http/:url', async (req, res) => {
+        try {
+            const url = decodeURIComponent(req.params.url);
+            const data = await businessService.performHttpRequest(url);
+            
+            res.json({
+                success: true,
+                url,
+                dataLength: data.length,
+                timestamp: new Date().toISOString(),
+            });
+        } catch (error) {
+            res.status(500).json({
+                success: false,
+                error: error.message,
+                timestamp: new Date().toISOString(),
+            });
+        }
+    });
+    
+    return app;
 }
 
-// 运行所有示例
-async function runExamples() {
-  logger.info('开始运行示例...');
-
-  try {
-    // 示例1: 基本追踪
-    await runBasicTracingExample();
-
-    // 示例2: 嵌套追踪
-    await runNestedTracingExample();
-
-    // 示例3: 错误追踪
-    await runErrorTracingExample();
-
-    // 示例4: 指标记录
-    await runMetricsExample();
-
-    // 示例5: 属性记录
-    await runAttributesExample();
-
-    // 示例6: 事件记录
-    await runEventsExample();
-
-    // 示例7: HTTP请求
-    await runHttpRequestExample();
-
-    logger.info('所有示例执行完成');
-  } catch (error) {
-    logger.error('示例执行失败', error);
-    throw error;
-  }
-}
-
-// 启动Express服务器
-function startExpressServer() {
-  const app = createExpressApp();
-  const port = process.env.PORT || 3000;
-
-  app.listen(port, () => {
-    logger.info(`Express服务器启动在端口 ${port}`);
-    logger.info(`健康检查: http://localhost:${port}/health`);
-    logger.info(`API示例: http://localhost:${port}/api/example`);
-  });
-
-  return app;
-}
-
-// 主函数
+/**
+ * 主函数
+ */
 async function main() {
-  logger.info('启动 OpenTelemetry JavaScript 最小示例...');
-
-  try {
-    // 初始化OpenTelemetry
-    const sdk = initializeOpenTelemetry();
-
-    // 运行示例
-    await runExamples();
-
-    // 启动Express服务器
-    const app = startExpressServer();
-
-    // 等待数据导出
-    logger.info('等待数据导出完成...');
-    await new Promise(resolve => setTimeout(resolve, 5000));
-
-    logger.info('示例执行完成！');
-    logger.info('请查看以下地址查看结果：');
-    logger.info('- Jaeger UI: http://localhost:16686');
-    logger.info('- Prometheus: http://localhost:9090');
-    logger.info('- Express服务器: http://localhost:3000');
-
-    // 优雅关闭
-    process.on('SIGINT', async () => {
-      logger.info('收到关闭信号，正在优雅关闭...');
-      await sdk.shutdown();
-      process.exit(0);
-    });
-
-    process.on('SIGTERM', async () => {
-      logger.info('收到终止信号，正在优雅关闭...');
-      await sdk.shutdown();
-      process.exit(0);
-    });
-
-  } catch (error) {
-    logger.error('示例执行失败', error);
-    process.exit(1);
-  }
+    console.log('🚀 OpenTelemetry JavaScript 最小示例启动');
+    
+    try {
+        // 创建 OpenTelemetry SDK
+        const { sdk, meterProvider, loggerProvider } = createOpenTelemetrySDK();
+        
+        // 启动 SDK
+        sdk.start();
+        console.log('✅ OpenTelemetry SDK 启动成功');
+        
+        // 创建业务服务
+        const businessService = new BusinessService();
+        
+        // 记录启动日志
+        businessService.logger.info('OpenTelemetry JavaScript 示例启动', {
+            serviceName: SERVICE_NAME,
+            serviceVersion: SERVICE_VERSION,
+            environment: SERVICE_ENVIRONMENT,
+            nodeVersion: process.version,
+            platform: process.platform,
+        });
+        
+        // 创建Express应用
+        const app = createExpressApp(businessService);
+        
+        // 启动服务器
+        const port = process.env.PORT || 3000;
+        const server = app.listen(port, () => {
+            console.log(`🌐 服务器启动在端口 ${port}`);
+            console.log(`📊 健康检查: http://localhost:${port}/health`);
+            console.log(`🔧 业务操作: http://localhost:${port}/api/operation/test`);
+            console.log(`🔗 嵌套操作: http://localhost:${port}/api/nested`);
+        });
+        
+        // 执行一些初始业务操作
+        console.log('📊 执行业务操作...');
+        await businessService.performBusinessOperation('user-login', 50);
+        await businessService.performBusinessOperation('data-processing', 100);
+        await businessService.performBusinessOperation('cache-update', 30);
+        
+        // 执行嵌套操作
+        console.log('🔗 执行嵌套操作...');
+        await businessService.performNestedOperation();
+        
+        // 执行HTTP请求（如果可能）
+        try {
+            console.log('🌐 执行HTTP请求...');
+            await businessService.performHttpRequest('https://httpbin.org/json');
+        } catch (error) {
+            console.log('⚠️ HTTP请求失败（这是正常的，如果网络不可用）:', error.message);
+        }
+        
+        // 等待一段时间确保数据被导出
+        console.log('⏳ 等待数据导出...');
+        await new Promise(resolve => setTimeout(resolve, 5000));
+        
+        console.log('✅ 示例执行完成');
+        console.log('📈 请查看以下地址查看追踪数据:');
+        console.log('   - Jaeger UI: http://localhost:16686');
+        console.log('   - Prometheus: http://localhost:9090');
+        console.log('   - Grafana: http://localhost:3000');
+        console.log(`   - 应用服务: http://localhost:${port}`);
+        
+        // 优雅关闭
+        process.on('SIGINT', () => {
+            console.log('\n🛑 收到关闭信号，正在优雅关闭...');
+            server.close(() => {
+                console.log('✅ 服务器已关闭');
+                sdk.shutdown().then(() => {
+                    console.log('✅ OpenTelemetry SDK 已关闭');
+                    process.exit(0);
+                });
+            });
+        });
+        
+    } catch (error) {
+        console.error('❌ 示例执行失败:', error.message);
+        console.error(error.stack);
+        process.exit(1);
+    }
 }
 
-// 执行主函数
-if (import.meta.url === `file://${process.argv[1]}`) {
-  main().catch(error => {
-    logger.error('主函数执行失败', error);
-    process.exit(1);
-  });
-}
-
-export {
-  runBasicTracingExample,
-  runNestedTracingExample,
-  runErrorTracingExample,
-  runMetricsExample,
-  runAttributesExample,
-  runEventsExample,
-  runHttpRequestExample,
-  createExpressApp
-};
+// 启动应用
+main().catch(console.error);
