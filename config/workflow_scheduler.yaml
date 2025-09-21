@@ -1,0 +1,217 @@
+# OpenTelemetry 2025 工作流调度器配置
+# Workflow Scheduler Configuration for OpenTelemetry 2025
+
+# 调度器基本配置
+scheduler:
+  name: "OpenTelemetry 2025 工作流调度器"
+  version: "1.0.0"
+  description: "自动化工作流调度和任务管理"
+  
+  # 执行器配置
+  executor:
+    max_workers: 4
+    thread_pool_size: 8
+    queue_size: 100
+    
+  # 任务配置
+  task:
+    default_timeout: 300  # 默认超时时间（秒）
+    default_max_retries: 3  # 默认最大重试次数
+    retry_delay: 5  # 重试延迟（秒）
+    
+  # 工作流配置
+  workflow:
+    max_concurrent_workflows: 2
+    workflow_timeout: 3600  # 工作流超时时间（秒）
+    auto_cleanup: true
+    cleanup_interval: 86400  # 清理间隔（秒）
+
+# 调度策略配置
+scheduling:
+  # 优先级策略
+  priority_strategy: "weighted_round_robin"
+  
+  # 资源分配策略
+  resource_allocation:
+    cpu_weight: 0.4
+    memory_weight: 0.3
+    io_weight: 0.3
+    
+  # 负载均衡策略
+  load_balancing:
+    strategy: "least_loaded"
+    health_check_interval: 30
+    failure_threshold: 3
+
+# 监控配置
+monitoring:
+  # 性能监控
+  performance:
+    enabled: true
+    metrics_interval: 60
+    alert_thresholds:
+      cpu_usage: 80
+      memory_usage: 85
+      disk_usage: 90
+      
+  # 日志配置
+  logging:
+    level: "INFO"
+    format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    file_rotation: true
+    max_file_size: "10MB"
+    backup_count: 5
+    
+  # 告警配置
+  alerting:
+    enabled: true
+    channels:
+      - type: "log"
+        level: "ERROR"
+      - type: "file"
+        path: "alerts.log"
+    notification:
+      email:
+        enabled: false
+        smtp_server: "localhost"
+        smtp_port: 587
+        username: ""
+        password: ""
+        recipients: []
+
+# 工作流模板配置
+workflow_templates:
+  # 质量保证模板
+  quality_assurance:
+    name: "质量保证工作流模板"
+    description: "标准的质量保证工作流模板"
+    default_tasks:
+      - "document_quality_check"
+      - "standards_compliance_check"
+      - "knowledge_completeness_check"
+    default_timeout: 600
+    default_retries: 2
+    
+  # 标准合规模板
+  standards_compliance:
+    name: "标准合规工作流模板"
+    description: "标准的合规检查工作流模板"
+    default_tasks:
+      - "compliance_check"
+      - "trend_analysis"
+      - "report_generation"
+    default_timeout: 500
+    default_retries: 3
+    
+  # 知识管理模板
+  knowledge_management:
+    name: "知识管理工作流模板"
+    description: "标准的知识管理工作流模板"
+    default_tasks:
+      - "index_build"
+      - "relationship_build"
+      - "quality_assessment"
+    default_timeout: 800
+    default_retries: 2
+
+# 任务类型配置
+task_types:
+  # Python脚本任务
+  python_script:
+    executor: "python"
+    default_timeout: 300
+    default_retries: 2
+    environment:
+      PYTHONPATH: "."
+      PYTHONUNBUFFERED: "1"
+      
+  # Shell命令任务
+  shell_command:
+    executor: "shell"
+    default_timeout: 120
+    default_retries: 3
+    environment:
+      PATH: "/usr/local/bin:/usr/bin:/bin"
+      
+  # 自定义任务
+  custom:
+    executor: "custom"
+    default_timeout: 600
+    default_retries: 1
+
+# 错误处理配置
+error_handling:
+  # 重试策略
+  retry_strategy:
+    exponential_backoff: true
+    base_delay: 1
+    max_delay: 60
+    multiplier: 2
+    
+  # 故障转移
+  failover:
+    enabled: true
+    max_failures: 3
+    recovery_timeout: 300
+    
+  # 错误通知
+  error_notification:
+    enabled: true
+    notification_delay: 30
+    max_notifications: 5
+
+# 安全配置
+security:
+  # 访问控制
+  access_control:
+    enabled: false
+    authentication: "none"
+    authorization: "none"
+    
+  # 数据保护
+  data_protection:
+    encrypt_sensitive_data: false
+    data_retention_days: 30
+    secure_logging: false
+    
+  # 审计日志
+  audit_logging:
+    enabled: false
+    log_level: "INFO"
+    retention_days: 90
+
+# 集成配置
+integrations:
+  # 外部系统集成
+  external_systems:
+    enabled: false
+    systems: []
+    
+  # API集成
+  api_integration:
+    enabled: false
+    endpoints: []
+    
+  # 数据库集成
+  database_integration:
+    enabled: false
+    connection_string: ""
+    pool_size: 5
+
+# 扩展配置
+extensions:
+  # 插件系统
+  plugins:
+    enabled: false
+    plugin_directory: "plugins"
+    auto_load: false
+    
+  # 自定义执行器
+  custom_executors:
+    enabled: false
+    executors: []
+    
+  # 自定义调度器
+  custom_schedulers:
+    enabled: false
+    schedulers: []
