@@ -582,7 +582,6 @@ SdkTracerProvider tracerProvider = SdkTracerProvider.builder()
     .build();
 ```
 
-
 ## 🎯 创建Tracer目标
 
 ### 主要目标
@@ -600,6 +599,7 @@ SdkTracerProvider tracerProvider = SdkTracerProvider.builder()
 - **标准3**: 完整解决方案提供
 - **标准4**: 最佳实践建立
 - **标准5**: 持续改进机制
+
 ## 最佳实践
 
 ### 1. 性能优化
@@ -668,7 +668,8 @@ SdkTracerProvider tracerProvider = SdkTracerProvider.builder()
 3. **维护指导**: 为创建Tracer维护提供最佳实践
 4. **扩展指导**: 为创建Tracer扩展提供方向建议
 
-创建Tracer为OTLP标准的成功应用提供了重要的技术支撑。
+创建Tracer为OTLP标准的成功应用提供了重要的技术支撑
+
 ---
 
 **文档创建完成时间**: 2025年09月22日  
