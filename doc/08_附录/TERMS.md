@@ -178,6 +178,7 @@ curl -s http://localhost:13133/metrics | grep -E "otelcol_receiver_accepted_span
 4. **扩展指导**: 为查询 Collector 指标以验证术语中提到的关键指标存在扩展提供方向建议
 
 查询 Collector 指标以验证术语中提到的关键指标存在为OTLP标准的成功应用提供了重要的技术支撑。
+
 ---
 
 **文档创建完成时间**: 2025年09月22日  
