@@ -1,0 +1,11 @@
+# OpenTelemetry 2025 项目自动化脚本依赖
+# 用于自动生成目录和更新导航
+
+# 核心依赖
+PyYAML>=6.0
+pathlib2>=2.3.7; python_version < "3.4"
+
+# 可选依赖（用于增强功能）
+# jinja2>=3.1.0  # 模板引擎
+# markdown>=3.4.0  # Markdown处理
+# beautifulsoup4>=4.11.0  # HTML解析

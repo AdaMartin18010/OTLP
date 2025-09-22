@@ -1,0 +1,20 @@
+auto_update: true
+backup_changes: true
+exclude_patterns:
+- '*.tmp'
+- '*.bak'
+- .git/*
+- node_modules/*
+generate_toc: true
+module_mapping:
+  00_项目概览与导航: 项目概览
+  01_理论基础与形式化证明: 理论基础
+  02_OTLP标准深度分析: 标准分析
+  03_行业标准与最佳实践: 最佳实践
+  04_形式论证与证明体系: 形式论证
+  05_批判性分析与评价: 批判分析
+  06_学术研究与理论创新: 学术研究
+  07_实施指南与操作手册: 实施指南
+  08_可持续发展计划: 可持续发展
+  09_附录与参考资料: 参考资料
+update_navigation: true
