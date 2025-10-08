@@ -61,7 +61,7 @@ SDK (软件开发工具包):
 
 关系:
 ┌──────────────────────────┐
-│   应用程序代码           │
+│   应用程序代码            │
 └────────────┬─────────────┘
              │ 依赖
     ┌────────▼────────┐
@@ -150,10 +150,10 @@ SDK (软件开发工具包):
                         └───┬────┘
                             │ 结束时
               ┌─────────────▼─────────────┐
-              │     Span Processor         │  (处理逻辑)
-              │  - SimpleSpanProcessor     │
-              │  - BatchSpanProcessor      │
-              └─────────────┬──────────────┘
+              │     Span Processor        │  (处理逻辑)
+              │  - SimpleSpanProcessor    │
+              │  - BatchSpanProcessor     │
+              └─────────────┬─────────────┘
                             │ 导出
                     ┌───────▼────────┐
                     │  Span Exporter │  (导出器)
@@ -191,11 +191,11 @@ SDK (软件开发工具包):
    
    内部流程:
    ┌──────────────────────────────────────────────┐
-   │ 1. Sampler决策: 是否采样?                   │
-   │ 2. ID Generator: 生成trace_id, span_id      │
+   │ 1. Sampler决策: 是否采样?                     │
+   │ 2. ID Generator: 生成trace_id, span_id       │
    │ 3. 创建Span对象                              │
-   │ 4. 设置开始时间                              │
-   │ 5. 关联父Span (如果有)                       │
+   │ 4. 设置开始时间                               │
+   │ 5. 关联父Span (如果有)                        │
    └──────────────────────────────────────────────┘
 
 4. Span操作:
@@ -208,13 +208,13 @@ SDK (软件开发工具包):
    
    内部流程:
    ┌──────────────────────────────────────────────┐
-   │ 1. 设置结束时间                              │
+   │ 1. 设置结束时间                               │
    │ 2. 计算duration                              │
-   │ 3. 调用Processor.onEnd(span)                │
-   │   ├─ SimpleProcessor: 立即导出              │
-   │   └─ BatchProcessor: 加入批处理队列         │
-   │ 4. Processor调用Exporter.export(spans)      │
-   │ 5. Exporter发送到后端                       │
+   │ 3. 调用Processor.onEnd(span)                 │
+   │   ├─ SimpleProcessor: 立即导出               │
+   │   └─ BatchProcessor: 加入批处理队列           │
+   │ 4. Processor调用Exporter.export(spans)       │
+   │ 5. Exporter发送到后端                         │
    └──────────────────────────────────────────────┘
 
 6. 应用关闭:
