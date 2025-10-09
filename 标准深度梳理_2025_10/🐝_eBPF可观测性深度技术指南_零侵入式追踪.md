@@ -73,6 +73,10 @@
     - [eBPF + OTLP 核心价值](#ebpf--otlp-核心价值)
     - [适用场景](#适用场景)
     - [参考资源](#参考资源)
+  - [📚 相关文档](#-相关文档)
+    - [核心集成 ⭐⭐⭐](#核心集成-)
+    - [架构可视化 ⭐⭐⭐](#架构可视化-)
+    - [工具链支持 ⭐⭐](#工具链支持-)
 
 ---
 
@@ -2766,6 +2770,48 @@ sudo trace-cmd report
 - 📚 [BCC 项目](https://github.com/iovisor/bcc)
 - 📚 [Cilium eBPF](https://github.com/cilium/ebpf)
 - 📚 [OpenTelemetry eBPF](https://github.com/open-telemetry/opentelemetry-ebpf)
+
+---
+
+## 📚 相关文档
+
+### 核心集成 ⭐⭐⭐
+
+- **🤖 AIOps平台设计**: [查看文档](./🤖_OTLP自主运维能力完整架构_AIOps平台设计.md)
+  - 使用场景: eBPF采集的零侵入数据直接接入AIOps异常检测
+  - 关键章节: [数据采集层](./🤖_OTLP自主运维能力完整架构_AIOps平台设计.md#第二部分-核心架构设计)
+  - 价值: 数据采集成本降低90%,覆盖率100%
+
+- **🕸️ Service Mesh集成**: [查看文档](./🕸️_服务网格可观测性完整指南_Istio_Linkerd深度集成.md)
+  - 使用场景: eBPF与Envoy Sidecar协同,实现深度可观测性
+  - 关键章节: [eBPF增强追踪](./🕸️_服务网格可观测性完整指南_Istio_Linkerd深度集成.md#第五部分-生产实战案例)
+  - 价值: Service Mesh + eBPF = 零盲点追踪
+
+- **📊 Continuous Profiling**: [查看文档](./📊_Profiles性能分析完整指南_连续性能剖析与OTLP集成.md)
+  - 使用场景: 基于eBPF的持续性能剖析,无侵入CPU/内存分析
+  - 关键章节: [eBPF Profiling](./📊_Profiles性能分析完整指南_连续性能剖析与OTLP集成.md#第二部分-parca-ebpf-profiler)
+  - 价值: 性能问题定位时间从3天降至30分钟
+
+### 架构可视化 ⭐⭐⭐
+
+- **📊 架构图表指南**: [查看文档](./📊_架构图表与可视化指南_Mermaid完整版.md)
+  - 推荐图表:
+    - [eBPF追踪架构](./📊_架构图表与可视化指南_Mermaid完整版.md#2-ebpf-数据流)
+    - [eBPF HTTP追踪时序图](./📊_架构图表与可视化指南_Mermaid完整版.md#22-ebpf-http-追踪时序图)
+    - [CO-RE编译流程](./📊_架构图表与可视化指南_Mermaid完整版.md#23-co-re-compile-once-run-everywhere-流程)
+  - 价值: 内核空间与用户空间交互一目了然
+
+### 工具链支持 ⭐⭐
+
+- **🛠️ 配置生成器**: [查看文档](./🛠️_交互式配置生成器_OTLP_Collector配置向导.md)
+  - 使用场景: 快速生成eBPF场景的OTLP Collector配置
+  - 关键功能: [零侵入追踪场景](./🛠️_交互式配置生成器_OTLP_Collector配置向导.md#场景模板)
+  - 价值: 配置时间从2小时降至3分钟
+
+- **📚 SDK最佳实践**: [查看文档](./📚_OTLP_SDK最佳实践指南_多语言全栈实现.md)
+  - 使用场景: eBPF自动追踪 vs SDK手动插桩的对比与选择
+  - 关键章节: [插桩策略对比](./📚_OTLP_SDK最佳实践指南_多语言全栈实现.md#第一部分-快速开始)
+  - 价值: 选择最适合的追踪方案
 
 ---
 

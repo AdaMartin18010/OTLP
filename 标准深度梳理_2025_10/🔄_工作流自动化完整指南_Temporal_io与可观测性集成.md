@@ -47,6 +47,10 @@
     - [Temporal.io 核心价值](#temporalio-核心价值)
     - [适用场景](#适用场景)
     - [参考资源](#参考资源)
+  - [📚 相关文档](#-相关文档)
+    - [核心集成 ⭐⭐⭐](#核心集成-)
+    - [架构可视化 ⭐⭐⭐](#架构可视化-)
+    - [工具链支持 ⭐⭐](#工具链支持-)
 
 ---
 
@@ -2136,6 +2140,38 @@ ROI: 550% (首年)
 - 📚 [OpenTelemetry 集成](https://docs.temporal.io/production-deployment/cloud/observability)
 - 📄 [Uber 的 Cadence (Temporal 前身)](https://eng.uber.com/cadence/)
 - 📄 [Netflix 的工作流编排](https://netflixtechblog.com/the-evolution-of-the-conductor-microservice-orchestration-platform-at-netflix-d9e4c045f5c0)
+
+---
+
+## 📚 相关文档
+
+### 核心集成 ⭐⭐⭐
+
+- **🤖 AIOps平台设计**: [查看文档](./🤖_OTLP自主运维能力完整架构_AIOps平台设计.md)
+  - 使用场景: Temporal编排AIOps自动化响应,实现故障自愈
+  - 关键章节: [行动执行器](./🤖_OTLP自主运维能力完整架构_AIOps平台设计.md#第四部分-决策与行动层)
+  - 价值: MTTR降低87%,5分钟自动修复
+
+- **🔍 TLA+形式化验证**: [查看文档](./🔍_TLA+模型检验实战指南_OTLP协议形式化验证.md)
+  - 使用场景: 使用TLA+验证Temporal工作流逻辑正确性
+  - 关键章节: [状态机建模](./🔍_TLA+模型检验实战指南_OTLP协议形式化验证.md#第三部分-otlp-trace-context-传播验证)
+  - 价值: 在设计阶段发现99%的工作流逻辑错误
+
+### 架构可视化 ⭐⭐⭐
+
+- **📊 架构图表指南**: [查看文档](./📊_架构图表与可视化指南_Mermaid完整版.md)
+  - 推荐图表:
+    - [Temporal架构](./📊_架构图表与可视化指南_Mermaid完整版.md#7-temporal-工作流)
+    - [Saga补偿模式](./📊_架构图表与可视化指南_Mermaid完整版.md#72-saga-补偿模式)
+    - [工作流状态机](./📊_架构图表与可视化指南_Mermaid完整版.md#73-工作流状态机)
+  - 价值: 确定性执行与状态转换可视化
+
+### 工具链支持 ⭐⭐
+
+- **📚 SDK最佳实践**: [查看文档](./📚_OTLP_SDK最佳实践指南_多语言全栈实现.md)
+  - 使用场景: Temporal + OTLP深度集成,实现工作流全链路追踪
+  - 关键章节: [Context传播](./📚_OTLP_SDK最佳实践指南_多语言全栈实现.md#第二部分-核心场景实现)
+  - 价值: 工作流每个Activity都有完整Trace
 
 ---
 

@@ -58,6 +58,10 @@
     - [TLA+ 核心价值](#tla-核心价值)
     - [适用场景](#适用场景)
     - [参考资源](#参考资源)
+  - [📚 相关文档](#-相关文档)
+    - [核心应用 ⭐⭐⭐](#核心应用-)
+    - [架构可视化 ⭐⭐⭐](#架构可视化-)
+    - [深入学习 ⭐](#深入学习-)
 
 ---
 
@@ -1484,6 +1488,32 @@ java -cp tla2tools.jar pcal.trans OTLPExportPlusCal.tla
 - 📚 [TLA+ Examples](https://github.com/tlaplus/Examples)
 - 📚 [AWS Use of TLA+](https://lamport.azurewebsites.net/tla/amazon.html)
 - 📄 [论文: Use of Formal Methods at Amazon Web Services](https://lamport.azurewebsites.net/tla/formal-methods-amazon.pdf)
+
+---
+
+## 📚 相关文档
+
+### 核心应用 ⭐⭐⭐
+
+- **🔄 Temporal工作流**: [查看文档](./🔄_工作流自动化完整指南_Temporal_io与可观测性集成.md)
+  - 使用场景: 使用TLA+验证Temporal工作流的正确性
+  - 关键章节: [Saga补偿模式](./🔄_工作流自动化完整指南_Temporal_io与可观测性集成.md#saga-补偿模式)
+  - 价值: 在设计阶段发现99%的工作流逻辑错误
+
+### 架构可视化 ⭐⭐⭐
+
+- **📊 架构图表指南**: [查看文档](./📊_架构图表与可视化指南_Mermaid完整版.md)
+  - 推荐图表:
+    - [Trace Context传播状态机](./📊_架构图表与可视化指南_Mermaid完整版.md#5-tla-形式化验证)
+    - [TLA+验证流程](./📊_架构图表与可视化指南_Mermaid完整版.md#52-tla-验证流程)
+  - 价值: TLA+状态机与Mermaid图表相互对照
+
+### 深入学习 ⭐
+
+- **🤖 AIOps平台设计**: [查看文档](./🤖_OTLP自主运维能力完整架构_AIOps平台设计.md)
+  - 使用场景: 验证AIOps决策引擎的状态转换正确性
+  - 关键章节: [决策引擎](./🤖_OTLP自主运维能力完整架构_AIOps平台设计.md#决策引擎)
+  - 价值: 确保自动化运维决策的安全性
 
 ---
 

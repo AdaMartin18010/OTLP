@@ -47,6 +47,10 @@
     - [✅ 核心要点](#-核心要点)
     - [📚 参考资源](#-参考资源)
     - [🎯 下一步行动](#-下一步行动)
+  - [📚 相关文档](#-相关文档)
+    - [核心集成 ⭐⭐⭐](#核心集成-)
+    - [架构可视化 ⭐⭐⭐](#架构可视化-)
+    - [工具链支持 ⭐⭐](#工具链支持-)
 
 ---
 
@@ -303,21 +307,35 @@ CHAIN_OF_THOUGHT_PROMPT = """
 
 import openai
 import json
+import logging
 from typing import List, Dict, Optional
 from datetime import datetime, timedelta
 
 class LLMLogAnalyzer:
     """LLM 驱动的日志分析器"""
     
-    def __init__(self, api_key: str, model: str = "gpt-4"):
+    def __init__(self, api_key: Optional[str] = None, model: str = "gpt-4"):
         """
         Args:
-            api_key: OpenAI API Key
+            api_key: OpenAI API Key (如果为 None,从环境变量 OPENAI_API_KEY 读取)
             model: 模型名称 (gpt-4, gpt-3.5-turbo, etc.)
+        
+        Raises:
+            ValueError: 如果 API Key 未提供且环境变量不存在
         """
-        self.api_key = api_key
+        import os
+        import logging
+        
+        self.api_key = api_key or os.getenv("OPENAI_API_KEY")
+        if not self.api_key:
+            raise ValueError(
+                "OpenAI API Key is required. "
+                "Provide via api_key parameter or OPENAI_API_KEY environment variable."
+            )
+        
         self.model = model
-        openai.api_key = api_key
+        openai.api_key = self.api_key
+        self.logger = logging.getLogger(__name__)
         
         self.system_prompt = """
 你是一个资深的系统运维专家 (SRE),专门分析日志、诊断故障、定位根本原因。
@@ -373,7 +391,9 @@ class LLMLogAnalyzer:
     def analyze_logs(
         self,
         logs: List[str],
-        context: Optional[Dict] = None
+        context: Optional[Dict] = None,
+        timeout: int = 60,
+        retries: int = 3
     ) -> Dict:
         """
         分析日志,检测异常
@@ -381,10 +401,27 @@ class LLMLogAnalyzer:
         Args:
             logs: 日志列表
             context: 上下文信息 (服务名、时间范围等)
+            timeout: API 请求超时时间 (秒)
+            retries: 失败重试次数
         
         Returns:
             分析结果 (JSON)
+        
+        Raises:
+            ValueError: 如果 logs 为空或格式无效
+            openai.APIError: 如果 API 调用失败
         """
+        import time
+        from openai import APIError, Timeout, RateLimitError
+        
+        # 输入验证
+        if not logs:
+            raise ValueError("Logs list cannot be empty")
+        
+        if len(logs) > 1000:
+            self.logger.warning(f"Large log batch ({len(logs)} logs), truncating to 1000")
+            logs = logs[:1000]
+        
         # 1. 准备 User Prompt
         log_text = "\n".join(logs)
         
@@ -407,19 +444,22 @@ class LLMLogAnalyzer:
 请分析以上日志,识别异常。
 """
         
-        # 2. 调用 LLM
+        # 2. 调用 LLM (带重试逻辑)
         messages = [
             {"role": "system", "content": self.system_prompt},
             *self.few_shot_examples,
             {"role": "user", "content": user_prompt}
         ]
         
+        last_exception = None
+        for attempt in range(retries):
         try:
             response = openai.ChatCompletion.create(
                 model=self.model,
                 messages=messages,
                 temperature=0.1,  # 低温度 → 更确定性的输出
                 max_tokens=1000,
+                    request_timeout=timeout,
                 response_format={"type": "json_object"}  # 强制 JSON 输出
             )
             
@@ -430,12 +470,64 @@ class LLMLogAnalyzer:
             result['model'] = self.model
             result['token_usage'] = response.usage.total_tokens
             
+                # 验证响应格式
+                required_fields = ['is_anomaly', 'severity', 'confidence']
+                if not all(field in result for field in required_fields):
+                    self.logger.warning(f"Incomplete response fields: {result.keys()}")
+                    result['_incomplete'] = True
+            
             return result
             
+            except Timeout as e:
+                last_exception = e
+                self.logger.warning(f"Timeout on attempt {attempt+1}/{retries}: {e}")
+                if attempt < retries - 1:
+                    time.sleep(2 ** attempt)  # 指数退避
+                    continue
+            
+            except RateLimitError as e:
+                last_exception = e
+                self.logger.warning(f"Rate limit hit on attempt {attempt+1}/{retries}")
+                if attempt < retries - 1:
+                    time.sleep(10 * (attempt + 1))  # 等待更长时间
+                    continue
+            
+            except APIError as e:
+                last_exception = e
+                self.logger.error(f"OpenAI API error on attempt {attempt+1}/{retries}: {e}")
+                if attempt < retries - 1 and hasattr(e, 'code') and e.code in ['server_error', 'service_unavailable']:
+                    time.sleep(5)
+                    continue
+                # 不可重试的错误,返回错误响应而非抛出异常
+                return {
+                    "is_anomaly": False,
+                    "error": f"API Error: {str(e)}",
+                    "timestamp": datetime.now().isoformat()
+                }
+            
+            except json.JSONDecodeError as e:
+                last_exception = e
+                self.logger.error(f"Failed to parse LLM response as JSON: {e}")
+                return {
+                    "is_anomaly": False,
+                    "error": f"Invalid JSON response: {str(e)}",
+                    "timestamp": datetime.now().isoformat()
+                }
+            
         except Exception as e:
+                last_exception = e
+                self.logger.error(f"Unexpected error on attempt {attempt+1}/{retries}: {e}")
+                if attempt == retries - 1:
             return {
                 "is_anomaly": False,
                 "error": str(e),
+                        "timestamp": datetime.now().isoformat()
+                    }
+        
+        # 所有重试都失败
+        return {
+            "is_anomaly": False,
+            "error": f"All {retries} retry attempts failed: {str(last_exception)}",
                 "timestamp": datetime.now().isoformat()
             }
     
@@ -562,8 +654,26 @@ class OTLPLogAnalyzer:
     """从 OTLP 数据库读取日志并分析"""
     
     def __init__(self, db_config: Dict, llm_analyzer: LLMLogAnalyzer):
+        """
+        Args:
+            db_config: 数据库配置字典 (host, port, database, user, password)
+            llm_analyzer: LLM 分析器实例
+        
+        Raises:
+            psycopg2.Error: 如果数据库连接失败
+        """
         self.db_config = db_config
         self.llm_analyzer = llm_analyzer
+        self.logger = logging.getLogger(__name__)
+        
+        # 验证数据库连接
+        try:
+            with psycopg2.connect(**self.db_config) as conn:
+                with conn.cursor() as cursor:
+                    cursor.execute("SELECT 1")
+        except psycopg2.Error as e:
+            self.logger.error(f"Database connection failed: {e}")
+            raise
         
         # 初始化 OpenTelemetry
         trace.set_tracer_provider(TracerProvider())
@@ -579,13 +689,38 @@ class OTLPLogAnalyzer:
         self,
         service_name: str,
         time_range_minutes: int = 5,
-        severity: str = "ERROR"
+        severity: str = "ERROR",
+        max_logs: int = 100
     ) -> List[str]:
-        """从数据库获取最近的日志"""
+        """
+        从数据库获取最近的日志
         
-        conn = psycopg2.connect(**self.db_config)
-        cursor = conn.cursor()
+        Args:
+            service_name: 服务名称
+            time_range_minutes: 时间范围(分钟)
+            severity: 最低日志级别
+            max_logs: 最大返回日志数
         
+        Returns:
+            格式化后的日志列表
+        
+        Raises:
+            ValueError: 如果参数无效
+            psycopg2.Error: 如果数据库查询失败
+        """
+        # 输入验证
+        if not service_name:
+            raise ValueError("service_name cannot be empty")
+        
+        if time_range_minutes <= 0 or time_range_minutes > 1440:  # 最多24小时
+            raise ValueError("time_range_minutes must be between 1 and 1440")
+        
+        if max_logs <= 0 or max_logs > 10000:
+            raise ValueError("max_logs must be between 1 and 10000")
+        
+        try:
+            with psycopg2.connect(**self.db_config) as conn:
+                with conn.cursor() as cursor:
         query = """
             SELECT 
                 time,
@@ -598,10 +733,10 @@ class OTLPLogAnalyzer:
               AND severity_text >= %s
               AND time >= NOW() - INTERVAL '%s minutes'
             ORDER BY time DESC
-            LIMIT 100
+                        LIMIT %s
         """
         
-        cursor.execute(query, (service_name, severity, time_range_minutes))
+                    cursor.execute(query, (service_name, severity, time_range_minutes, max_logs))
         rows = cursor.fetchall()
         
         # 格式化为日志字符串
@@ -613,10 +748,12 @@ class OTLPLogAnalyzer:
                 log_line += f" [TraceID: {trace_id}]"
             logs.append(log_line)
         
-        cursor.close()
-        conn.close()
-        
+                    self.logger.info(f"Fetched {len(logs)} logs for service {service_name}")
         return logs
+        
+        except psycopg2.Error as e:
+            self.logger.error(f"Database query failed: {e}")
+            raise
     
     def analyze_service(self, service_name: str):
         """分析指定服务的日志"""
@@ -1312,9 +1449,33 @@ if __name__ == '__main__':
 class CostOptimizedLLMAnalyzer:
     """成本优化的 LLM 分析器"""
     
-    def __init__(self, primary_model="gpt-4", fallback_model="gpt-3.5-turbo"):
-        self.primary_model = primary_model  # 精度高,贵
-        self.fallback_model = fallback_model  # 精度稍低,便宜
+    def __init__(
+        self, 
+        primary_model="gpt-4", 
+        fallback_model="gpt-3.5-turbo",
+        rate_limit_calls=50,
+        rate_limit_period=60
+    ):
+        """
+        Args:
+            primary_model: 主模型(精度高,贵)
+            fallback_model: 备用模型(精度稍低,便宜)
+            rate_limit_calls: 速率限制调用次数
+            rate_limit_period: 速率限制时间窗口(秒)
+        """
+        import threading
+        from collections import deque
+        import time
+        
+        self.primary_model = primary_model
+        self.fallback_model = fallback_model
+        self.logger = logging.getLogger(__name__)
+        
+        # 速率限制
+        self.rate_limit_calls = rate_limit_calls
+        self.rate_limit_period = rate_limit_period
+        self._call_times = deque()
+        self._rate_limit_lock = threading.Lock()
         
         # 成本 (美元/1k tokens, 2025年10月价格)
         self.costs = {
@@ -1324,6 +1485,36 @@ class CostOptimizedLLMAnalyzer:
             "claude-3-sonnet": {"input": 0.003, "output": 0.015},
             "llama-3-70b": {"input": 0.0008, "output": 0.0008}  # 自托管
         }
+    
+    def _check_rate_limit(self) -> bool:
+        """
+        检查是否超过速率限制
+        
+        Returns:
+            True 如果在限制内,False 如果超限
+        """
+        import time
+        
+        with self._rate_limit_lock:
+            current_time = time.time()
+            
+            # 移除时间窗口外的调用记录
+            while self._call_times and current_time - self._call_times[0] > self.rate_limit_period:
+                self._call_times.popleft()
+            
+            # 检查是否超限
+            if len(self._call_times) >= self.rate_limit_calls:
+                oldest_call = self._call_times[0]
+                wait_time = self.rate_limit_period - (current_time - oldest_call)
+                self.logger.warning(
+                    f"Rate limit reached ({self.rate_limit_calls}/{self.rate_limit_period}s), "
+                    f"wait {wait_time:.1f}s"
+                )
+                return False
+            
+            # 记录本次调用
+            self._call_times.append(current_time)
+            return True
     
     def analyze_with_tiered_models(self, logs: List[str]) -> Dict:
         """
@@ -1356,7 +1547,29 @@ class CostOptimizedLLMAnalyzer:
         }
     
     def _quick_screen(self, logs: List[str], model: str) -> Dict:
-        """快速筛选 (简化 prompt)"""
+        """
+        快速筛选 (简化 prompt)
+        
+        Args:
+            logs: 日志列表
+            model: 模型名称
+        
+        Returns:
+            筛选结果
+        
+        Raises:
+            ValueError: 如果速率限制阻止调用
+        """
+        import time
+        
+        # 速率限制检查
+        max_wait = 30  # 最多等待30秒
+        start_wait = time.time()
+        
+        while not self._check_rate_limit():
+            if time.time() - start_wait > max_wait:
+                raise ValueError(f"Rate limit exceeded, waited {max_wait}s")
+            time.sleep(1)
         
         prompt = f"""
 分析以下日志,判断是否有异常 (简要回答):
@@ -1371,18 +1584,24 @@ class CostOptimizedLLMAnalyzer:
 }}
 """
         
-        response = openai.ChatCompletion.create(
-            model=model,
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0.0,
-            max_tokens=200,  # 限制输出长度
-            response_format={"type": "json_object"}
-        )
+        try:
+            response = openai.ChatCompletion.create(
+                model=model,
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.0,
+                max_tokens=200,  # 限制输出长度
+                request_timeout=30,
+                response_format={"type": "json_object"}
+            )
+            
+            result = json.loads(response.choices[0].message.content)
+            result['token_usage'] = response.usage.total_tokens
+            
+            return result
         
-        result = json.loads(response.choices[0].message.content)
-        result['token_usage'] = response.usage.total_tokens
-        
-        return result
+        except Exception as e:
+            self.logger.error(f"Quick screen failed: {e}")
+            raise
     
     def _detailed_analysis(self, logs: List[str], model: str) -> Dict:
         """详细分析 (完整 prompt)"""
@@ -1404,7 +1623,13 @@ class CostOptimizedLLMAnalyzer:
         
         return cost
     
-    def analyze_with_caching(self, logs: List[str], cache_ttl: int = 3600) -> Dict:
+    def analyze_with_caching(
+        self, 
+        logs: List[str], 
+        cache_ttl: int = 3600,
+        redis_host: str = 'localhost',
+        redis_port: int = 6379
+    ) -> Dict:
         """
         使用缓存减少重复分析
         
@@ -1412,35 +1637,67 @@ class CostOptimizedLLMAnalyzer:
         1. 对日志进行哈希
         2. 查询缓存
         3. 缓存未命中才调用 LLM
+        
+        Args:
+            logs: 日志列表
+            cache_ttl: 缓存过期时间(秒)
+            redis_host: Redis 主机地址
+            redis_port: Redis 端口
+        
+        Returns:
+            分析结果,包含 cache_hit 标志
         """
         import hashlib
         import redis
+        from redis.exceptions import RedisError
         
         # 计算日志哈希
         log_hash = hashlib.sha256(
-            "\n".join(logs).encode()
+            "\n".join(logs).encode('utf-8')
         ).hexdigest()
         
-        # 查询缓存
-        redis_client = redis.Redis(host='localhost', port=6379)
-        cached_result = redis_client.get(f"log_analysis:{log_hash}")
+        # 尝试连接 Redis 并查询缓存
+        try:
+            redis_client = redis.Redis(
+                host=redis_host, 
+                port=redis_port,
+                socket_connect_timeout=5,
+                socket_timeout=5,
+                decode_responses=True
+            )
+            
+            # 测试连接
+            redis_client.ping()
+            
+            # 查询缓存
+            cached_result = redis_client.get(f"log_analysis:{log_hash}")
+            
+            if cached_result:
+                self.logger.info(f"Cache hit for log hash {log_hash[:8]}")
+                return {
+                    **json.loads(cached_result),
+                    "cache_hit": True,
+                    "cost_usd": 0.0  # 缓存命中,无成本
+                }
         
-        if cached_result:
-            return {
-                **json.loads(cached_result),
-                "cache_hit": True,
-                "cost_usd": 0.0  # 缓存命中,无成本
-            }
+        except RedisError as e:
+            self.logger.warning(f"Redis connection failed: {e}, proceeding without cache")
+            redis_client = None
         
-        # 缓存未命中,调用 LLM
+        # 缓存未命中或 Redis 不可用,调用 LLM
         result = self.analyze_with_tiered_models(logs)
         
-        # 存入缓存
-        redis_client.setex(
-            f"log_analysis:{log_hash}",
-            cache_ttl,
-            json.dumps(result)
-        )
+        # 尝试存入缓存
+        if redis_client:
+            try:
+                redis_client.setex(
+                    f"log_analysis:{log_hash}",
+                    cache_ttl,
+                    json.dumps(result, ensure_ascii=False)
+                )
+                self.logger.info(f"Cached result for log hash {log_hash[:8]}")
+            except RedisError as e:
+                self.logger.warning(f"Failed to cache result: {e}")
         
         result['cache_hit'] = False
         return result
@@ -2483,6 +2740,32 @@ class OpsKnowledgeRAG:
 2. **评估**: 2周内验证检测率和误报率
 3. **扩展**: 逐步覆盖所有服务
 4. **优化**: 持续调优 Prompt 和成本
+
+---
+
+## 📚 相关文档
+
+### 核心集成 ⭐⭐⭐
+
+- **🤖 AIOps平台设计**: [查看文档](./🤖_OTLP自主运维能力完整架构_AIOps平台设计.md)
+  - 使用场景: LLM日志分析与AIOps异常检测协同,实现智能根因分析
+  - 关键章节: [GNN根因分析](./🤖_OTLP自主运维能力完整架构_AIOps平台设计.md#gnn-根因分析)
+  - 价值: LLM (日志文本分析) + GNN (服务依赖图) = 精准定位
+
+### 架构可视化 ⭐⭐⭐
+
+- **📊 架构图表指南**: [查看文档](./📊_架构图表与可视化指南_Mermaid完整版.md)
+  - 推荐图表:
+    - [LLM日志分析架构](./📊_架构图表与可视化指南_Mermaid完整版.md#4-ai-日志分析流程)
+    - [成本优化策略](./📊_架构图表与可视化指南_Mermaid完整版.md#42-成本优化策略)
+  - 价值: 分层模型+缓存策略可视化
+
+### 工具链支持 ⭐⭐
+
+- **📚 SDK最佳实践**: [查看文档](./📚_OTLP_SDK最佳实践指南_多语言全栈实现.md)
+  - 使用场景: OTLP Logs数据模型与LLM分析的集成
+  - 关键章节: [Logs采集最佳实践](./📚_OTLP_SDK最佳实践指南_多语言全栈实现.md#第三部分-生产级优化)
+  - 价值: 结构化日志提升LLM分析准确率
 
 ---
 

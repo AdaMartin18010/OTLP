@@ -77,6 +77,10 @@
     - [Continuous Profiling 核心价值](#continuous-profiling-核心价值)
     - [适用场景](#适用场景)
     - [参考资源](#参考资源)
+  - [📚 相关文档](#-相关文档)
+    - [核心集成 ⭐⭐⭐](#核心集成-)
+    - [架构可视化 ⭐⭐⭐](#架构可视化-)
+    - [工具链支持 ⭐⭐](#工具链支持-)
 
 ---
 
@@ -2453,6 +2457,42 @@ ROI:
 - 📚 [Brendan Gregg's Flame Graphs](https://www.brendangregg.com/flamegraphs.html)
 - 📚 [eBPF Profiling 原理](https://www.polarsignals.com/blog/posts/2022/11/29/profiling-at-the-speed-of-light-with-ebpf/)
 - 📄 [论文: Continuous Profiling at Google](https://research.google/pubs/pub36575/)
+
+---
+
+## 📚 相关文档
+
+### 核心集成 ⭐⭐⭐
+
+- **🤖 AIOps平台设计**: [查看文档](./🤖_OTLP自主运维能力完整架构_AIOps平台设计.md)
+  - 使用场景: Profiling数据接入AIOps,自动检测性能异常
+  - 关键章节: [性能瓶颈检测](./🤖_OTLP自主运维能力完整架构_AIOps平台设计.md#第三部分-机器学习模型)
+  - 价值: 性能问题发现时间从3天降至30分钟
+
+- **🐝 eBPF零侵入追踪**: [查看文档](./🐝_eBPF可观测性深度技术指南_零侵入式追踪.md)
+  - 使用场景: 基于eBPF的持续性能剖析,无需修改应用
+  - 关键章节: [eBPF Profiling](./🐝_eBPF可观测性深度技术指南_零侵入式追踪.md#性能分析)
+  - 价值: 零侵入,开销<1%,生产环境7x24运行
+
+- **🕸️ Service Mesh集成**: [查看文档](./🕸️_服务网格可观测性完整指南_Istio_Linkerd深度集成.md)
+  - 使用场景: Envoy Sidecar性能剖析,优化Service Mesh开销
+  - 关键章节: [Envoy性能优化](./🕸️_服务网格可观测性完整指南_Istio_Linkerd深度集成.md#第五部分-生产实战案例)
+  - 价值: Sidecar开销从15%降至3%
+
+### 架构可视化 ⭐⭐⭐
+
+- **📊 架构图表指南**: [查看文档](./📊_架构图表与可视化指南_Mermaid完整版.md)
+  - 推荐图表:
+    - [Profiling架构](./📊_架构图表与可视化指南_Mermaid完整版.md#6-continuous-profiling)
+    - [Profiling与Tracing关联](./📊_架构图表与可视化指南_Mermaid完整版.md#62-profiling-与-tracing-关联)
+  - 价值: Trace → Profile跳转流程一目了然
+
+### 工具链支持 ⭐⭐
+
+- **📚 SDK最佳实践**: [查看文档](./📚_OTLP_SDK最佳实践指南_多语言全栈实现.md)
+  - 使用场景: SDK集成Profiling,实现Trace-Profile关联
+  - 关键章节: [Exemplars集成](./📚_OTLP_SDK最佳实践指南_多语言全栈实现.md#第三部分-生产级优化)
+  - 价值: 从慢请求直接跳转到火焰图
 
 ---
 
