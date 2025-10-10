@@ -1,0 +1,122 @@
+# OpenTelemetry Collector 配置文件
+# 版本: 0.111.0
+# 用途: 接收OTLP数据并导出到Jaeger
+
+# 接收器 (Receivers)
+# 定义如何接收遥测数据
+receivers:
+  # OTLP接收器 - 支持gRPC和HTTP协议
+  otlp:
+    protocols:
+      # gRPC端点 (推荐用于生产环境)
+      grpc:
+        endpoint: 0.0.0.0:4317
+        # 可选配置
+        # max_recv_msg_size_mib: 4    # 最大接收消息大小(MB)
+        # max_concurrent_streams: 100  # 最大并发流数
+      
+      # HTTP端点 (适合浏览器或简单客户端)
+      http:
+        endpoint: 0.0.0.0:4318
+        # cors: # CORS配置
+        #   allowed_origins:
+        #     - http://localhost:*
+        #     - https://*.example.com
+
+# 处理器 (Processors)
+# 处理接收到的数据
+processors:
+  # 批处理器 - 将数据批量发送以提高性能
+  batch:
+    timeout: 10s           # 最长等待时间
+    send_batch_size: 1024  # 批量大小
+    send_batch_max_size: 2048 # 最大批量大小
+
+  # 内存限制器 - 防止OOM
+  memory_limiter:
+    check_interval: 1s
+    limit_mib: 512      # 硬限制512MB
+    spike_limit_mib: 128 # 峰值允许额外128MB
+
+  # 资源检测器 - 自动添加环境信息
+  # resourcedetection:
+  #   detectors: [env, system, docker]
+  #   timeout: 5s
+
+# 导出器 (Exporters)
+# 定义数据导出目的地
+exporters:
+  # Jaeger导出器 - 发送traces到Jaeger
+  jaeger:
+    endpoint: jaeger:14250
+    tls:
+      insecure: true  # 开发环境不使用TLS
+
+  # 日志导出器 - 输出到控制台（调试用）
+  logging:
+    verbosity: detailed  # basic, normal, detailed
+    sampling_initial: 5  # 初始采样数
+    sampling_thereafter: 200 # 之后每200条采样1条
+
+  # 可选：Prometheus导出器 - 导出指标
+  # prometheus:
+  #   endpoint: 0.0.0.0:8889
+
+  # 可选：OTLP导出器 - 转发到其他Collector
+  # otlp:
+  #   endpoint: upstream-collector:4317
+  #   tls:
+  #     insecure: true
+
+# 扩展 (Extensions)
+# 提供额外功能
+extensions:
+  # 健康检查端点
+  health_check:
+    endpoint: 0.0.0.0:13133
+
+  # pprof性能分析
+  pprof:
+    endpoint: 0.0.0.0:1777
+
+  # zpages调试页面
+  zpages:
+    endpoint: 0.0.0.0:55679
+
+# 服务 (Service)
+# 组装上述组件
+service:
+  # 启用扩展
+  extensions: [health_check, pprof, zpages]
+  
+  # 数据管道 (Pipelines)
+  pipelines:
+    # Traces管道
+    traces:
+      receivers: [otlp]
+      processors: [memory_limiter, batch]
+      exporters: [jaeger, logging]
+    
+    # Metrics管道 (可选)
+    # metrics:
+    #   receivers: [otlp]
+    #   processors: [memory_limiter, batch]
+    #   exporters: [prometheus, logging]
+    
+    # Logs管道 (可选)
+    # logs:
+    #   receivers: [otlp]
+    #   processors: [memory_limiter, batch]
+    #   exporters: [logging]
+
+  # 遥测配置 - Collector自身的遥测
+  telemetry:
+    logs:
+      level: info  # debug, info, warn, error
+      # development: true  # 开发模式
+      # encoding: json     # console or json
+    
+    metrics:
+      level: detailed  # none, basic, normal, detailed
+      address: 0.0.0.0:8888  # Prometheus metrics端点
+

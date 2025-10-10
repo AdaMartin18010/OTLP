@@ -1,0 +1,13 @@
+# OpenTelemetry Core
+opentelemetry-api==1.27.0
+opentelemetry-sdk==1.27.0
+
+# OTLP Exporter
+opentelemetry-exporter-otlp-proto-grpc==1.27.0
+
+# Protocol Buffers (OTLP依赖)
+protobuf==5.28.2
+
+# gRPC (OTLP gRPC传输依赖)
+grpcio==1.67.0
+
