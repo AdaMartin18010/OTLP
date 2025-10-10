@@ -11,6 +11,7 @@
 AI/ML正在从根本上改变可观测性领域。从被动监控到主动预测,从人工分析到智能RCA,AI驱动的可观测性正在成为2025年的核心趋势。
 
 **核心发现**:
+
 - ✅ Datadog Watchdog、Grafana ML等AI功能已生产就绪
 - 🔥 LLM用于日志分析和根因分析快速普及
 - 📈 时序异常检测、预测性维护成为标配
@@ -87,6 +88,7 @@ graph TB
 #### 1.1 Datadog Watchdog
 
 **技术原理**:
+
 ```yaml
 算法:
   - 动态基线 (Adaptive Baselines)
@@ -107,7 +109,8 @@ graph TB
 ```
 
 **架构设计**:
-```
+
+```text
 ┌─────────────────────────────────────────────┐
 │          Datadog Watchdog引擎                │
 │  ┌─────────────────────────────────────┐    │
@@ -147,6 +150,7 @@ graph TB
 ```
 
 **实现示例** (Python,基于本项目当前LLM日志分析):
+
 ```python
 import numpy as np
 from sklearn.ensemble import IsolationForest
@@ -256,6 +260,7 @@ print(f"检测到 {anomalies_ts['is_anomaly'].sum()} 个时序异常")
 ```
 
 **本项目差距**:
+
 | 维度 | Datadog Watchdog | 本项目 | 差距 |
 |------|-----------------|--------|------|
 | 时序异常检测 | ✅ Prophet/LSTM | ❌ 无 | 完全缺失 |
@@ -270,6 +275,7 @@ print(f"检测到 {anomalies_ts['is_anomaly'].sum()} 个时序异常")
 **核心技术**: 因果AI (Causal AI)
 
 **差异化特点**:
+
 ```yaml
 因果推理:
   - 不仅检测相关性,更推断因果关系
@@ -288,7 +294,8 @@ print(f"检测到 {anomalies_ts['is_anomaly'].sum()} 个时序异常")
 ```
 
 **根因分析示例**:
-```
+
+```text
 场景: 用户报告服务响应慢
 
 Davis AI分析过程:
@@ -309,6 +316,7 @@ Davis AI分析过程:
 ```
 
 **本项目改进方向**:
+
 - 补充因果AI算法原理
 - 实现简化版依赖图分析
 - 提供根因分析实战案例
@@ -320,17 +328,20 @@ Davis AI分析过程:
 #### 2.1 本项目现状
 
 **已有内容** (🤖_AI驱动日志分析完整指南):
+
 - ✅ LLM日志异常检测
 - ✅ LLM根因分析
 - ✅ 自然语言查询
 - ✅ 成本优化策略
 
 **优势**:
+
 - 文档完整度高 (2400行)
 - 代码示例丰富
 - 成本优化实用
 
 **不足**:
+
 - 缺少多模态分析 (Logs + Metrics + Traces)
 - 缺少LLM微调案例 (Fine-tuning)
 - 缺少RAG (Retrieval-Augmented Generation) 深化
@@ -342,6 +353,7 @@ Davis AI分析过程:
 **代表项目**: OpenAI GPT-4o, Google Gemini (多模态)
 
 **应用场景**:
+
 ```yaml
 1. 跨信号关联分析:
    输入: 
@@ -368,152 +380,161 @@ Davis AI分析过程:
 ```
 
 **实现示例** (Python, 基于GPT-4o API):
+
 ```python
-import openai
-from typing import Dict, List
-import json
+    import openai
+    from typing import Dict, List
+    import json
 
-class MultimodalObservabilityLLM:
-    """多模态可观测性LLM分析器"""
-    
-    def __init__(self, api_key: str):
-        self.client = openai.OpenAI(api_key=api_key)
-    
-    def analyze_multimodal(
-        self,
-        logs: List[str],
-        metrics: Dict[str, float],
-        trace_span: Dict,
-        screenshot_url: str = None
-    ) -> Dict:
-        """
-        多模态分析 (Logs + Metrics + Traces + Screenshot)
+    class MultimodalObservabilityLLM:
+        """多模态可观测性LLM分析器"""
         
-        Args:
-            logs: 日志列表
-            metrics: 指标字典 {metric_name: value}
-            trace_span: Trace Span数据
-            screenshot_url: Grafana截图URL (可选)
+        def __init__(self, api_key: str):
+            self.client = openai.OpenAI(api_key=api_key)
         
-        Returns:
-            分析结果
-        """
-        # 构建多模态Prompt
-        prompt = f"""
-你是一个可观测性专家。请分析以下数据并给出根因和建议。
+        def analyze_multimodal(
+            self,
+            logs: List[str],
+            metrics: Dict[str, float],
+            trace_span: Dict,
+            screenshot_url: str = None
+        ) -> Dict:
+            """
+            多模态分析 (Logs + Metrics + Traces + Screenshot)
+            
+            Args:
+                logs: 日志列表
+                metrics: 指标字典 {metric_name: value}
+                trace_span: Trace Span数据
+                screenshot_url: Grafana截图URL (可选)
+            
+            Returns:
+                分析结果
+            """
+            # 构建多模态Prompt
+            prompt = f"""
+    你是一个可观测性专家。请分析以下数据并给出根因和建议。
 
-# 日志 (Logs)
-```
-{chr(10).join(logs)}
-```
+    # 日志 (Logs)
+    ```
 
-# 指标 (Metrics)
-```json
-{json.dumps(metrics, indent=2)}
-```
+    {chr(10).join(logs)}
 
-# 追踪 (Trace Span)
-```json
-{json.dumps(trace_span, indent=2)}
-```
+    ```
 
-请回答:
-1. 根本原因是什么?
-2. 为什么会导致这个问题?
-3. 推荐的修复方案是什么? (至少3个,按优先级排序)
-4. 如何预防类似问题?
-"""
-        
-        # 构建消息 (包含图片,如果有)
-        messages = [
-            {
-                "role": "system",
-                "content": "你是一个专业的可观测性分析专家,擅长根因分析和故障诊断。"
-            },
-            {
-                "role": "user",
-                "content": [
-                    {"type": "text", "text": prompt}
-                ]
+    # 指标 (Metrics)
+    ```json
+    {json.dumps(metrics, indent=2)}
+    ```
+
+    # 追踪 (Trace Span)
+
+    ```json
+    {json.dumps(trace_span, indent=2)}
+    ```
+
+    请回答:
+
+    1. 根本原因是什么?
+    2. 为什么会导致这个问题?
+    3. 推荐的修复方案是什么? (至少3个,按优先级排序)
+    4. 如何预防类似问题?
+    """
+
+            # 构建消息 (包含图片,如果有)
+            messages = [
+                {
+                    "role": "system",
+                    "content": "你是一个专业的可观测性分析专家,擅长根因分析和故障诊断。"
+                },
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": prompt}
+                    ]
+                }
+            ]
+            
+            # 如果有截图,添加到消息中
+            if screenshot_url:
+                messages[1]["content"].append({
+                    "type": "image_url",
+                    "image_url": {"url": screenshot_url}
+                })
+            
+            # 调用GPT-4o (支持多模态)
+            response = self.client.chat.completions.create(
+                model="gpt-4o",  # 或 "gpt-4-vision-preview"
+                messages=messages,
+                temperature=0.3,
+                max_tokens=2000
+            )
+            
+            # 解析结果
+            analysis = response.choices[0].message.content
+            
+            return {
+                "root_cause": self._extract_section(analysis, "根本原因"),
+                "explanation": self._extract_section(analysis, "为什么"),
+                "recommendations": self._extract_section(analysis, "推荐"),
+                "prevention": self._extract_section(analysis, "预防"),
+                "full_analysis": analysis
             }
-        ]
-        
-        # 如果有截图,添加到消息中
-        if screenshot_url:
-            messages[1]["content"].append({
-                "type": "image_url",
-                "image_url": {"url": screenshot_url}
-            })
-        
-        # 调用GPT-4o (支持多模态)
-        response = self.client.chat.completions.create(
-            model="gpt-4o",  # 或 "gpt-4-vision-preview"
-            messages=messages,
-            temperature=0.3,
-            max_tokens=2000
-        )
-        
-        # 解析结果
-        analysis = response.choices[0].message.content
-        
-        return {
-            "root_cause": self._extract_section(analysis, "根本原因"),
-            "explanation": self._extract_section(analysis, "为什么"),
-            "recommendations": self._extract_section(analysis, "推荐"),
-            "prevention": self._extract_section(analysis, "预防"),
-            "full_analysis": analysis
-        }
-    
-    def _extract_section(self, text: str, section_name: str) -> str:
-        """从LLM响应中提取特定章节"""
-        # 简化实现,实际可用更复杂的解析逻辑
-        lines = text.split('\n')
-        section_lines = []
-        in_section = False
-        
-        for line in lines:
-            if section_name in line:
-                in_section = True
-                continue
-            if in_section:
-                if line.startswith('#') or line.startswith('##'):
-                    break
-                section_lines.append(line)
-        
-        return '\n'.join(section_lines).strip()
 
-# 使用示例
-analyzer = MultimodalObservabilityLLM(api_key="your-openai-api-key")
+        def _extract_section(self, text: str, section_name: str) -> str:
+            """从LLM响应中提取特定章节"""
+            # 简化实现,实际可用更复杂的解析逻辑
+            lines = text.split('\n')
+            section_lines = []
+            in_section = False
 
-# 场景: 数据库慢查询
-result = analyzer.analyze_multimodal(
-    logs=[
-        "2025-10-09 10:15:32 ERROR Database query timeout after 30s",
-        "2025-10-09 10:15:32 WARN Connection pool exhausted (100/100 connections)"
-    ],
-    metrics={
-        "database.cpu_usage": 95.0,
-        "database.memory_usage": 98.0,
-        "database.connections": 100,
-        "database.query_time_p99": 30000  # 30秒
-    },
-    trace_span={
-        "span_id": "abc123",
-        "operation_name": "SELECT * FROM users",
-        "duration_ms": 30000,
-        "attributes": {
-            "db.system": "postgresql",
-            "db.statement": "SELECT * FROM users WHERE created_at > '2024-01-01'"
-        }
-    },
-    screenshot_url="https://example.com/grafana-screenshot.png"
-)
+            for line in lines:
+                if section_name in line:
+                    in_section = True
+                    continue
+                if in_section:
+                    if line.startswith('#') or line.startswith('##'):
+                        break
+                    section_lines.append(line)
+            
+            return '\n'.join(section_lines).strip()
 
-print("根因:", result["root_cause"])
-print("建议:", result["recommendations"])
+    # 使用示例
+
+    analyzer = MultimodalObservabilityLLM(api_key="your-openai-api-key")
+
+    # 场景: 数据库慢查询
+
+    result = analyzer.analyze_multimodal(
+        logs=[
+            "2025-10-09 10:15:32 ERROR Database query timeout after 30s",
+            "2025-10-09 10:15:32 WARN Connection pool exhausted (100/100 connections)"
+        ],
+        metrics={
+            "database.cpu_usage": 95.0,
+            "database.memory_usage": 98.0,
+            "database.connections": 100,
+            "database.query_time_p99": 30000  # 30秒
+        },
+        trace_span={
+            "span_id": "abc123",
+            "operation_name": "SELECT *FROM users",
+            "duration_ms": 30000,
+            "attributes": {
+                "db.system": "postgresql",
+                "db.statement": "SELECT* FROM users WHERE created_at > '2024-01-01'"
+            }
+        },
+        screenshot_url="<https://example.com/grafana-screenshot.png>"
+    )
+
+    print("根因:", result["root_cause"])
+    print("建议:", result["recommendations"])
+
 ```
 
 **本项目改进方向**:
+
 1. 补充多模态LLM分析章节
 2. 提供GPT-4o/Gemini集成示例
 3. 编写可视化分析案例 (Grafana截图 → LLM诊断)
@@ -526,6 +547,7 @@ print("建议:", result["recommendations"])
 #### 3.1 技术原理
 
 **核心算法**:
+
 ```yaml
 1. 时序预测:
    - ARIMA (自回归移动平均)
@@ -545,6 +567,7 @@ print("建议:", result["recommendations"])
 ```
 
 **实现示例** (Python, Prophet):
+
 ```python
 from prophet import Prophet
 import pandas as pd
@@ -667,6 +690,7 @@ print(leak_detection)
 ```
 
 **本项目差距**:
+
 | 维度 | 业界最佳 | 本项目 | 差距 |
 |------|---------|--------|------|
 | 时序预测 | ✅ Prophet/LSTM | ❌ 无 | 完全缺失 |
@@ -681,9 +705,11 @@ print(leak_detection)
 ### 短期 (Q4 2025)
 
 #### 任务1: 时序异常检测实战指南 (🔴 P0)
+
 **目标**: 补充完整的时序异常检测能力
 
 **交付物**:
+
 1. Prophet时序预测教程
 2. LSTM异常检测示例
 3. Isolation Forest多维度检测
@@ -694,9 +720,11 @@ print(leak_detection)
 **时间**: 3周
 
 #### 任务2: 预测性维护完整指南 (🔴 P0)
+
 **目标**: 建立预测性维护能力
 
 **交付物**:
+
 1. 磁盘耗尽预测
 2. 内存泄漏检测
 3. 容量规划建议
@@ -707,9 +735,11 @@ print(leak_detection)
 **时间**: 2周
 
 #### 任务3: 多模态LLM分析 (🟡 P1)
+
 **目标**: 增强现有LLM日志分析,支持多模态
 
 **交付物**:
+
 1. GPT-4o多模态集成示例
 2. Logs + Metrics + Traces联合分析
 3. Grafana截图分析案例
@@ -722,9 +752,11 @@ print(leak_detection)
 ### 中期 (2026 H1)
 
 #### 任务4: AI可观测性平台架构
+
 **目标**: 建立完整的AI驱动可观测性平台
 
 **交付物**:
+
 1. 架构设计文档
 2. 核心模块实现 (开源)
    - 异常检测引擎
@@ -738,9 +770,11 @@ print(leak_detection)
 **时间**: 12周
 
 #### 任务5: LLM微调与RAG实战
+
 **目标**: 探索LLM在可观测性领域的深度应用
 
 **交付物**:
+
 1. LLM Fine-tuning教程 (使用公司历史故障数据)
 2. RAG (检索增强生成) 实现
    - Vector Database (ChromaDB/Milvus)
@@ -756,16 +790,19 @@ print(leak_detection)
 ## 📚 推荐学习资源
 
 ### AI/ML课程
+
 - [fast.ai Practical Deep Learning](https://course.fast.ai/)
 - [Andrew Ng Machine Learning](https://www.coursera.org/learn/machine-learning)
 - [Stanford CS224N (NLP)](http://web.stanford.edu/class/cs224n/)
 
 ### 可观测性 + AI
+
 - [Datadog Watchdog Blog](https://www.datadoghq.com/blog/tag/watchdog/)
 - [Dynatrace Davis AI](https://www.dynatrace.com/platform/artificial-intelligence/)
 - [AWS DevOps Guru](https://aws.amazon.com/devops-guru/)
 
 ### 技术论文
+
 - "Robust Random Cut Forest Based Anomaly Detection On Streams" (AWS, 2016)
 - "Unsupervised Anomaly Detection via Variational Auto-Encoder" (Microsoft, 2018)
 
@@ -774,4 +811,3 @@ print(leak_detection)
 **最后更新**: 2025-10-09  
 **下次更新**: 2025-11-09  
 **负责人**: OTLP项目组 - AI/ML追踪小组
-
