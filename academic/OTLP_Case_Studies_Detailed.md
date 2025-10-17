@@ -9,7 +9,8 @@
 
 ## 📋 Overview
 
-This document provides detailed case studies for the evaluation of our OTLP formal verification framework. Each case study includes:
+This document provides detailed case studies for the evaluation of our OTLP formal verification framework.
+Each case study includes:
 
 - System architecture and characteristics
 - OTLP deployment details

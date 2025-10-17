@@ -524,7 +524,8 @@ Defined.
 
 ### Theorem 5.1: CFG Soundness
 
-**Statement**: If a trace is valid according to the CFG, then all parent-child span relationships correspond to valid call paths.
+**Statement**:
+If a trace is valid according to the CFG, then all parent-child span relationships correspond to valid call paths.
 
 **Formal Statement**:
 

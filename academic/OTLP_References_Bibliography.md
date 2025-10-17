@@ -9,12 +9,68 @@
 
 ## 📚 Reference Categories
 
-1. [OpenTelemetry and OTLP](#opentelemetry-and-otlp) (8 references)
-2. [Formal Verification Methods](#formal-verification-methods) (8 references)
-3. [Type Systems and Semantics](#type-systems-and-semantics) (7 references)
-4. [Distributed Tracing Systems](#distributed-tracing-systems) (6 references)
-5. [Temporal Logic and Model Checking](#temporal-logic-and-model-checking) (7 references)
-6. [Algebraic Approaches](#algebraic-approaches) (6 references)
+- [OTLP Formal Verification Paper - References and Bibliography](#otlp-formal-verification-paper---references-and-bibliography)
+  - [📚 Reference Categories](#-reference-categories)
+  - [OpenTelemetry and OTLP](#opentelemetry-and-otlp)
+    - [\[1\] OpenTelemetry Specification](#1-opentelemetry-specification)
+    - [\[2\] OTLP Protocol Specification](#2-otlp-protocol-specification)
+    - [\[3\] OpenTelemetry Semantic Conventions](#3-opentelemetry-semantic-conventions)
+    - [\[4\] OpenTelemetry: Effective Observability](#4-opentelemetry-effective-observability)
+    - [\[5\] OTLP in Production](#5-otlp-in-production)
+    - [\[6\] OpenTelemetry Collector Architecture](#6-opentelemetry-collector-architecture)
+    - [\[7\] OTLP Arrow: Columnar Encoding](#7-otlp-arrow-columnar-encoding)
+    - [\[8\] OpenTelemetry Tracing in Microservices](#8-opentelemetry-tracing-in-microservices)
+  - [Formal Verification Methods](#formal-verification-methods)
+    - [\[9\] Specifying Systems with TLA+](#9-specifying-systems-with-tla)
+    - [\[10\] Ivy: Protocol Verification](#10-ivy-protocol-verification)
+    - [\[11\] Formal Methods for Distributed Systems](#11-formal-methods-for-distributed-systems)
+    - [\[12\] Runtime Verification](#12-runtime-verification)
+    - [\[13\] Model Checking](#13-model-checking)
+    - [\[14\] Coq Proof Assistant](#14-coq-proof-assistant)
+    - [\[15\] Isabelle/HOL](#15-isabellehol)
+    - [\[16\] Formal Verification Survey](#16-formal-verification-survey)
+  - [Type Systems and Semantics](#type-systems-and-semantics)
+    - [\[17\] Types and Programming Languages](#17-types-and-programming-languages)
+    - [\[18\] Session Types for Distributed Systems](#18-session-types-for-distributed-systems)
+    - [\[19\] Dependent Types for Correctness](#19-dependent-types-for-correctness)
+    - [\[20\] Operational Semantics](#20-operational-semantics)
+    - [\[21\] Denotational Semantics](#21-denotational-semantics)
+    - [\[22\] Type Systems for Distributed Programming](#22-type-systems-for-distributed-programming)
+    - [\[23\] Refinement Types](#23-refinement-types)
+  - [Distributed Tracing Systems](#distributed-tracing-systems)
+    - [\[24\] Dapper: Google's Distributed Tracing](#24-dapper-googles-distributed-tracing)
+    - [\[25\] Zipkin](#25-zipkin)
+    - [\[26\] Jaeger: Uber's Tracing System](#26-jaeger-ubers-tracing-system)
+    - [\[27\] X-Ray: AWS Distributed Tracing](#27-x-ray-aws-distributed-tracing)
+    - [\[28\] Canopy: End-to-End Tracing](#28-canopy-end-to-end-tracing)
+    - [\[29\] Pivot Tracing](#29-pivot-tracing)
+  - [Temporal Logic and Model Checking](#temporal-logic-and-model-checking)
+    - [\[30\] Linear Temporal Logic](#30-linear-temporal-logic)
+    - [\[31\] Computation Tree Logic](#31-computation-tree-logic)
+    - [\[32\] SPIN Model Checker](#32-spin-model-checker)
+    - [\[33\] NuSMV Model Checker](#33-nusmv-model-checker)
+    - [\[34\] Temporal Logic Patterns](#34-temporal-logic-patterns)
+    - [\[35\] Runtime Verification with Temporal Logic](#35-runtime-verification-with-temporal-logic)
+    - [\[36\] LTL Model Checking](#36-ltl-model-checking)
+  - [Algebraic Approaches](#algebraic-approaches)
+    - [\[37\] Process Algebras: CSP](#37-process-algebras-csp)
+    - [\[38\] Process Algebras: CCS](#38-process-algebras-ccs)
+    - [\[39\] Category Theory for Computer Science](#39-category-theory-for-computer-science)
+    - [\[40\] Applied Category Theory](#40-applied-category-theory)
+    - [\[41\] Monoids and Semigroups](#41-monoids-and-semigroups)
+    - [\[42\] Lattice Theory](#42-lattice-theory)
+  - [Additional References (Recent Work)](#additional-references-recent-work)
+    - [\[43\] Tracezip: Trace Compression](#43-tracezip-trace-compression)
+    - [\[44\] Autoscope: Intelligent Sampling](#44-autoscope-intelligent-sampling)
+  - [BibTeX Format](#bibtex-format)
+  - [Reference Usage in Paper](#reference-usage-in-paper)
+    - [Introduction (Section 1)](#introduction-section-1)
+    - [Background (Section 2)](#background-section-2)
+    - [Formal Semantics (Section 3)](#formal-semantics-section-3)
+    - [Algebraic Structures (Section 4)](#algebraic-structures-section-4)
+    - [Temporal Logic (Section 6)](#temporal-logic-section-6)
+    - [Related Work (Throughout)](#related-work-throughout)
+  - [Citation Statistics](#citation-statistics)
 
 ---
 
@@ -55,7 +111,8 @@ URL: <https://opentelemetry.io/docs/specs/semconv/>
 
 ### [6] OpenTelemetry Collector Architecture
 
-**T. Mathis and J. Vera**. "OpenTelemetry Collector: Design and Implementation." In *Cloud Native Computing Foundation Blog*, 2023.
+**T. Mathis and J. Vera**. "OpenTelemetry Collector: Design and Implementation."
+In *Cloud Native Computing Foundation Blog*, 2023.
 
 **Relevance**: OTLP Collector internals and processing pipeline.
 
@@ -67,7 +124,8 @@ URL: <https://opentelemetry.io/docs/specs/semconv/>
 
 ### [8] OpenTelemetry Tracing in Microservices
 
-**C. Sun et al.** "Tracing Microservices with OpenTelemetry: Best Practices and Pitfalls." In *Proceedings of IEEE CLOUD*, 2024.
+**C. Sun et al.** "Tracing Microservices with OpenTelemetry: Best Practices and Pitfalls."
+In *Proceedings of IEEE CLOUD*, 2024.
 
 **Relevance**: Microservices tracing patterns and issues.
 
@@ -95,7 +153,8 @@ URL: <https://opentelemetry.io/docs/specs/semconv/>
 
 ### [12] Runtime Verification
 
-**M. Leucker and C. Schallhart**. "A Brief Account of Runtime Verification." *Journal of Logic and Algebraic Programming*, 78(5):293-303, 2009.
+**M. Leucker and C. Schallhart**. "A Brief Account of Runtime Verification."
+*Journal of Logic and Algebraic Programming*, 78(5):293-303, 2009.
 
 **Relevance**: Runtime verification techniques for trace analysis.
 
@@ -135,7 +194,9 @@ URL: <https://opentelemetry.io/docs/specs/semconv/>
 
 ### [18] Session Types for Distributed Systems
 
-**K. Honda, V. T. Vasconcelos, and M. Kubo**. "Language Primitives and Type Discipline for Structured Communication-Based Programming." In *ESOP*, 1998, pp. 122-138.
+**K. Honda, V. T. Vasconcelos, and M. Kubo**.
+"Language Primitives and Type Discipline for Structured Communication-Based Programming."
+In *ESOP*, 1998, pp. 122-138.
 
 **Relevance**: Type systems for distributed communication protocols.
 
@@ -147,7 +208,8 @@ URL: <https://opentelemetry.io/docs/specs/semconv/>
 
 ### [20] Operational Semantics
 
-**G. D. Plotkin**. "A Structural Approach to Operational Semantics." *Journal of Logic and Algebraic Programming*, 60-61:17-139, 2004.
+**G. D. Plotkin**. "A Structural Approach to Operational Semantics."
+*Journal of Logic and Algebraic Programming*, 60-61:17-139, 2004.
 
 **Relevance**: Framework for defining operational semantics.
 
@@ -222,7 +284,8 @@ URL: <https://zipkin.io/>
 
 ### [31] Computation Tree Logic
 
-**E. M. Clarke and E. A. Emerson**. "Design and Synthesis of Synchronization Skeletons Using Branching Time Temporal Logic." In *Workshop on Logic of Programs*, 1981, pp. 52-71.
+**E. M. Clarke and E. A. Emerson**. "Design and Synthesis of Synchronization Skeletons Using Branching Time Temporal Logic."
+In *Workshop on Logic of Programs*, 1981, pp. 52-71.
 
 **Relevance**: CTL for branching-time properties.
 

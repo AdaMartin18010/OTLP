@@ -12,7 +12,8 @@
 
 ### Metadata
 
-- **Title**: A Comprehensive Formal Verification Framework for OTLP: Ensuring Correctness and Consistency in Distributed Tracing
+- **Title**: A Comprehensive Formal Verification Framework for OTLP:
+Ensuring Correctness and Consistency in Distributed Tracing
 - **Keywords**: OpenTelemetry, OTLP, Formal Verification, Distributed Tracing, Type Systems, Algebraic Structures
 - **Category**: Software Engineering, Distributed Systems, Formal Methods
 - **Target Venue**: ICSE 2026 (Deadline: ~August 2025)
@@ -22,11 +23,23 @@
 
 **Draft**:
 
-Distributed tracing has become essential for understanding the behavior of modern microservices architectures. OpenTelemetry Protocol (OTLP) has emerged as the industry standard for telemetry data transmission. However, the correctness and consistency of OTLP implementations remain challenging due to the protocol's complexity and the distributed nature of tracing systems.
+Distributed tracing has become essential for understanding the behavior of modern microservices architectures.
+OpenTelemetry Protocol (OTLP) has emerged as the industry standard for telemetry data transmission.
+However, the correctness and consistency of OTLP implementations remain challenging due to the protocol's complexity
+and the distributed nature of tracing systems.
 
-In this paper, we present a comprehensive formal verification framework for OTLP that provides mathematical rigor and guarantees. Our framework includes: (1) formal semantics with type systems and operational semantics, (2) algebraic structures (Monoid, Lattice, Category Theory) for data composition, (3) triple flow analysis (control flow, data flow, execution flow), and (4) temporal logic (LTL/CTL) for property verification.
+In this paper,
+we present a comprehensive formal verification framework for OTLP that provides mathematical rigor and guarantees.
+Our framework includes:
+(1) formal semantics with type systems and operational semantics,
+(2) algebraic structures (Monoid, Lattice, Category Theory) for data composition,
+(3) triple flow analysis (control flow, data flow, execution flow), and
+(4) temporal logic (LTL/CTL) for property verification.
 
-We implement our framework in Rust and validate it with real-world OTLP deployments. Our evaluation shows that the framework can effectively detect protocol violations, ensure trace consistency, and verify critical properties such as causality preservation and span completeness. We demonstrate the framework's practical applicability with case studies from production systems.
+We implement our framework in Rust and validate it with real-world OTLP deployments.
+Our evaluation shows that the framework can effectively detect protocol violations,
+ensure trace consistency, and verify critical properties such as causality preservation and span completeness.
+We demonstrate the framework's practical applicability with case studies from production systems.
 
 ---
 
@@ -675,11 +688,19 @@ def model_check_ltl(trace, formula):
 
 ## 9. Conclusion (0.5 pages)
 
-We presented a comprehensive formal verification framework for OTLP that provides mathematical guarantees for distributed tracing correctness. Our framework integrates formal semantics, algebraic structures, triple flow analysis, and temporal logic to verify critical properties of OTLP implementations.
+We presented a comprehensive formal verification framework for
+OTLP that provides mathematical guarantees for distributed tracing correctness.
+Our framework integrates formal semantics, algebraic structures,
+triple flow analysis, and temporal logic to verify critical properties of OTLP implementations.
 
-Our evaluation with five real-world systems demonstrates the framework's effectiveness in detecting violations and ensuring trace consistency. While the current implementation has a 42% overhead, it is practical for offline analysis and can significantly improve the quality of distributed tracing.
+Our evaluation with five real-world systems demonstrates the framework's effectiveness in detecting violations and
+ensuring trace consistency.
+While the current implementation has a 42% overhead,
+it is practical for offline analysis and can significantly improve
+the quality of distributed tracing.
 
-We believe this work lays the foundation for formal methods in observability systems and opens up new research directions in verified telemetry protocols.
+We believe this work lays the foundation for formal methods in observability systems
+and opens up new research directions in verified telemetry protocols.
 
 ---
 

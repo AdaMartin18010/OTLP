@@ -105,7 +105,8 @@
 
 - 标准与规范对标（spec/ ←→ doc/02_*）
   - 总览与对标：`doc/02_标准与对标/README.md`, `doc/02_标准规范分析/国际标准深度对标分析.md`
-  - 规范分册：`doc/02_标准规范/OTLP_OVERVIEW.md`, `doc/02_标准规范/TRACES.md`, `doc/02_标准规范/METRICS.md`, `doc/02_标准规范/LOGS.md`, `doc/02_标准规范/STATUS.md`, `doc/02_标准规范/语义约定标准.md`
+  - 规范分册：`doc/02_标准规范/OTLP_OVERVIEW.md`, `doc/02_标准规范/TRACES.md`, `doc/02_标准规范/METRICS.md`, `doc/02_标准规范/LOGS.md`,
+  - `doc/02_标准规范/STATUS.md`, `doc/02_标准规范/语义约定标准.md`
   - 深度对标：`doc/02_国际标准深度对标/2025年最新标准分析/README.md`
   - 项目级大纲：`doc/OTLP_2025年9月最新规范全面对标分析.md`
 
