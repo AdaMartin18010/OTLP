@@ -1,0 +1,99 @@
+name: ✨ Feature Request
+description: Suggest a new feature or enhancement
+title: "[Feature]: "
+labels: ["enhancement", "需要分类"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢您提出新功能建议！请填写以下信息。
+        Thank you for suggesting a new feature! Please fill in the following information.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: 问题描述 / Problem Description
+      description: 描述您遇到的问题或需求 / Describe the problem or need you have
+      placeholder: 我总是需要... / I always need to...
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: 建议解决方案 / Proposed Solution
+      description: 描述您希望的功能实现方式 / Describe how you'd like the feature to work
+      placeholder: 我希望能够... / I would like to be able to...
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: 替代方案 / Alternatives Considered
+      description: 描述您考虑过的其他解决方案 / Describe alternative solutions you've considered
+      placeholder: 我也考虑过... / I've also considered...
+    validations:
+      required: false
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: 功能类别 / Feature Category
+      description: 选择功能类别 / Select the feature category
+      options:
+        - 新文档 / New Documentation
+        - 新代码示例 / New Code Example
+        - 新语言支持 / New Language Support
+        - 性能改进 / Performance Improvement
+        - 工具/脚本 / Tools/Scripts
+        - CI/CD增强 / CI/CD Enhancement
+        - 其他 / Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: 优先级 / Priority
+      description: 您认为这个功能的优先级 / Your perceived priority of this feature
+      options:
+        - P0 - 紧急 / Urgent
+        - P1 - 高 / High
+        - P2 - 中 / Medium
+        - P3 - 低 / Low
+    validations:
+      required: false
+
+  - type: textarea
+    id: benefits
+    attributes:
+      label: 预期收益 / Expected Benefits
+      description: 描述这个功能会带来什么好处 / Describe the benefits this feature would bring
+      placeholder: |
+        - 提高性能 / Improve performance
+        - 简化使用 / Simplify usage
+        - 增加覆盖范围 / Increase coverage
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: 其他信息 / Additional Context
+      description: 添加任何其他有助于理解需求的信息 / Add any other context about the feature request
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: 检查清单 / Checklist
+      options:
+        - label: 我已经搜索过现有的issues / I have searched existing issues
+          required: true
+        - label: 这个功能与项目目标一致 / This feature aligns with project goals
+          required: true
+        - label: 我愿意贡献实现 / I'm willing to contribute to the implementation
+          required: false
+

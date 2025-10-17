@@ -1,0 +1,12 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 GitHub Discussions
+    url: https://github.com/YOUR_USERNAME/OTLP/discussions
+    about: 用于一般性讨论、问答和社区交流 / For general discussions, Q&A, and community interaction
+  - name: 📖 项目文档
+    url: https://github.com/YOUR_USERNAME/OTLP/blob/main/README.md
+    about: 查看项目文档和学习资源 / View project documentation and learning resources
+  - name: 🌐 OpenTelemetry官方文档
+    url: https://opentelemetry.io/docs/
+    about: OpenTelemetry官方文档 / Official OpenTelemetry documentation
+

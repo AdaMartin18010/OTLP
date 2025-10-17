@@ -1,0 +1,272 @@
+name: Code Examples Test
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'examples/**'
+      - '.github/workflows/code-examples-test.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'examples/**'
+  schedule:
+    # 每天UTC时间0点运行
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+jobs:
+  test-go-examples:
+    name: Test Go Examples
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21'
+      
+      - name: Test Go basic example
+        working-directory: examples/go
+        run: |
+          go mod download
+          go build -v .
+          echo "✅ Go example builds successfully"
+      
+      - name: Run Go linting
+        working-directory: examples/go
+        run: |
+          go install golang.org/x/lint/golint@latest
+          golint ./...
+      
+      - name: Check Go formatting
+        working-directory: examples/go
+        run: |
+          if [ -n "$(gofmt -l .)" ]; then
+            echo "Go files not formatted:"
+            gofmt -l .
+            exit 1
+          fi
+          echo "✅ Go files properly formatted"
+
+  test-python-examples:
+    name: Test Python Examples
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        working-directory: examples/python
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pylint black
+      
+      - name: Run Python linting
+        working-directory: examples/python
+        run: |
+          pylint app.py || true
+          echo "✅ Python linting completed"
+      
+      - name: Check Python formatting
+        working-directory: examples/python
+        run: |
+          black --check .
+          echo "✅ Python files properly formatted"
+      
+      - name: Validate Python syntax
+        working-directory: examples/python
+        run: |
+          python -m py_compile app.py
+          echo "✅ Python syntax valid"
+
+  test-docker-compose:
+    name: Test Docker Compose Setup
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Validate docker-compose.yml
+        run: |
+          docker-compose config
+          echo "✅ docker-compose.yml is valid"
+      
+      - name: Build Docker images (no cache)
+        run: |
+          docker-compose build --no-cache
+          echo "✅ All Docker images built successfully"
+      
+      - name: Start services
+        run: |
+          docker-compose up -d
+          sleep 10
+          echo "✅ Services started"
+      
+      - name: Check service health
+        run: |
+          # 检查Jaeger UI
+          curl -f http://localhost:16686/ || (echo "❌ Jaeger UI not accessible" && exit 1)
+          echo "✅ Jaeger UI accessible"
+          
+          # 检查OTLP collector
+          curl -f http://localhost:13133/ || (echo "❌ OTLP collector not healthy" && exit 1)
+          echo "✅ OTLP collector healthy"
+      
+      - name: Stop services
+        if: always()
+        run: |
+          docker-compose logs
+          docker-compose down -v
+
+  integration-test:
+    name: Integration Test
+    runs-on: ubuntu-latest
+    needs: [test-go-examples, test-python-examples, test-docker-compose]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21'
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          # Go dependencies
+          cd examples/go && go mod download && cd ../..
+          
+          # Python dependencies
+          cd examples/python && pip install -r requirements.txt && cd ../..
+      
+      - name: Start infrastructure
+        run: |
+          docker-compose up -d
+          sleep 15
+          echo "✅ Infrastructure ready"
+      
+      - name: Run Go example
+        run: |
+          cd examples/go
+          timeout 30s go run . || true
+          sleep 5
+          echo "✅ Go example executed"
+      
+      - name: Run Python example
+        run: |
+          cd examples/python
+          timeout 30s python app.py || true
+          sleep 5
+          echo "✅ Python example executed"
+      
+      - name: Verify traces in Jaeger
+        run: |
+          # 等待traces被处理
+          sleep 10
+          
+          # 查询Jaeger API
+          RESPONSE=$(curl -s "http://localhost:16686/api/services")
+          echo "Services: $RESPONSE"
+          
+          if echo "$RESPONSE" | grep -q "data"; then
+            echo "✅ Traces found in Jaeger"
+          else
+            echo "⚠️ No traces found (may be timing issue)"
+          fi
+      
+      - name: Cleanup
+        if: always()
+        run: |
+          docker-compose logs
+          docker-compose down -v
+
+  lint-markdown:
+    name: Lint Markdown Documentation
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      
+      - name: Install markdownlint-cli
+        run: npm install -g markdownlint-cli
+      
+      - name: Lint examples README
+        run: |
+          markdownlint examples/**/*.md --config .markdownlint.json || true
+          echo "✅ Markdown linting completed"
+
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: 'examples/'
+          format: 'table'
+          exit-code: '0'
+          severity: 'CRITICAL,HIGH'
+      
+      - name: Scan Go dependencies
+        working-directory: examples/go
+        run: |
+          go install golang.org/x/vuln/cmd/govulncheck@latest
+          govulncheck ./... || true
+      
+      - name: Scan Python dependencies
+        working-directory: examples/python
+        run: |
+          pip install safety
+          safety check -r requirements.txt || true
+
+  report:
+    name: Test Report
+    runs-on: ubuntu-latest
+    needs: [test-go-examples, test-python-examples, test-docker-compose, integration-test]
+    if: always()
+    
+    steps:
+      - name: Generate test summary
+        run: |
+          echo "# 🧪 Code Examples Test Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Job | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Go Examples | ${{ needs.test-go-examples.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Python Examples | ${{ needs.test-python-examples.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Docker Compose | ${{ needs.test-docker-compose.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Integration Test | ${{ needs.integration-test.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Test Date**: $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
+

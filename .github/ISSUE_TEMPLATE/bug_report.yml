@@ -1,0 +1,119 @@
+name: 🐛 Bug Report
+description: Report a bug or issue
+title: "[Bug]: "
+labels: ["bug", "需要分类"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢您报告bug！请填写以下信息以帮助我们更好地理解和解决问题。
+        Thank you for reporting a bug! Please fill in the following information to help us understand and resolve the issue.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: 问题描述 / Bug Description
+      description: 清晰简洁地描述问题 / A clear and concise description of the bug
+      placeholder: 告诉我们发生了什么... / Tell us what happened...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: 期望行为 / Expected Behavior
+      description: 描述您期望发生什么 / Describe what you expected to happen
+      placeholder: 我期望... / I expected...
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: 实际行为 / Actual Behavior
+      description: 描述实际发生了什么 / Describe what actually happened
+      placeholder: 实际上... / Actually...
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: 复现步骤 / Steps to Reproduce
+      description: 提供详细的复现步骤 / Provide detailed steps to reproduce
+      placeholder: |
+        1. 前往... / Go to...
+        2. 点击... / Click on...
+        3. 滚动到... / Scroll to...
+        4. 看到错误 / See error
+    validations:
+      required: true
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: 影响组件 / Affected Component
+      description: 选择受影响的组件 / Select the affected component
+      options:
+        - 文档 / Documentation
+        - Go示例 / Go Example
+        - Python示例 / Python Example
+        - Java示例 / Java Example
+        - Node.js示例 / Node.js Example
+        - Docker配置 / Docker Configuration
+        - CI/CD
+        - 其他 / Other
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: 版本 / Version
+      description: 您使用的版本 / The version you are using
+      placeholder: v1.0.0
+    validations:
+      required: false
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: 环境信息 / Environment
+      description: 提供您的环境信息 / Provide your environment details
+      placeholder: |
+        - OS: [e.g. Ubuntu 22.04, macOS 14, Windows 11]
+        - Programming Language Version: [e.g. Go 1.21, Python 3.11]
+        - Docker Version: [e.g. 24.0.0]
+        - OpenTelemetry SDK Version: [e.g. 1.32.0]
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: 日志/错误信息 / Logs/Error Messages
+      description: 粘贴相关的日志或错误信息 / Paste relevant logs or error messages
+      render: shell
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: 其他信息 / Additional Context
+      description: 添加任何其他有助于理解问题的信息 / Add any other context about the problem
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: 检查清单 / Checklist
+      options:
+        - label: 我已经搜索过现有的issues / I have searched existing issues
+          required: true
+        - label: 我已经阅读过相关文档 / I have read the relevant documentation
+          required: true
+        - label: 这是一个可复现的bug / This is a reproducible bug
+          required: false
+

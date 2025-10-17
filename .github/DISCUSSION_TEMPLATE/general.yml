@@ -1,0 +1,24 @@
+body:
+  - type: markdown
+    attributes:
+      value: |
+        # 欢迎参与讨论！/ Welcome to Discussions!
+        
+        这里是我们社区交流和协作的地方。请选择合适的类别创建讨论：
+        This is the place for our community to communicate and collaborate. Please choose the appropriate category to start a discussion:
+        
+        - **💡 Ideas**: 分享想法和建议 / Share ideas and suggestions
+        - **🙏 Q&A**: 提问和回答问题 / Ask and answer questions
+        - **📢 Announcements**: 项目公告和更新 / Project announcements and updates
+        - **🎉 Show and Tell**: 展示您的项目和使用案例 / Showcase your projects and use cases
+        - **💬 General**: 一般性讨论 / General discussions
+        
+        ## 社区准则 / Community Guidelines
+        
+        - 保持尊重和友好 / Be respectful and friendly
+        - 搜索现有讨论避免重复 / Search existing discussions to avoid duplicates
+        - 提供清晰的上下文 / Provide clear context
+        - 使用适当的类别和标签 / Use appropriate categories and labels
+        
+        感谢您的参与！/ Thank you for participating!
+

@@ -1,0 +1,75 @@
+name: 📚 Documentation Issue
+description: Report issues with documentation
+title: "[Doc]: "
+labels: ["documentation", "需要分类"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢您帮助改进文档！请填写以下信息。
+        Thank you for helping improve documentation! Please fill in the following information.
+
+  - type: dropdown
+    id: type
+    attributes:
+      label: 问题类型 / Issue Type
+      description: 选择文档问题类型 / Select the type of documentation issue
+      options:
+        - 错误/不准确 / Error/Inaccuracy
+        - 缺失信息 / Missing Information
+        - 不清晰/难理解 / Unclear/Confusing
+        - 过时信息 / Outdated Information
+        - 排版/格式问题 / Formatting Issue
+        - 链接失效 / Broken Link
+        - 翻译问题 / Translation Issue
+        - 其他 / Other
+    validations:
+      required: true
+
+  - type: input
+    id: location
+    attributes:
+      label: 文档位置 / Document Location
+      description: 文档的路径或URL / Path or URL of the document
+      placeholder: doc/01_理论基础/数学基础.md
+    validations:
+      required: true
+
+  - type: textarea
+    id: issue
+    attributes:
+      label: 问题描述 / Issue Description
+      description: 清晰描述文档中的问题 / Clearly describe the issue in the documentation
+      placeholder: 第3节中提到... 但实际上... / Section 3 mentions... but actually...
+    validations:
+      required: true
+
+  - type: textarea
+    id: correction
+    attributes:
+      label: 建议修正 / Suggested Correction
+      description: 如果知道正确内容，请提供建议 / If you know the correct content, please provide suggestion
+      placeholder: 应该是... / It should be...
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: 其他信息 / Additional Context
+      description: 添加任何其他有助于理解问题的信息 / Add any other context about the issue
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: 检查清单 / Checklist
+      options:
+        - label: 我已经搜索过现有的issues / I have searched existing issues
+          required: true
+        - label: 我已经确认这是文档问题而非代码问题 / I've confirmed this is a documentation issue, not a code issue
+          required: true
+        - label: 我愿意提交PR修复 / I'm willing to submit a PR to fix this
+          required: false
+

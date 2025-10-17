@@ -1,0 +1,47 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: otlp-spring-boot-demo
+
+# OpenTelemetry配置
+otel:
+  service:
+    name: ${spring.application.name}
+    version: 1.0.0
+  exporter:
+    otlp:
+      endpoint: http://localhost:4317
+      # 对于HTTP协议，使用: http://localhost:4318
+  traces:
+    sampler: always_on
+  metrics:
+    export:
+      interval: 10s
+  logs:
+    export:
+      interval: 1s
+
+# Micrometer配置 (用于Metrics)
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  metrics:
+    export:
+      otlp:
+        enabled: true
+        url: http://localhost:4318/v1/metrics
+        step: 10s
+
+# 日志配置
+logging:
+  level:
+    root: INFO
+    io.opentelemetry: INFO
+    io.opentelemetry.example: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] [%X{trace_id}/%X{span_id}] %-5level %logger{36} - %msg%n"
+

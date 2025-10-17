@@ -1,0 +1,72 @@
+name: ❓ Question
+description: Ask a question about the project
+title: "[Question]: "
+labels: ["question"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢您的提问！请填写以下信息。
+        Thank you for your question! Please fill in the following information.
+        
+        💡 **提示**: 对于快速问题，也可以使用 [GitHub Discussions](../../discussions)
+        💡 **Tip**: For quick questions, you can also use [GitHub Discussions](../../discussions)
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: 问题类别 / Question Category
+      description: 选择问题类别 / Select the question category
+      options:
+        - OpenTelemetry基础 / OpenTelemetry Basics
+        - OTLP协议 / OTLP Protocol
+        - 代码示例使用 / Code Example Usage
+        - 配置和部署 / Configuration & Deployment
+        - 最佳实践 / Best Practices
+        - 故障排查 / Troubleshooting
+        - 理论和研究 / Theory & Research
+        - 其他 / Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: question
+    attributes:
+      label: 您的问题 / Your Question
+      description: 清晰地描述您的问题 / Clearly describe your question
+      placeholder: 我想知道... / I would like to know...
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: 背景信息 / Context
+      description: 提供相关的背景信息 / Provide relevant context
+      placeholder: |
+        我正在尝试... / I'm trying to...
+        我已经查看了... / I've already looked at...
+    validations:
+      required: false
+
+  - type: textarea
+    id: attempted
+    attributes:
+      label: 已尝试的方法 / What I've Tried
+      description: 描述您已经尝试过的方法 / Describe what you've already tried
+      placeholder: 我试过... / I've tried...
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: 检查清单 / Checklist
+      options:
+        - label: 我已经搜索过现有的issues和discussions / I have searched existing issues and discussions
+          required: true
+        - label: 我已经阅读过相关文档 / I have read the relevant documentation
+          required: true
+        - label: 这个问题不是bug报告 / This is not a bug report
+          required: true
+
