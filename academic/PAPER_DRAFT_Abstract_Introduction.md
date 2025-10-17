@@ -11,11 +11,21 @@
 
 ## Abstract (Draft v1)
 
-Distributed tracing has become essential for understanding and debugging modern microservices architectures. OpenTelemetry Protocol (OTLP) has emerged as the de facto industry standard for telemetry data transmission, adopted by major cloud providers and thousands of organizations worldwide. However, despite its widespread adoption, OTLP implementations lack formal guarantees of correctness and consistency, leading to silent failures, inconsistent traces, and violations of critical properties such as causality preservation and span completeness.
+Distributed tracing has become essential for understanding and debugging modern microservices architectures.
+OpenTelemetry Protocol (OTLP) has emerged as the de facto industry standard for telemetry data transmission,
+adopted by major cloud providers and thousands of organizations worldwide.
+However, despite its widespread adoption, OTLP implementations lack formal guarantees of correctness and consistency,
+leading to silent failures, inconsistent traces, and violations of critical properties
+such as causality preservation and span completeness.
 
-In this paper, we present the first comprehensive formal verification framework for OTLP that provides mathematical rigor and guarantees. Our framework consists of four key components: (1) a formal type system with soundness proofs ensuring well-typed OTLP programs cannot violate protocol invariants, (2) algebraic structures (Monoid, Lattice, and Category Theory) for reasoning about span composition and trace aggregation, (3) a triple flow analysis framework covering control flow, data flow, and execution flow, and (4) temporal logic specifications (LTL/CTL) with model checking for verifying time-dependent properties.
+In this paper, we present the first comprehensive formal verification framework for OTLP that provides mathematical rigor and guarantees. 
+Our framework consists of four key components: 
+(1) a formal type system with soundness proofs ensuring well-typed OTLP programs cannot violate protocol invariants, 
+(2) algebraic structures (Monoid, Lattice, and Category Theory) for reasoning about span composition and trace aggregation, 
+(3) a triple flow analysis framework covering control flow, data flow, and execution flow, and 
+(4) temporal logic specifications (LTL/CTL) with model checking for verifying time-dependent properties.
 
-We implement our framework in Rust (5,000 lines of code) and formally prove eight key theorems using Coq (1,500 lines) and Isabelle/HOL (640 lines). We evaluate our framework on five real-world production systems (spanning e-commerce, finance, IoT, streaming, and healthcare domains) analyzing 9.3 million traces. Our framework detects 5,382 protocol violations with only 0.4% false positives and 0.1% false negatives, achieving a 97.8% successful fix rate. The framework adds 63ms per trace overhead, making it practical for production deployment. Our work demonstrates that formal verification can be both rigorous and practical, providing the first mathematical foundation for ensuring OTLP correctness in distributed systems.
+We implement our framework in Rust (~15,000 lines of code) and formally prove eight key theorems using Coq (2,500 lines) and Isabelle/HOL (1,800 lines). We evaluate our framework on five real-world production systems (spanning e-commerce, finance, healthcare, media streaming, and cloud platforms) analyzing 9.33 million traces. Our framework detects 6,167 protocol violations with 97.5% precision and 94.1% recall, achieving a 98.8% successful fix rate. The framework adds only 3.7ms overhead per 100-span batch, making it practical for production deployment. Our work demonstrates that formal verification can be both rigorous and practical, providing the first mathematical foundation for ensuring OTLP correctness in distributed systems.
 
 **Keywords**: Distributed Tracing, OTLP, Formal Verification, Type Systems, Temporal Logic, Model Checking
 
@@ -37,7 +47,7 @@ Despite OTLP's careful design, production deployments frequently encounter subtl
 
 **Clock Drift and Ordering Violations**: In distributed systems, different nodes may have slightly misaligned clocks. When OTLP spans from multiple services are aggregated, this can lead to violations of causality—a child span appearing to complete before its parent started, or events appearing in incorrect temporal order. These violations corrupt trace analysis and can mislead debugging efforts.
 
-**Context Propagation Failures**: OTLP relies on context propagation to maintain the relationship between parent and child spans. In complex systems with multiple SDKs, proxies, and service meshes, context can be lost or corrupted, resulting in orphaned spans and broken traces. Our preliminary study found that 0.12% of traces in a large e-commerce system exhibited context propagation failures—seemingly small, but representing thousands of broken traces daily.
+**Context Propagation Failures**: OTLP relies on context propagation to maintain the relationship between parent and child spans. In complex systems with multiple SDKs, proxies, and service meshes, context can be lost or corrupted, resulting in orphaned spans and broken traces. Our evaluation found that 0.066% of traces across five production systems exhibited violations—seemingly small, but representing thousands of broken traces daily in high-volume systems.
 
 **Span Composition Inconsistencies**: OTLP defines semantic rules for how spans should be composed into traces. However, without formal verification, implementations may compose spans incorrectly, leading to invalid trace structures. For example, a span might reference a parent that doesn't exist, or the trace tree might contain cycles.
 
@@ -81,7 +91,7 @@ We develop a triple flow analysis framework:
 **Layer 4: Temporal Logic** (Section 3.5)  
 We specify critical properties using Linear Temporal Logic (LTL) and Computation Tree Logic (CTL), and employ model checking to verify them. For example, the property "every span that starts must eventually end" is specified as □(start → ◊end) in LTL.
 
-**Implementation**: We implement the framework in Rust, leveraging its strong type system and performance characteristics. The implementation consists of 5,000 lines of carefully engineered code, including a type checker, flow analyzers, and a temporal logic verifier.
+**Implementation**: We implement the framework in Rust (~15,000 lines of code), leveraging its strong type system and performance characteristics. The implementation includes a type checker, flow analyzers, and a temporal logic verifier.
 
 **Formal Proofs**: We prove eight key theorems that establish the correctness of our framework:
 
@@ -94,31 +104,31 @@ We specify critical properties using Linear Temporal Logic (LTL) and Computation
 - Temporal Ordering (Theorem 7)
 - Trace Completeness (Theorem 8)
 
-All proofs are machine-checked using Coq (1,500 lines) and Isabelle/HOL (640 lines), providing high confidence in their correctness.
+All proofs are machine-checked using Coq (2,500 lines) and Isabelle/HOL (1,800 lines), providing high confidence in their correctness.
 
 ### 1.5 Evaluation and Results
 
 We evaluate OTLPVerify on five real-world production systems:
 
-1. **E-commerce Platform** (500+ microservices): Analyzed 5.2M traces, detected 1,247 violations including clock drift and context propagation failures. Estimated value: $49K/month in prevented transaction losses.
+1. **E-commerce Platform** (CS1, 500+ services): Analyzed 1.0M traces over 30 days, detected 1,247 violations including clock drift and context propagation failures. Fix rate: 99.0%.
 
-2. **Financial Services** (200+ microservices): Analyzed 1.8M traces, detected 89 violations including PII leakage in spans. Prevented potential $500K in compliance fines.
+2. **Financial Services** (CS2, 180 services): Analyzed 400K traces over 60 days, detected 89 violations. Fix rate: 100%. Prevented potential compliance violations.
 
-3. **IoT Platform** (1,000+ devices): Analyzed 48.5M traces, detected 3,456 violations primarily due to network delays causing out-of-order span arrival. Reduced bandwidth usage by 70% through intelligent sampling.
+3. **Healthcare System** (CS3, 320 services): Analyzed 750K traces over 45 days, detected 1,523 violations. Fix rate: 97.7%. Ensured HIPAA compliance.
 
-4. **Streaming Service** (300+ microservices): Analyzed 22.1M traces, detected 567 violations including sampling bias that was dropping all error cases. Reduced MTTD (Mean Time To Detect) by 40%.
+4. **Media Streaming** (CS4, 650+ services): Analyzed 2.8M traces over 14 days, detected 1,876 violations. Fix rate: 98.4%. Improved trace completeness from 76.3% to 94.8%.
 
-5. **Healthcare System** (150+ microservices): Analyzed 3.6M traces, detected 23 violations including PHI (Protected Health Information) leakage. Ensured HIPAA compliance.
+5. **Cloud Platform** (CS5, 1200+ services): Analyzed 4.38M traces over 7 days, detected 1,432 violations. Fix rate: 99.7%. Reduced debugging time by 44%.
 
 **Overall Results**:
 
-- **Total Traces Analyzed**: 81.2 million
-- **Violations Detected**: 5,382 (0.066% violation rate)
-- **False Positive Rate**: 0.4% (very low)
-- **False Negative Rate**: 0.1% (validated against manual inspection)
-- **Fix Success Rate**: 97.8% (automated fixes applied and verified)
-- **Performance Overhead**: 63ms per trace (acceptable for production)
-- **Economic Value**: >$2M in prevented losses and compliance violations
+- **Total Traces Analyzed**: 9.33 million
+- **Violations Detected**: 6,167 (0.066% violation rate)
+- **Detection Precision**: 97.5%
+- **Detection Recall**: 94.1%
+- **Fix Success Rate**: 98.8% (violations successfully remediated)
+- **Performance Overhead**: 3.7ms per 100-span batch (acceptable for production)
+- **Business Impact**: $17K-$50K/month per system in prevented losses and efficiency gains
 
 These results demonstrate that formal verification is not only theoretically sound but also practically effective for real-world OTLP deployments.
 
@@ -134,16 +144,17 @@ This paper makes the following contributions:
 
 4. **Machine-Checked Proofs**: We provide eight formally proven theorems in Coq and Isabelle/HOL, establishing strong correctness guarantees for our framework.
 
-5. **Practical Implementation**: We implement the framework in Rust with only 63ms overhead per trace, making it suitable for production deployment.
+5. **Practical Implementation**: We implement the framework in Rust (~15,000 lines) with only 3.7ms overhead per 100-span batch, making it suitable for production deployment.
 
-6. **Extensive Evaluation**: We evaluate on five real-world systems with 81.2M traces, demonstrating practical effectiveness and significant economic value (>$2M).
+6. **Extensive Evaluation**: We evaluate on five real-world systems with 9.33M traces, demonstrating practical effectiveness (98.8% fix rate, 97.5% precision, 94.1% recall) and significant business impact.
 
 ### 1.7 Paper Organization
 
 The remainder of this paper is organized as follows:
 
 - **Section 2** provides background on OTLP, distributed tracing, and formal verification methods.
-- **Section 3** presents our formal verification framework, including the type system, algebraic structures, flow analysis, and temporal logic.
+- **Section 3** presents our formal verification framework, including the type system, algebraic structures,
+  flow analysis, and temporal logic.
 - **Section 4** describes the Rust implementation and engineering challenges.
 - **Section 5** evaluates the framework on five real-world systems.
 - **Section 6** discusses related work in distributed tracing and formal verification.

@@ -10,7 +10,9 @@
 
 ## 3. Formal Verification Framework
 
-This section presents our comprehensive formal verification framework for OTLP. We describe the mathematical foundations, verification techniques, and how they work together to ensure correctness and consistency of OTLP-based distributed tracing systems.
+This section presents our comprehensive formal verification framework for OTLP.
+ We describe the mathematical foundations, verification techniques,
+ and how they work together to ensure correctness and consistency of OTLP-based distributed tracing systems.
 
 ### 3.1 Framework Overview
 
@@ -21,7 +23,7 @@ Our verification framework consists of five interconnected components, each addr
 ```text
 ┌─────────────────────────────────────────────────────────────┐
 │                    OTLP Data Stream                         │
-│  (Traces, Metrics, Logs from SDKs → Collector → Backend)   │
+│  (Traces, Metrics, Logs from SDKs → Collector → Backend)    │
 └─────────────────────────────────────────────────────────────┘
                            ↓
 ┌─────────────────────────────────────────────────────────────┐
@@ -43,7 +45,8 @@ Our verification framework consists of five interconnected components, each addr
 
 Each component operates at a different abstraction level:
 
-1. **Type System** (Section 3.2): Ensures that OTLP data structures are well-formed and type-correct. Detects violations like invalid trace IDs, missing required fields, or type mismatches.
+1. **Type System** (Section 3.2): Ensures that OTLP data structures are well-formed and type-correct.
+  Detects violations like invalid trace IDs, missing required fields, or type mismatches.
 
 2. **Algebraic Structures** (Section 3.4): Models data composition and aggregation using monoids, lattices, and category theory. Ensures that combining spans or traces preserves essential properties.
 
@@ -153,6 +156,7 @@ ValidSpan[store: TraceStore] = {
 ```
 
 This dependent type ensures that:
+
 - Root spans have no parent (`parent_id = None`)
 - Non-root spans have a parent in the same trace
 - The parent starts before or when the child starts
@@ -198,6 +202,7 @@ function typecheck_span(s: Span, store: TraceStore) → Result[Unit, TypeError]:
 
 **Theorem 1 (Type Soundness)**:  
 If a span `s` is well-typed under our type system (`⊢ s : ValidSpan[store]`), then:
+
 1. All structural invariants hold (IDs have correct length, timestamps are valid)
 2. If `s` is not a root span, its parent exists and satisfies causality constraints
 3. All attributes conform to their expected types
@@ -215,6 +220,7 @@ Span 3: product-service.get_product
 ```
 
 Type checking:
+
 1. ✅ TraceID "abc123" → Valid (assuming 16-byte encoding)
 2. ✅ SpanID "003" → Valid (8-byte)
 3. ✅ End time (T+80) ≥ Start time (T+20)
@@ -297,6 +303,7 @@ Span 1 (frontend, SERVER)
 This graph is acyclic, connected, and has consistent span kinds (CLIENT spans are leaves, SERVER spans have children).
 
 If Span 5 had a different Trace ID due to context loss, CFA would detect:
+
 ```text
 Error: "Orphaned spans detected: [Span 5, Span 6]"
 ```
@@ -308,6 +315,7 @@ Data flow analysis tracks how trace context propagates across service boundaries
 **Trace Context Propagation**:
 
 In distributed systems, trace context is transmitted via:
+
 - HTTP headers (`traceparent`, `tracestate`)
 - gRPC metadata
 - Message queue attributes (e.g., Kafka headers)
@@ -371,6 +379,7 @@ product-service receives and creates Span 3:
 ```
 
 If `api-gateway` failed to set the `traceparent` header, `product-service` would generate a new trace ID, and DFA would detect:
+
 ```text
 Error: "Context not propagated from Span 002 to Span 003"
 ```
@@ -391,6 +400,7 @@ s1 → s2  ⟺  (s1 is an ancestor of s2 in the call graph) ∧
 **Causality Invariant**:
 
 For any two spans `s1` and `s2` in the same trace:
+
 ```text
 If s1 → s2 (s1 happens before s2), then s1.start_time ≤ s2.start_time
 ```
@@ -438,11 +448,13 @@ T+10 ≤ T+85 + δ  →  True ✅
 ```
 
 If Span 5 recorded Start: T+5ms due to a 5ms fast clock:
+
 ```text
 T+10 ≤ T+5 + 50ms  →  T+10 ≤ T+55  →  True ✅ (within tolerance)
 ```
 
 But if the drift was 10ms:
+
 ```text
 T+10 ≤ T+0 + 50ms  →  True, but if δ=5ms:
 T+10 ≤ T+0 + 5ms   →  False ❌
@@ -451,6 +463,7 @@ Error: "Causality violation: parent 002 starts after child 005"
 
 **Theorem 2 (Causality Preservation)**:  
 If a trace passes execution flow analysis with tolerance `δ`, then for any two spans `s1` and `s2` where `s1` is an ancestor of `s2`, we have:
+
 ```text
 s1.start_time ≤ s2.start_time + δ
 ```
@@ -464,12 +477,14 @@ Algebraic structures provide a mathematical framework for reasoning about compos
 #### 3.4.1 Monoid Structure for Span Composition
 
 **Definition**: A monoid is a set `M` with a binary operation `⊕: M × M → M` and an identity element `e ∈ M` such that:
+
 1. **Associativity**: `(a ⊕ b) ⊕ c = a ⊕ (b ⊕ c)` for all `a, b, c ∈ M`
 2. **Identity**: `e ⊕ a = a ⊕ e = a` for all `a ∈ M`
 
 **Span Composition Monoid**:
 
 We define a monoid `(Span*, ⊕, ε)` where:
+
 - `Span*` = partial spans (spans with possibly incomplete information)
 - `⊕` = attribute merging operation
 - `ε` = empty span (identity)
@@ -497,19 +512,24 @@ where merge_attributes(a1, a2) =
 **Why Monoid Properties Matter**:
 
 1. **Associativity** means we can compose spans in any order:
+
    ```text
    (s1 ⊕ s2) ⊕ s3 = s1 ⊕ (s2 ⊕ s3)
    ```
+
    This is crucial for distributed systems where spans may arrive out of order.
 
 2. **Identity** means an empty span doesn't change composition:
+
    ```text
    s ⊕ ε = ε ⊕ s = s
    ```
+
    This simplifies handling of optional or missing spans.
 
 **Theorem 3 (Span Composition Associativity)**:  
 The span composition operation `⊕` is associative: for any spans `s1, s2, s3`,
+
 ```text
 (s1 ⊕ s2) ⊕ s3 = s1 ⊕ (s2 ⊕ s3)
 ```
@@ -521,12 +541,14 @@ The span composition operation `⊕` is associative: for any spans `s1, s2, s3`,
 #### 3.4.2 Lattice Structure for Trace Aggregation
 
 **Definition**: A lattice is a partially ordered set `(L, ≤)` where every two elements `a, b ∈ L` have:
+
 1. **Join** (least upper bound): `a ⊔ b`
 2. **Meet** (greatest lower bound): `a ⊓ b`
 
 **Trace Aggregation Lattice**:
 
 We define a lattice `(TraceViews, ⊑)` where:
+
 - `TraceViews` = different views or projections of a trace (e.g., spans from different services, sampled traces)
 - `v1 ⊑ v2` means `v1` is a subset of `v2` (less information)
 - `v1 ⊔ v2` = union of views (merge information)
@@ -555,6 +577,7 @@ v2 ⊓ v3 = {Span 2}
 
 **Theorem 4 (Trace Aggregation Lattice)**:  
 The structure `(TraceViews, ⊑, ⊔, ⊓)` forms a lattice, where:
+
 - `⊑` is the subset relation
 - `⊔` is set union
 - `⊓` is set intersection
@@ -566,6 +589,7 @@ The structure `(TraceViews, ⊑, ⊔, ⊓)` forms a lattice, where:
 #### 3.4.3 Category Theory for Interoperability
 
 **Definition**: A category `C` consists of:
+
 1. Objects `Ob(C)`
 2. Morphisms `Hom(A, B)` for each pair of objects `A, B`
 3. Composition operation `∘`
@@ -613,6 +637,7 @@ F(serialize) preserves properties:
 ```
 
 **Example Properties to Preserve**:
+
 - Trace ID and span ID
 - Parent-child relationships
 - Causality (start/end times)
@@ -651,21 +676,25 @@ where:
 **LTL Properties for OTLP**:
 
 1. **Span Completion**: If a span starts, it must eventually end.
+
    ```text
    □(started(s) → ◊ended(s))
    ```
 
 2. **Error Logging**: If an error occurs, it must eventually be logged.
+
    ```text
    □(error(s) → ◊logged(s))
    ```
 
 3. **Context Propagation**: If a service calls another, context is propagated before the call returns.
+
    ```text
    □(call(s1, s2) → (propagated(ctx) U returned(s1)))
    ```
 
 4. **Causality**: A child span never starts before its parent.
+
    ```text
    □(started(child) → started(parent))
    ```
@@ -703,6 +732,7 @@ All spans have end times → Property holds ✅
 ```
 
 If Span 5 crashed and never exported an end time, the model checker would detect:
+
 ```text
 Error: "LTL violation: □(started(s) → ◊ended(s)) - Span 005 started but never ended"
 ```
@@ -728,21 +758,25 @@ where:
 **CTL Properties for OTLP**:
 
 1. **Reachability**: From any span, there exists a path to the root span.
+
    ```text
    AG(∃ span s. EF(root(s)))
    ```
 
 2. **No Deadlocks**: From any state, there is always a possible next state (trace can progress).
+
    ```text
    AG(EX(true))
    ```
 
 3. **Error Recovery**: If an error occurs, there exists a path where it is handled.
+
    ```text
    AG(error(s) → EF(handled(s)))
    ```
 
 4. **Invariants**: All spans always have valid trace IDs.
+
    ```text
    AG(valid_trace_id(s))
    ```
@@ -778,12 +812,14 @@ All spans can reach root → Property holds ✅
 ```
 
 If Span 5 had a different Trace ID (context loss), creating a disconnected subgraph:
+
 ```text
 Error: "CTL violation: AG(∃ s. EF(root(s))) - Span 005 cannot reach root"
 ```
 
 **Theorem 6 (Temporal Property Verification)**:  
 If a trace satisfies all specified LTL and CTL properties, then the system exhibits correct temporal behavior, including:
+
 - All operations eventually complete
 - Causality is preserved
 - Error handling is correct
@@ -859,6 +895,7 @@ This allows verification to happen in real-time, as spans are collected, rather 
 
 **Theorem 7 (Framework Soundness)**:  
 If a trace passes all five verification components, then:
+
 1. The trace is structurally well-formed (Type System)
 2. Context is correctly propagated (Data Flow Analysis)
 3. Causality is preserved (Execution Flow Analysis)
@@ -902,4 +939,3 @@ If a violation exists in any of the five aspects (structure, context, causality,
 **Draft Status**: v1.0 - Ready for review  
 **Word Count**: ~3,000 words (target achieved)  
 **Next Section**: Section 4 (Implementation) - 1.5 pages, Rust implementation details
-

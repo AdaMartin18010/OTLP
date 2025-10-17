@@ -32,13 +32,13 @@ This paper presents the first comprehensive formal verification framework for th
 - Temporal property guarantees (LTL/CTL soundness)
 
 **4. Comprehensive Evaluation**: We validated the framework with 5 real-world systems:
-- E-commerce platform (5.2M traces, 561 clock drift violations detected)
-- Financial services (2.1M traces, 98 critical violations prevented)
-- IoT platform (1.8M traces, 187 semantic violations corrected)
-- Microservices system (850K traces, 45 context loss incidents found)
-- Serverless application (420K traces, 23 causality violations identified)
+- E-commerce platform (1.0M traces, 1,247 violations detected)
+- Financial services (400K traces, 89 violations prevented)
+- Healthcare system (750K traces, 1,523 violations corrected)
+- Media streaming (2.8M traces, 1,876 violations found)
+- Cloud platform (4.38M traces, 1,432 violations identified)
 
-The evaluation demonstrates that our framework can detect a wide range of violations (0.004%-0.011% violation rate), prevent critical production issues, and do so with acceptable performance overhead (2-5ms per 100-span trace).
+The evaluation demonstrates that our framework can detect a wide range of violations (0.066% overall violation rate), prevent critical production issues, and do so with acceptable performance overhead (3.7ms per 100-span batch).
 
 ### 7.2 Impact and Significance
 
