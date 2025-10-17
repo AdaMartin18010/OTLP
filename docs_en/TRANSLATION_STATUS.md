@@ -61,16 +61,19 @@
 ### Primary Objectives
 
 ✅ **Enable International Discovery**
+
 - English README visible on GitHub
 - Quick start guide for non-Chinese speakers
 - Clear navigation to all resources
 
 ✅ **Establish Translation Foundation**
+
 - Glossary for consistent terminology
 - Translation guidelines
 - Index system for tracking progress
 
 ✅ **Provide Practical Examples**
+
 - All code examples have bilingual docs
 - Production-ready with Docker
 - Detailed troubleshooting
@@ -132,13 +135,13 @@
 
 #### P2: Theoretical Framework (Academic Value)
 
-3. **Unified Theoretical Framework** (2,000+ lines)
+1. **Unified Theoretical Framework** (2,000+ lines)
    - Formal verification
    - Academic audience
    - Estimated effort: 25-30 hours
    - Current: Chinese only
 
-4. **Self-Aware Framework** (1,761 lines)
+2. **Self-Aware Framework** (1,761 lines)
    - Intelligent operations
    - Research material
    - Estimated effort: 22-25 hours
@@ -146,25 +149,25 @@
 
 #### P3: Practical Guides (User Value)
 
-5. **Best Practices Guide** (800+ lines)
+1. **Best Practices Guide** (800+ lines)
    - Production deployment
    - Real-world scenarios
    - Estimated effort: 10-12 hours
    - Current: Chinese only
 
-6. **Troubleshooting Guide** (600+ lines)
+2. **Troubleshooting Guide** (600+ lines)
    - Common issues
    - Solutions and workarounds
    - Estimated effort: 8-10 hours
    - Current: Chinese only
 
-7. **Performance Optimization** (700+ lines)
+3. **Performance Optimization** (700+ lines)
    - Tuning strategies
    - Benchmark results
    - Estimated effort: 9-11 hours
    - Current: Chinese only
 
-8. **Security Best Practices** (500+ lines)
+4. **Security Best Practices** (500+ lines)
    - TLS configuration
    - Authentication
    - Estimated effort: 6-8 hours
@@ -172,13 +175,13 @@
 
 #### P4: Reference Materials (Lower Priority)
 
-9. **Semantic Conventions Overview** (400+ lines)
+1. **Semantic Conventions Overview** (400+ lines)
    - Standard reference
    - Links to official docs
    - Estimated effort: 5-7 hours
    - Current: Chinese only
 
-10. **Ecosystem Integration** (600+ lines)
+2. **Ecosystem Integration** (600+ lines)
     - Third-party tools
     - Integration patterns
     - Estimated effort: 8-10 hours
@@ -217,6 +220,7 @@
 ### Recognition
 
 All translators will be:
+
 - ✅ Credited in document header
 - ✅ Added to contributors list
 - ✅ Mentioned in project README
@@ -228,7 +232,7 @@ All translators will be:
 
 ### Standard Process
 
-```
+```text
 Step 1: Select Document
   └─> Create Issue (label: translation)
   
@@ -310,18 +314,21 @@ Step 5: Review & Merge
 ### Success Criteria
 
 **Phase 1** (Current) ✅:
+
 - ✅ English README
 - ✅ Quick start guide
 - ✅ Bilingual code examples
 - ✅ Translation infrastructure
 
 **Phase 2** (1-3 months):
+
 - P1 cutting-edge docs translated
 - 5+ active translators
 - Clear review process established
 - Regular translation activity
 
 **Phase 3** (3-6 months):
+
 - All critical docs translated (P1-P3)
 - 10+ translators
 - Self-sustaining process
@@ -334,18 +341,21 @@ Step 5: Review & Merge
 ### Phase 1 Insights
 
 **What Worked Well**:
+
 - ✅ Prioritizing core navigation documents
 - ✅ Creating glossary early (consistency)
 - ✅ Bilingual code example READMEs
 - ✅ Clear translation guidelines
 
 **Challenges**:
+
 - ⚠️ Large document size (1000+ lines each)
 - ⚠️ Technical terminology complexity
 - ⚠️ Keeping sync with Chinese updates
 - ⚠️ Time investment (20+ hours for Phase 1)
 
 **Recommendations for Phase 2**:
+
 - 📝 Break large docs into sections
 - 📝 Multiple translators per document
 - 📝 Establish review rotation
@@ -404,4 +414,3 @@ Step 5: Review & Merge
 ---
 
 **🌍 Thank you for helping make OpenTelemetry knowledge accessible globally!**
-

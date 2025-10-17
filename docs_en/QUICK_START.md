@@ -75,6 +75,7 @@
 | Git | 2.30+ | Clone repository |
 
 **Choose one programming language**:
+
 - Go 1.21+ OR
 - Python 3.11+ OR
 - Java 17+ OR
@@ -118,6 +119,7 @@ docker-compose ps
 ```
 
 **Expected Output**:
+
 ```
 NAME                COMMAND             STATUS              PORTS
 otel-collector      ...                 Up                  4317/tcp, 4318/tcp
@@ -200,6 +202,7 @@ chained-operations (300ms)                      ← Root span
 ```
 
 **Key Information**:
+
 - **Duration**: How long each operation took
 - **Attributes**: Metadata (HTTP method, database table, etc.)
 - **Events**: Important moments (e.g., "greeting_processed")
@@ -224,17 +227,20 @@ This allows you to correlate logs with traces!
 ### Learning Path
 
 **Beginner Level** (You are here ✓):
+
 - ✅ Ran your first example
 - ✅ Viewed traces in Jaeger
 - ✅ Understood basic concepts
 
 **Intermediate Level**:
+
 1. 📖 Read [OTLP Protocol Foundation](../../标准深度梳理_2025_10/01_协议基础/README.md)
 2. 🔧 Customize SDK configuration
 3. 📊 Add custom metrics
 4. 🐛 Implement error tracking
 
 **Advanced Level**:
+
 1. 📚 Study [Theoretical Framework](../../标准深度梳理_2025_10/02_THEORETICAL_FRAMEWORK/)
 2. ⚡ Learn [Sampling Strategies](../../标准深度梳理_2025_10/05_采样与性能/)
 3. 🚀 Explore [OTLP Arrow](../../标准深度梳理_2025_10/12_前沿技术/04_OTLP_Arrow完整指南.md)
@@ -243,16 +249,19 @@ This allows you to correlate logs with traces!
 ### Recommended Resources
 
 **Official Documentation**:
+
 - [OpenTelemetry Official Docs](https://opentelemetry.io/docs/)
 - [OTLP Specification](https://opentelemetry.io/docs/specs/otlp/)
 - [Semantic Conventions](https://opentelemetry.io/docs/specs/semconv/)
 
 **Project Documentation**:
+
 - [Main README](../../README.md)
 - [Contributing Guide](../../CONTRIBUTING.md)
 - [Code Examples](../../examples/)
 
 **Community**:
+
 - [GitHub Discussions](../../discussions)
 - [GitHub Issues](../../issues)
 - [OpenTelemetry Slack](https://cloud-native.slack.com/archives/C01N3AT62SJ)
@@ -264,17 +273,21 @@ This allows you to correlate logs with traces!
 ### Problem 1: Can't Connect to OTLP Collector
 
 **Symptom**:
+
 ```
 Error: 14 UNAVAILABLE: No connection established
 ```
 
 **Solution**:
+
 1. Check if collector is running:
+
    ```bash
    docker ps | grep otel-collector
    ```
 
 2. Check collector health:
+
    ```bash
    curl http://localhost:13133/
    ```
@@ -284,14 +297,17 @@ Error: 14 UNAVAILABLE: No connection established
 ### Problem 2: No Traces in Jaeger
 
 **Possible Causes**:
+
 1. **Wrong service name**: Check OTLP_SERVICE_NAME
 2. **Sampling disabled**: Verify sampler configuration
 3. **Network issue**: Ensure correct endpoint
 
 **Debug Steps**:
+
 1. Enable debug logging in your application
 2. Check application logs for export errors
 3. Verify collector logs:
+
    ```bash
    docker-compose logs otel-collector
    ```
@@ -299,12 +315,15 @@ Error: 14 UNAVAILABLE: No connection established
 ### Problem 3: Docker Compose Fails
 
 **Symptom**:
+
 ```
 ERROR: yaml: line X: mapping values are not allowed here
 ```
 
 **Solution**:
+
 1. Validate YAML syntax:
+
    ```bash
    docker-compose config
    ```
@@ -333,4 +352,3 @@ You've successfully run your first OpenTelemetry example and viewed distributed 
 
 **Last Updated**: October 17, 2025  
 **Maintainer**: OTLP Project Team
-

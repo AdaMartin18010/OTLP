@@ -291,12 +291,14 @@
 ### Recommended Format
 
 When introducing a new term:
-```
+
+```text
 OpenTelemetry Protocol (OTLP, OpenTelemetry协议)
 ```
 
 Subsequent uses:
-```
+
+```text
 OTLP
 ```
 
@@ -305,6 +307,7 @@ OTLP
 ## Contributing to Glossary
 
 To add or modify terms:
+
 1. Create an issue or PR
 2. Provide English term, Chinese translation, and definition
 3. Include usage examples if helpful
@@ -315,4 +318,3 @@ To add or modify terms:
 **Last Updated**: October 17, 2025  
 **Maintainer**: OTLP Project Team  
 **Version**: 1.0.0
-
