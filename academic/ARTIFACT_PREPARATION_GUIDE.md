@@ -1,587 +1,730 @@
-# ICSE 2026 Artifact Preparation Guide
+# 🎁 ICSE 2026 Artifact准备指南
 
-> **Target Conference**: ICSE 2026  
-> **Artifact Type**: Reusable, Available, Functional, Reproduced  
-> **Preparation Status**: Planning Stage  
-> **Last Updated**: 2025-10-17
-
----
-
-## 📋 Overview
-
-This document outlines the preparation plan for the ICSE 2026 artifact submission accompanying our paper:
-**"A Comprehensive Formal Verification Framework for OTLP:
-Ensuring Correctness and Consistency in Distributed Tracing"**.
-
-### Artifact Goals
-
-1. **Reusable** ⭐⭐⭐: Easy to use for other OTLP implementations
-2. **Available** ⭐⭐⭐: Publicly accessible via GitHub and Docker Hub
-3. **Functional** ⭐⭐⭐: All claims in the paper can be verified
-4. **Reproduced** ⭐⭐⭐: All experiments can be fully reproduced
+> **目标**: 为ICSE 2026论文准备可重现的Artifact包  
+> **状态**: 📝 框架就绪，等待论文完成后执行  
+> **预计时间**: 1周（论文完成后）
 
 ---
 
-## 🎯 Artifact Components
+## 🎯 Artifact目标
 
-### 1. Core Verification Framework
+### ICSE 2026 Artifact评估标准
 
-**Location**: `implementation/rust/otlp-verifier/`
+ICSE要求Artifact满足以下标准：
 
-**Contents**:
+1. **Available** (可获得):
+   - ✅ 公开可访问（如GitHub、Zenodo）
+   - ✅ 永久归档
+   - ✅ 明确的许可证
 
-- Rust implementation of the formal verification framework
-- Type system checker
-- Control flow analyzer
-- Data flow analyzer
-- Temporal logic verifier
+2. **Functional** (功能性):
+   - ✅ 文档完整
+   - ✅ 可以安装和运行
+   - ✅ 能够重现论文中的关键结果
 
-**Size**: ~5,000 lines of Rust code
+3. **Reusable** (可重用):
+   - ✅ 代码结构清晰
+   - ✅ 有良好的文档
+   - ✅ 可以扩展到新的场景
 
-**Build**: Standard Cargo build
-
-```bash
-cd implementation/rust/otlp-verifier
-cargo build --release
-cargo test
-```
-
----
-
-### 2. Formal Proofs
-
-**Location**: `proofs/`
-
-**Contents**:
-
-- Coq proofs (8 theorems, 1,500 lines)
-- Isabelle/HOL proofs (3 theorems, 640 lines)
-- Proof checking scripts
-
-**Verification**:
-
-```bash
-# Coq proofs
-cd proofs/coq
-coqc *.v
-
-# Isabelle proofs
-cd proofs/isabelle
-isabelle build -D .
-```
-
-**Verification Time**: ~130 minutes total
+4. **Reproduced** (可重现):
+   - ✅ 能够重现论文中的所有实验结果
+   - ✅ 结果一致性>90%
 
 ---
 
-### 3. Case Studies
+## 📦 Artifact内容清单
 
-**Location**: `case-studies/`
+### 必须包含
 
-**Contents**:
+1. **源代码** (5,000行Rust)
+   - `src/` - 主要实现
+   - `tests/` - 测试套件
+   - `examples/` - 示例代码
 
-- 5 real-world system configurations
-- Anonymized trace data (9.3M traces)
-- Analysis scripts
-- Violation detection results
+2. **形式化证明** (2,140行)
+   - `proofs/coq/` - Coq证明
+   - `proofs/isabelle/` - Isabelle证明
 
-**Systems**:
+3. **实验数据和脚本**
+   - `data/` - 实验数据（或生成脚本）
+   - `scripts/` - 实验运行脚本
+   - `results/` - 预计算结果
 
-1. **E-commerce** (500+ microservices)
-2. **Financial Services** (200+ microservices)
-3. **IoT Platform** (1,000+ devices)
-4. **Streaming Service** (300+ microservices)
-5. **Healthcare System** (150+ microservices)
+4. **文档**
+   - `README.md` - 完整的使用指南
+   - `INSTALL.md` - 安装说明
+   - `EXPERIMENTS.md` - 实验重现指南
+   - `LICENSE` - 许可证文件
 
-**Reproduce**:
-
-```bash
-cd case-studies
-./run-all-analyses.sh
-```
-
-**Expected Output**:
-
-- Violation reports for each system
-- Performance metrics
-- Economic value analysis
+5. **Docker支持**
+   - `Dockerfile` - Docker镜像
+   - `docker-compose.yml` - 容器编排
+   - `scripts/docker_build.sh` - 构建脚本
 
 ---
 
-### 4. Benchmarks
-
-**Location**: `benchmarks/`
-
-**Contents**:
-
-- Performance benchmarks
-- Scalability tests
-- Comparison with baseline approaches
-
-**Run**:
-
-```bash
-cd benchmarks
-./run-benchmarks.sh
-```
-
-**Metrics**:
-
-- Analysis time per trace
-- Memory usage
-- False positive rate
-- False negative rate
-
----
-
-## 🐳 Docker Containerization
-
-### Container Strategy
-
-We provide **3 Docker containers** for different use cases:
-
-#### 1. All-in-One Container (Recommended)
-
-**Purpose**: Run everything with a single command
-
-**Image**: `otlp-verifier:all-in-one`
-
-**Usage**:
-
-```bash
-docker pull otlp-verifier/icse2026:all-in-one
-docker run -it otlp-verifier/icse2026:all-in-one
-```
-
-**Contents**:
-
-- Verification framework
-- Proof checkers (Coq + Isabelle)
-- Case study data
-- Benchmarks
-- All dependencies
-
-**Size**: ~2GB
-
----
-
-#### 2. Verification Only Container
-
-**Purpose**: Run verification framework only (faster)
-
-**Image**: `otlp-verifier:verifier-only`
-
-**Usage**:
-
-```bash
-docker pull otlp-verifier/icse2026:verifier-only
-docker run -it otlp-verifier/icse2026:verifier-only
-
-# Inside container
-cd /artifact
-./verify-case-study.sh e-commerce
-```
-
-**Size**: ~500MB
-
----
-
-#### 3. Proof Verification Container
-
-**Purpose**: Verify formal proofs (for reviewers interested in proofs)
-
-**Image**: `otlp-verifier:proofs`
-
-**Usage**:
-
-```bash
-docker pull otlp-verifier/icse2026:proofs
-docker run -it otlp-verifier/icse2026:proofs
-
-# Inside container
-cd /artifact/proofs
-./verify-all-proofs.sh
-```
-
-**Size**: ~1.5GB (includes Coq + Isabelle)
-
----
-
-## 📦 Artifact Structure
+## 📂 目录结构
 
 ```text
 otlp-verification-artifact/
-├── README.md                    # Quick start guide
-├── LICENSE                      # MIT License
-├── INSTALL.md                   # Installation instructions
-├── STATUS.md                    # Artifact evaluation status
-├── docker/
-│   ├── Dockerfile.all-in-one    # Main container
-│   ├── Dockerfile.verifier      # Verifier only
-│   └── Dockerfile.proofs        # Proofs only
-├── implementation/
-│   └── rust/
-│       └── otlp-verifier/       # 5,000 lines Rust
-│           ├── src/
-│           ├── tests/
-│           ├── Cargo.toml
-│           └── README.md
-├── proofs/
-│   ├── coq/                     # 1,500 lines Coq
+├── README.md                    # 主要文档（第一个看的文件）
+├── LICENSE                      # MIT或Apache 2.0
+├── INSTALL.md                   # 详细安装指南
+├── EXPERIMENTS.md               # 实验重现指南
+├── Dockerfile                   # Docker支持
+├── docker-compose.yml
+├── .gitignore
+├── Cargo.toml                   # Rust项目配置
+│
+├── src/                         # 源代码 (Rust)
+│   ├── lib.rs
+│   ├── types/                   # 类型系统
+│   ├── algebra/                 # 代数结构
+│   ├── flow/                    # 流分析
+│   ├── temporal/                # 时态逻辑
+│   └── semantic/                # 语义验证
+│
+├── tests/                       # 测试
+│   ├── unit/                    # 单元测试
+│   ├── integration/             # 集成测试
+│   └── fixtures/                # 测试数据
+│
+├── proofs/                      # 形式化证明
+│   ├── coq/                     # Coq证明 (5个定理)
+│   │   ├── README.md
 │   │   ├── TypeSystem.v
-│   │   ├── ControlFlow.v
-│   │   ├── DataFlow.v
-│   │   ├── Temporal.v
-│   │   └── README.md
-│   └── isabelle/                # 640 lines Isabelle/HOL
-│       ├── Monoid.thy
-│       ├── Lattice.thy
-│       ├── Category.thy
-│       └── README.md
-├── case-studies/
-│   ├── e-commerce/
-│   │   ├── config.yaml
-│   │   ├── traces/ (anonymized)
-│   │   ├── run.sh
-│   │   └── expected-results.json
-│   ├── financial/
-│   ├── iot/
-│   ├── streaming/
-│   ├── healthcare/
-│   ├── run-all-analyses.sh
-│   └── README.md
-├── benchmarks/
-│   ├── performance/
-│   │   ├── analysis-time.sh
-│   │   └── memory-usage.sh
-│   ├── scalability/
-│   │   └── trace-count-scaling.sh
-│   ├── accuracy/
-│   │   ├── false-positives.sh
-│   │   └── false-negatives.sh
-│   ├── run-benchmarks.sh
-│   └── README.md
-├── scripts/
-│   ├── setup.sh                 # Initial setup
-│   ├── verify-all.sh            # Run all verifications
-│   └── generate-paper-data.sh   # Generate data for paper
-└── docs/
-    ├── GETTING_STARTED.md       # Step-by-step tutorial
-    ├── API.md                   # API documentation
-    └── TROUBLESHOOTING.md       # Common issues
+│   │   ├── Causality.v
+│   │   ├── TemporalLogic.v
+│   │   ├── Soundness.v
+│   │   └── Completeness.v
+│   │
+│   └── isabelle/                # Isabelle证明 (3个定理)
+│       ├── README.md
+│       ├── SpanComposition.thy
+│       ├── TraceAggregation.thy
+│       └── Interoperability.thy
+│
+├── examples/                    # 示例
+│   ├── simple_trace/            # 简单追踪示例
+│   ├── complex_trace/           # 复杂追踪示例
+│   └── case_studies/            # 案例研究
+│
+├── data/                        # 实验数据
+│   ├── README.md
+│   ├── raw/                     # 原始数据（或生成脚本）
+│   ├── processed/               # 处理后的数据
+│   └── synthetic/               # 合成数据
+│
+├── scripts/                     # 实验脚本
+│   ├── setup.sh                 # 环境设置
+│   ├── run_all_experiments.sh   # 运行所有实验
+│   ├── experiment_1_violations.sh
+│   ├── experiment_2_performance.sh
+│   ├── experiment_3_effectiveness.sh
+│   └── generate_figures.py      # 生成论文图表
+│
+├── results/                     # 预计算结果
+│   ├── README.md
+│   ├── violations.csv
+│   ├── performance.csv
+│   ├── effectiveness.csv
+│   └── figures/                 # 论文图表
+│
+└── docs/                        # 额外文档
+    ├── API.md                   # API文档
+    ├── ARCHITECTURE.md          # 架构说明
+    └── TROUBLESHOOTING.md       # 常见问题
 ```
 
 ---
 
-## 🔧 Build Instructions
+## 📝 核心文档模板
 
-### Prerequisites
-
-- Docker 20.10+ (Recommended)
-- OR: Rust 1.70+, Coq 8.17.0, Isabelle2023 (Manual build)
-
-### Option 1: Docker (Recommended)
-
-```bash
-# Clone repository
-git clone https://github.com/otlp-project/verification-artifact
-cd verification-artifact
-
-# Build all-in-one container
-cd docker
-docker build -t otlp-verifier:all-in-one -f Dockerfile.all-in-one .
-
-# Run container
-docker run -it otlp-verifier:all-in-one
-
-# Inside container, run all experiments
-./scripts/verify-all.sh
-```
-
-**Expected time**:
-
-- Build: 15 minutes
-- Run: 3-4 hours (all experiments)
-
----
-
-### Option 2: Manual Build
-
-```bash
-# 1. Install Rust
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-
-# 2. Install Coq (for proof verification)
-opam install coq.8.17.0
-
-# 3. Install Isabelle (for proof verification)
-# Download from https://isabelle.in.tum.de/
-
-# 4. Build verification framework
-cd implementation/rust/otlp-verifier
-cargo build --release
-cargo test
-
-# 5. Verify proofs
-cd ../../proofs
-./verify-all-proofs.sh
-
-# 6. Run case studies
-cd ../case-studies
-./run-all-analyses.sh
-
-# 7. Run benchmarks
-cd ../benchmarks
-./run-benchmarks.sh
-```
-
-**Expected time**: 4-5 hours
-
----
-
-## 📊 Expected Results
-
-### 1. Proof Verification
-
-```text
-Expected Output:
-✅ Theorem 1 (Type Soundness): VERIFIED (15 min)
-✅ Theorem 2 (Monoid Properties): VERIFIED (8 min)
-✅ Theorem 3 (Lattice Properties): VERIFIED (12 min)
-✅ Theorem 4 (Functor Laws): VERIFIED (10 min)
-✅ Theorem 5 (CFG Soundness): VERIFIED (20 min)
-✅ Theorem 6 (Context Propagation): VERIFIED (18 min)
-✅ Theorem 7 (Temporal Ordering): VERIFIED (25 min)
-✅ Theorem 8 (Trace Completeness): VERIFIED (22 min)
-
-Total: 130 minutes
-```
-
----
-
-### 2. Case Study Results
-
-| System | Traces | Violations | Time | Memory |
-|--------|--------|------------|------|--------|
-| E-commerce | 5.2M | 1,247 (0.12%) | 5.5 min | 2.1 GB |
-| Financial | 1.8M | 89 (0.02%) | 1.9 min | 780 MB |
-| IoT | 48.5M | 3,456 (0.07%) | 51 min | 18 GB |
-| Streaming | 22.1M | 567 (0.03%) | 23 min | 9.2 GB |
-| Healthcare | 3.6M | 23 (0.01%) | 3.8 min | 1.5 GB |
-| **Total** | **81.2M** | **5,382 (0.066%)** | **86 min** | **32 GB** |
-
----
-
-### 3. Performance Benchmarks
-
-| Metric | Result | Paper Claim |
-|--------|--------|-------------|
-| **Analysis Time** | 63 ms/trace | 50-100 ms/trace ✅ |
-| **Memory Usage** | 420 MB/1M traces | ~400 MB/1M traces ✅ |
-| **False Positive Rate** | 0.4% | <1% ✅ |
-| **False Negative Rate** | 0.1% | <0.5% ✅ |
-| **Throughput** | 15,873 traces/sec | >10k traces/sec ✅ |
-
----
-
-## ✅ Evaluation Checklist
-
-### Reusable Badge
-
-- [x] Clear documentation
-- [x] Well-structured code
-- [x] API documentation
-- [x] Usage examples
-- [x] Easy to extend
-
-### Available Badge
-
-- [x] Public GitHub repository
-- [x] Docker Hub images
-- [x] Zenodo DOI
-- [x] Long-term availability guarantee
-
-### Functional Badge
-
-- [x] All experiments runnable
-- [x] All claims verifiable
-- [x] No missing dependencies
-- [x] Clear expected outputs
-
-### Reproduced Badge
-
-- [x] Deterministic results
-- [x] Seed control for randomness
-- [x] Exact environment specification
-- [x] Results match paper
-
----
-
-## 🕒 Time Estimates
-
-### For Reviewers
-
-| Activity | Time | Badge |
-|----------|------|-------|
-| **Quick smoke test** | 15 min | Functional |
-| **Run one case study** | 20 min | Functional |
-| **Run all case studies** | 90 min | Reproduced |
-| **Verify one proof** | 15 min | Functional |
-| **Verify all proofs** | 130 min | Reproduced |
-| **Run benchmarks** | 60 min | Reproduced |
-| **Explore and extend** | 2-4 hours | Reusable |
-
-**Recommended evaluation path** (3-4 hours total):
-
-1. Quick smoke test (15 min)
-2. Run one case study (20 min)
-3. Verify 1-2 proofs (30 min)
-4. Run performance benchmarks (60 min)
-5. Explore code and extend (1-2 hours)
-
----
-
-## 📝 Artifact README Template
+### README.md
 
 ```markdown
-# OTLP Formal Verification Artifact - ICSE 2026
+      # OTLP Formal Verification Framework - Artifact
 
-**Paper**: A Comprehensive Formal Verification Framework for OTLP
+      [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.XXXXXXX.svg)](https://doi.org/10.5281/zenodo.XXXXXXX)
 
-**Authors**: [Anonymized for review]
+      This artifact accompanies the paper:
 
-## Quick Start (5 minutes)
+      > **Title**: A Comprehensive Formal Verification Framework for OTLP: Ensuring Correctness and Consistency in Distributed Tracing
+      > **Authors**: [Author Names]
+      > **Conference**: ICSE 2026
 
-### Docker (Recommended)
+      ## Quick Start
 
-docker run -it otlp-verifier/icse2026:all-in-one
-cd /artifact
-./quick-demo.sh
+      ### Option 1: Docker (Recommended, 5 minutes)
 
-### Manual Build
+      ```bash
+      docker pull ghcr.io/username/otlp-verification:latest
+      docker run -it ghcr.io/username/otlp-verification:latest
+      ```
 
-See INSTALL.md for detailed instructions.
+      ### Option 2: Local Installation (30 minutes)
 
-## What's Inside
+      See [INSTALL.md](INSTALL.md) for detailed instructions.
 
-- Rust verification framework (5,000 lines)
-- Coq + Isabelle proofs (2,140 lines)
-- 5 real-world case studies (9.3M traces)
-- Performance benchmarks
+      ```bash
+      # Prerequisites
+      # - Rust 1.70+
+      # - Coq 8.17.0
+      # - Isabelle2023
 
-## Reproduce Paper Results
+      # Build
+      cargo build --release
 
-### Table 1: Proof Verification Time
+      # Run tests
+      cargo test
 
-./scripts/reproduce-table1.sh
+      # Run experiments
+      ./scripts/run_all_experiments.sh
+      ```
 
-### Table 2: Case Study Results
+      ## Repository Structure
 
-./scripts/reproduce-table2.sh
+      - `src/` - Rust implementation (5,000 LOC)
+      - `proofs/` - Formal proofs (2,140 LOC)
+      - `examples/` - Usage examples
+      - `scripts/` - Experiment scripts
+      - `results/` - Pre-computed results
 
-### Figure 3: Performance Scaling
+      ## Reproducing Paper Results
 
-./scripts/reproduce-figure3.sh
+      See [EXPERIMENTS.md](EXPERIMENTS.md) for step-by-step instructions.
 
-## Badges We Claim
+      **Estimated time**: 2-4 hours
 
-- ✅ **Reusable**: Well-documented, extensible
-- ✅ **Available**: Public GitHub + Docker Hub
-- ✅ **Functional**: All experiments work
-- ✅ **Reproduced**: Results match paper
+      ## Claims and Validation
 
-## Support
+      This artifact supports the following claims from the paper:
 
-- Issues: https://github.com/otlp-project/verification-artifact/issues
-- Email: [contact email]
+      1. **Table 2-3**: Violation detection (Section 5.2)
+         - Script: `./scripts/experiment_1_violations.sh`
+         - Expected: 6,167 violations across 9.3M traces
+         - Tolerance: ±5%
+
+      2. **Table 5**: Performance overhead (Section 5.3)
+         - Script: `./scripts/experiment_2_performance.sh`
+         - Expected: <10% overhead
+         - Tolerance: ±2%
+
+      3. **Table 4**: Detection effectiveness (Section 5.4)
+         - Script: `./scripts/experiment_3_effectiveness.sh`
+         - Expected: 98%+ precision, 100% recall
+         - Tolerance: ±1%
+
+      4. **Formal Proofs**: Theorems T1-T8 (Section 3)
+         - Coq proofs: `cd proofs/coq && make`
+         - Isabelle proofs: `cd proofs/isabelle && isabelle build`
+         - Expected: All proofs verify successfully
+
+      ## License
+
+      MIT License - see [LICENSE](LICENSE)
+
+      ## Contact
+
+      - Email: [email]
+      - Issues: <https://github.com/username/otlp-verification/issues>
+
+      ## Citation
+
+      If you use this artifact, please cite our paper:
+
+      ```bibtex
+      @inproceedings{otlp-verification-icse2026,
+      title={A Comprehensive Formal Verification Framework for OTLP},
+      author={[Authors]},
+      booktitle={Proceedings of ICSE 2026},
+      year={2026}
+      }
+      ```
+
+```
+
+### INSTALL.md
+
+```markdown
+      # Installation Guide
+
+      ## Prerequisites
+
+      ### Required
+
+      - **Rust**: 1.70 or later
+      - **Cargo**: 1.70 or later
+      - **Git**: Any recent version
+
+      ### For Formal Proofs (Optional)
+
+      - **Coq**: 8.17.0
+      - **Isabelle**: 2023
+
+      ### System Requirements
+
+      - **OS**: Linux (Ubuntu 20.04+), macOS (12+), or Windows (WSL2)
+      - **RAM**: 4GB minimum, 8GB recommended
+      - **Disk**: 2GB free space
+
+      ## Quick Installation (Docker)
+
+      ### 1. Install Docker
+
+      Follow the official guide: https://docs.docker.com/get-docker/
+
+      ### 2. Pull and Run
+
+      ```bash
+      docker pull ghcr.io/username/otlp-verification:latest
+      docker run -it ghcr.io/username/otlp-verification:latest
+      ```
+
+      All dependencies are pre-installed in the container.
+
+      ## Local Installation
+
+      ### Ubuntu/Debian
+
+      ```bash
+      # 1. Install Rust
+      curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+      source $HOME/.cargo/env
+
+      # 2. Clone repository
+      git clone https://github.com/username/otlp-verification.git
+      cd otlp-verification
+
+      # 3. Build
+      cargo build --release
+
+      # 4. Run tests
+      cargo test
+
+      # 5. (Optional) Install Coq
+      sudo apt-get install coq
+
+      # 6. (Optional) Install Isabelle
+      # Download from https://isabelle.in.tum.de/
+      ```
+
+      ### macOS
+
+      ```bash
+      # 1. Install Rust
+      curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+      source $HOME/.cargo/env
+
+      # 2. Clone repository
+      git clone https://github.com/username/otlp-verification.git
+      cd otlp-verification
+
+      # 3. Build
+      cargo build --release
+
+      # 4. Run tests
+      cargo test
+
+      # 5. (Optional) Install Coq
+      brew install coq
+
+      # 6. (Optional) Install Isabelle
+      # Download from https://isabelle.in.tum.de/
+      ```
+
+      ### Windows (WSL2)
+
+      ```bash
+      # Same as Ubuntu/Debian
+      ```
+
+      ## Verification
+
+      After installation, verify everything works:
+
+      ```bash
+      # Run basic tests
+      cargo test
+
+      # Run a simple example
+      cargo run --example simple_trace
+
+      # Check formal proofs (if installed)
+      cd proofs/coq && make
+      cd ../isabelle && isabelle build
+      ```
+
+      Expected output: All tests pass, no errors.
+
+      ## Troubleshooting
+
+      See [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) for common issues.
+
+      ## Next Steps
+
+      See [EXPERIMENTS.md](EXPERIMENTS.md) to reproduce paper results.
+
+```
+
+### EXPERIMENTS.md
+
+```markdown
+      # Experiment Reproduction Guide
+
+      This guide explains how to reproduce all experiments from our ICSE 2026 paper.
+
+      **Estimated total time**: 2-4 hours
+
+      ## Overview
+
+      The paper presents five main experiments:
+
+      1. **Experiment 1**: Violation Detection (30 min)
+      2. **Experiment 2**: Performance Overhead (60 min)
+      3. **Experiment 3**: Detection Effectiveness (30 min)
+      4. **Experiment 4**: Formal Proof Verification (30 min)
+      5. **Experiment 5**: Case Study Analysis (60 min)
+
+      ## Prerequisites
+
+      - Completed installation (see [INSTALL.md](INSTALL.md))
+      - 4GB RAM, 2GB disk space
+      - Internet connection (for downloading test data)
+
+      ## Quick Start: Run All Experiments
+
+      ```bash
+      ./scripts/run_all_experiments.sh
+      ```
+
+      This will run all experiments and generate results in `results/`.
+
+      **Estimated time**: 3-4 hours
+
+      ## Detailed Instructions
+
+      ### Experiment 1: Violation Detection
+
+      **Claim**: Detect 6,167 violations across 9.3M traces (Table 3)
+
+      **Steps**:
+
+      ```bash
+      # 1. Generate or download trace data
+      ./scripts/setup_data.sh
+
+      # 2. Run violation detection
+      ./scripts/experiment_1_violations.sh
+
+      # 3. Check results
+      cat results/violations.csv
+      ```
+
+      **Expected output**:
+
+      ```csv
+      System,Traces,Violations,Rate
+      CS1,1000000,1247,0.125%
+      CS2,400000,89,0.022%
+      ...
+      Total,9330000,6167,0.066%
+      ```
+
+      **Tolerance**: ±5% (due to randomness in synthetic data)
+
+      **Time**: 30 minutes
+
+      ### Experiment 2: Performance Overhead
+
+      **Claim**: <10% overhead (Table 5)
+
+      **Steps**:
+
+      ```bash
+      ./scripts/experiment_2_performance.sh
+      ```
+
+      **Expected output**:
+
+      ```csv
+      Component,Baseline(ms),WithVerification(ms),Overhead(%)
+      Type System,100,105,5.0%
+      Algebraic,150,157,4.7%
+      ...
+      Overall,1000,1080,8.0%
+      ```
+
+      **Time**: 60 minutes
+
+      ### Experiment 3: Detection Effectiveness
+
+      **Claim**: 98%+ precision, 100% recall (Table 4)
+
+      **Steps**:
+
+      ```bash
+      ./scripts/experiment_3_effectiveness.sh
+      ```
+
+      **Expected output**:
+
+      ```csv
+      Component,TP,FP,FN,Precision,Recall
+      Type System,247,3,0,98.8%,100%
+      ...
+      ```
+
+      **Time**: 30 minutes
+
+      ### Experiment 4: Formal Proof Verification
+
+      **Claim**: All 8 theorems proven (Section 3)
+
+      **Steps**:
+
+      ```bash
+      # Coq proofs (T1, T2, T6, T7, T8)
+      cd proofs/coq
+      make
+
+      # Isabelle proofs (T3, T4, T5)
+      cd ../isabelle
+      isabelle build -D .
+      ```
+
+      **Expected output**:
+
+      ```text
+      All proofs verified successfully.
+      Total time: 15-30 minutes
+      ```
+
+      **Time**: 30 minutes
+
+      ### Experiment 5: Case Study Analysis
+
+      **Claim**: Successful deployment in 5 real-world systems
+
+      **Steps**:
+
+      ```bash
+      ./scripts/experiment_5_case_studies.sh
+      ```
+
+      **Expected output**: Detailed analysis for each of the 5 case studies.
+
+      **Time**: 60 minutes (mostly reading)
+
+      ## Generating Paper Figures
+
+      After running experiments, generate figures:
+
+      ```bash
+      python scripts/generate_figures.py
+      ```
+
+      Output: `results/figures/` (PNG and PDF)
+
+      ## Comparing with Paper Results
+
+      Compare your results with the paper:
+
+      ```bash
+      python scripts/compare_with_paper.py
+      ```
+
+      This will generate a report showing the difference between your results and the paper.
+
+      ## Troubleshooting
+
+      ### Issue 1: Data Download Fails
+
+      **Solution**: Manually download from Zenodo and extract to `data/`
+
+      ### Issue 2: Performance Results Differ Significantly
+
+      **Reason**: Different hardware
+
+      **Solution**: Compare relative overhead (%), not absolute times (ms)
+
+      ### Issue 3: Proofs Don't Verify
+
+      **Reason**: Version mismatch
+
+      **Solution**: Ensure Coq 8.17.0 and Isabelle2023 are installed
+
+      ## Contact
+
+      Questions? Open an issue: <https://github.com/username/otlp-verification/issues>
+
 ```
 
 ---
 
-## 🚀 Preparation Timeline
+## 🐳 Docker配置
 
-### Week 1-2: Core Preparation
+### Dockerfile
 
-- [ ] Clean up Rust code
-- [ ] Add comprehensive comments
-- [ ] Write API documentation
-- [ ] Create unit tests for all components
-- [ ] Verify proofs run on clean system
+```dockerfile
+FROM rust:1.70 as builder
 
-### Week 3: Case Studies
+WORKDIR /app
 
-- [ ] Anonymize trace data
-- [ ] Create run scripts
-- [ ] Verify results are deterministic
-- [ ] Document expected outputs
+# Copy source
+COPY Cargo.toml Cargo.lock ./
+COPY src ./src
+COPY tests ./tests
 
-### Week 4: Docker & Documentation
+# Build
+RUN cargo build --release
 
-- [ ] Create Dockerfiles
-- [ ] Test containers on clean machine
-- [ ] Write GETTING_STARTED.md
-- [ ] Write TROUBLESHOOTING.md
-- [ ] Record demo video
+# Runtime image
+FROM ubuntu:22.04
 
-### Week 5: Testing & Polish
+# Install dependencies
+RUN apt-get update && apt-get install -y \
+    ca-certificates \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
 
-- [ ] External tester evaluation
-- [ ] Fix discovered issues
-- [ ] Polish documentation
-- [ ] Create Zenodo release
+# Copy binary
+COPY --from=builder /app/target/release/otlp-verification /usr/local/bin/
 
-### Week 6: Final Submission
+# Copy artifact files
+WORKDIR /artifact
+COPY README.md INSTALL.md EXPERIMENTS.md LICENSE ./
+COPY scripts ./scripts
+COPY data ./data
+COPY results ./results
+COPY examples ./examples
 
-- [ ] Upload to Docker Hub
-- [ ] Create GitHub release
-- [ ] Submit Zenodo DOI
-- [ ] Fill artifact evaluation form
+# Set up environment
+ENV PATH="/usr/local/bin:${PATH}"
 
----
+# Run tests on container start
+CMD ["/bin/bash"]
+```
 
-## 📦 Distribution Channels
+### docker-compose.yml
 
-1. **GitHub**: Primary source code repository
-   - URL: <https://github.com/otlp-project/verification-artifact>
-   - License: MIT
+```yaml
+version: '3.8'
 
-2. **Docker Hub**: Pre-built containers
-   - Images: otlp-verifier/icse2026:*
-   - Tags: all-in-one, verifier-only, proofs
-
-3. **Zenodo**: Long-term archive
-   - DOI: 10.5281/zenodo.XXXXXX
-   - Version: 1.0.0
-
-4. **Project Website**: Documentation and demos
-   - URL: <https://otlp-verification.github.io>
-
----
-
-## 🛠️ Maintenance Plan
-
-### During Review Period
-
-- Monitor Issues daily
-- Respond to questions within 24 hours
-- Fix critical bugs within 48 hours
-
-### After Paper Acceptance
-
-- Continue maintenance for 2+ years
-- Accept community contributions
-- Provide long-term support
+services:
+  otlp-verification:
+    build: .
+    container_name: otlp-verification-artifact
+    volumes:
+      - ./results:/artifact/results
+    ports:
+      - "8080:8080"
+    environment:
+      - RUST_LOG=info
+```
 
 ---
 
-## 📞 Contact
+## 📋 准备清单
 
-**Artifact Maintainer**: [To be determined]  
-**Email**: [To be determined]  
-**Response Time**: Within 24 hours
+### 阶段1: 代码整理（1天）
+
+- [ ] 清理代码，移除调试代码
+- [ ] 添加完整的代码注释
+- [ ] 统一代码风格（`cargo fmt`）
+- [ ] 运行linter（`cargo clippy`）
+- [ ] 确保所有测试通过
+
+### 阶段2: 文档编写（2天）
+
+- [ ] 编写README.md
+- [ ] 编写INSTALL.md
+- [ ] 编写EXPERIMENTS.md
+- [ ] 编写API.md
+- [ ] 编写TROUBLESHOOTING.md
+
+### 阶段3: Docker打包（1天）
+
+- [ ] 创建Dockerfile
+- [ ] 测试Docker镜像
+- [ ] 优化镜像大小
+- [ ] 创建docker-compose.yml
+
+### 阶段4: 实验脚本（2天）
+
+- [ ] 编写数据生成脚本
+- [ ] 编写实验运行脚本
+- [ ] 验证所有实验可重现
+- [ ] 生成预计算结果
+
+### 阶段5: 发布（1天）
+
+- [ ] 创建GitHub仓库
+- [ ] 上传到Zenodo获取DOI
+- [ ] 构建Docker镜像并推送到GitHub Container Registry
+- [ ] 最终测试（在干净的环境中）
 
 ---
 
-**Last Updated**: 2025-10-17  
-**Document Version**: v1.0  
-**Artifact Status**: Planning Stage
+## 🎯 质量检查清单
+
+### 可用性
+
+- [ ] 代码可以从GitHub克隆
+- [ ] 有永久的DOI（Zenodo）
+- [ ] 许可证清晰（MIT或Apache 2.0）
+
+### 功能性
+
+- [ ] README清晰，5分钟内理解
+- [ ] 安装指南详细，30分钟内完成安装
+- [ ] 所有示例都能运行
+- [ ] Docker镜像正常工作
+
+### 可重现性
+
+- [ ] 所有实验都有详细步骤
+- [ ] 结果与论文一致（±5%）
+- [ ] 预计算结果已提供
+- [ ] 所有形式化证明都能验证
+
+### 可重用性
+
+- [ ] 代码结构清晰
+- [ ] API文档完整
+- [ ] 有扩展示例
+- [ ] 故障排除指南完备
+
+---
+
+## 📞 时间线
+
+### Week 1 (论文完成后)
+
+- **Day 1-2**: 代码整理和清理
+- **Day 3-4**: 文档编写
+- **Day 5**: Docker打包
+
+### Week 2
+
+- **Day 1-2**: 实验脚本和验证
+- **Day 3**: 最终测试
+- **Day 4**: 发布到GitHub和Zenodo
+- **Day 5**: 提交Artifact（论文接收后）
+
+---
+
+## 💡 最佳实践
+
+1. **Early Preparation**: 论文写作期间就开始整理代码
+2. **Continuous Testing**: 定期在干净的环境中测试
+3. **Clear Documentation**: 假设用户是第一次接触项目
+4. **Reproducibility First**: 确保结果可以重现比追求完美重要
+5. **Community Support**: 快速响应GitHub Issues
+
+---
+
+**状态**: 📝 框架就绪  
+**下一步**: 等待论文完成后开始执行  
+**预计开始时间**: 论文初稿完成后（约2周后）
