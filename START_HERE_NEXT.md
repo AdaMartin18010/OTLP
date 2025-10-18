@@ -32,7 +32,7 @@
 
 ### 选项A: LaTeX编译（推荐）⭐⭐⭐⭐⭐
 
-**如果你准备好了，现在就开始编译论文**
+**如果你准备好了，现在就开始编译论文**-
 
 **步骤**:
 
@@ -48,7 +48,7 @@
 
 ### 选项B: 推送到远程仓库（如有）
 
-**如果你有远程Git仓库**
+**如果你有远程Git仓库**-
 
 ```powershell
 # 推送代码
@@ -68,7 +68,7 @@ git remote -v
 
 ### 选项C: 继续完善项目（可选）
 
-**如果你想进一步完善**
+**如果你想进一步完善**-
 
 可选任务:
 
@@ -104,7 +104,7 @@ git remote -v
 
 ### 第1步：安装LaTeX环境（1-2小时）
 
-**Windows推荐: TeX Live 2024**
+**Windows推荐: TeX Live 2024**-
 
 ```powershell
 # 下载安装器（国内镜像快）
@@ -119,7 +119,7 @@ pdflatex --version
 bibtex --version
 ```
 
-**或使用 MiKTeX（更快）**
+**或使用 MiKTeX（更快）**-
 
 ```powershell
 # 下载: https://miktex.org/download
@@ -130,7 +130,7 @@ bibtex --version
 pdflatex --version
 ```
 
-**或使用 Overleaf（在线，无需安装）**
+**或使用 Overleaf（在线，无需安装）**-
 
 - 访问: <https://www.overleaf.com>
 - 上传所有论文文件
