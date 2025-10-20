@@ -1,0 +1,141 @@
+# 03-span-metrics.yaml
+# 
+# Span转Metric配置 - 从Trace生成Metrics
+# 
+# 功能:
+# - 自动从Span生成Metric
+# - 支持多维度聚合
+# - 导出到Prometheus
+# 
+# 生成的Metric:
+# - calls_total: 调用总数
+# - duration_milliseconds: 延迟分布
+# 
+# 适用场景: 需要长期趋势分析、告警
+
+receivers:
+  otlp/grpc:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+  
+  otlp/http:
+    protocols:
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  batch:
+    timeout: 1s
+    send_batch_size: 512
+
+  memory_limiter:
+    check_interval: 1s
+    limit_mib: 1024
+
+  # Span Metrics处理器
+  spanmetrics:
+    # Metric命名空间
+    namespace: span.metrics
+    
+    # 聚合维度（从Span属性提取）
+    dimensions:
+      # 标准维度
+      - name: http.method
+      - name: http.status_code
+      - name: service.name
+      
+      # 自定义维度（电商）
+      - name: myshop.user.tier
+      - name: myshop.order.status
+      
+      # 自定义维度（金融）
+      - name: fintech.transaction.type
+      - name: fintech.risk.level
+      - name: fintech.fraud.detected
+    
+    # 延迟直方图桶配置
+    histogram:
+      explicit:
+        buckets: [10ms, 50ms, 100ms, 200ms, 500ms, 1s, 2s, 5s, 10s]
+    
+    # 聚合周期
+    aggregation_temporality: "CUMULATIVE"
+    
+    # Metric过期时间
+    metrics_expiration: 5m
+    
+    # 维度缓存大小
+    dimensions_cache_size: 10000
+
+exporters:
+  # Jaeger exporter (trace)
+  jaeger:
+    endpoint: jaeger:14250
+    tls:
+      insecure: true
+  
+  # Prometheus exporter (metric)
+  prometheus:
+    endpoint: 0.0.0.0:8889
+    namespace: otel
+    
+    # Metric重命名（可选）
+    metric_expiration: 5m
+    enable_open_metrics: true
+  
+  logging:
+    loglevel: info
+
+service:
+  pipelines:
+    # Trace pipeline (生成metric)
+    traces:
+      receivers: [otlp/grpc, otlp/http]
+      processors: [memory_limiter, spanmetrics, batch]
+      exporters: [jaeger, logging]
+    
+    # Metric pipeline (导出到Prometheus)
+    metrics:
+      receivers: [spanmetrics]  # 从spanmetrics处理器接收
+      processors: [batch]
+      exporters: [prometheus]
+  
+  telemetry:
+    logs:
+      level: info
+
+# 生成的Metric示例:
+# 
+# 1. 调用总数 (Counter):
+#    span.metrics.calls.total{
+#      service.name="order-service",
+#      http.method="POST",
+#      http.status_code="200",
+#      myshop.user.tier="gold"
+#    } = 12345
+# 
+# 2. 延迟分布 (Histogram):
+#    span.metrics.duration.milliseconds_bucket{
+#      service.name="order-service",
+#      http.method="POST",
+#      le="100"
+#    } = 9500  # 95%的请求 < 100ms
+# 
+# 3. P99延迟查询 (PromQL):
+#    histogram_quantile(0.99, 
+#      sum by (le, service_name) (
+#        rate(span_metrics_duration_milliseconds_bucket[5m])
+#      )
+#    )
+# 
+# 4. 错误率查询 (PromQL):
+#    sum(rate(span_metrics_calls_total{http_status_code=~"5.."}[5m])) /
+#    sum(rate(span_metrics_calls_total[5m]))
+# 
+# Prometheus抓取配置:
+#   scrape_configs:
+#     - job_name: 'otel-collector'
+#       static_configs:
+#         - targets: ['otel-collector:8889']
+

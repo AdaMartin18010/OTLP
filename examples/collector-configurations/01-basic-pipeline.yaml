@@ -1,0 +1,87 @@
+# 01-basic-pipeline.yaml
+# 
+# 基础OTLP Collector Pipeline配置
+# 
+# 功能:
+# - 接收OTLP数据 (gRPC + HTTP)
+# - 批处理优化
+# - 导出到Jaeger
+# 
+# 适用场景: 开发/测试环境，单后端
+
+receivers:
+  # OTLP gRPC receiver (推荐，性能最佳)
+  otlp/grpc:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+  
+  # OTLP HTTP receiver (兼容性好)
+  otlp/http:
+    protocols:
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  # 批处理器 - 提升性能
+  batch:
+    # 超时时间: 1秒后强制发送
+    timeout: 1s
+    # 批量大小: 达到512条自动发送
+    send_batch_size: 512
+    # 最大批量: 不超过1024条
+    send_batch_max_size: 1024
+
+  # 内存限制器 - 防止OOM
+  memory_limiter:
+    # 检查间隔
+    check_interval: 1s
+    # 硬限制 (强制GC)
+    limit_mib: 512
+    # 软限制 (开始限流)
+    spike_limit_mib: 128
+
+exporters:
+  # Jaeger exporter (适合trace)
+  jaeger:
+    endpoint: jaeger:14250
+    tls:
+      insecure: true
+  
+  # Logging exporter (调试用)
+  logging:
+    loglevel: info
+    sampling_initial: 5
+    sampling_thereafter: 200
+
+# Pipeline配置
+service:
+  # Pipeline定义
+  pipelines:
+    # Trace pipeline
+    traces:
+      receivers: [otlp/grpc, otlp/http]
+      processors: [memory_limiter, batch]
+      exporters: [jaeger, logging]
+  
+  # Telemetry配置
+  telemetry:
+    logs:
+      level: info
+    metrics:
+      level: detailed
+      address: :8888
+
+# 说明:
+# 
+# 启动命令:
+#   docker run -d --name otel-collector \
+#     -p 4317:4317 -p 4318:4318 -p 8888:8888 \
+#     -v $(pwd)/01-basic-pipeline.yaml:/etc/otel-collector-config.yaml \
+#     otel/opentelemetry-collector-contrib:latest \
+#     --config=/etc/otel-collector-config.yaml
+# 
+# 监控:
+#   - Metrics: http://localhost:8888/metrics
+#   - Health: http://localhost:13133/
+

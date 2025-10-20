@@ -1,0 +1,126 @@
+# 02-tail-sampling.yaml
+# 
+# 尾部采样配置 - 智能采样决策
+# 
+# 功能:
+# - 100%保留错误trace
+# - 100%保留慢trace (>2秒)
+# - 100%保留VIP用户trace
+# - 1%采样普通流量
+# 
+# 效果: 数据量减少90%，但保留99.9%关键信息
+# 
+# 适用场景: 生产环境，高吞吐量系统
+
+receivers:
+  otlp/grpc:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+  
+  otlp/http:
+    protocols:
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  batch:
+    timeout: 1s
+    send_batch_size: 512
+    send_batch_max_size: 1024
+
+  memory_limiter:
+    check_interval: 1s
+    limit_mib: 1024
+    spike_limit_mib: 256
+
+  # 尾部采样处理器
+  tail_sampling:
+    # 决策等待时间: 10秒内收集完整trace
+    decision_wait: 10s
+    # 内存中保留的trace数量
+    num_traces: 100000
+    # 预期新trace速率 (用于内存分配)
+    expected_new_traces_per_sec: 1000
+    
+    # 采样策略（按顺序评估，匹配第一个即采样）
+    policies:
+      # 策略1: 所有错误trace
+      - name: error-policy
+        type: status_code
+        status_code:
+          status_codes: [ERROR]
+      
+      # 策略2: 慢trace (延迟 > 2秒)
+      - name: slow-trace-policy
+        type: latency
+        latency:
+          threshold_ms: 2000
+      
+      # 策略3: VIP用户 (100%采样)
+      - name: vip-user-policy
+        type: string_attribute
+        string_attribute:
+          key: myshop.user.tier
+          values: [platinum, gold]
+      
+      # 策略4: 高风险金融交易 (100%采样)
+      - name: high-risk-transaction-policy
+        type: string_attribute
+        string_attribute:
+          key: fintech.risk.level
+          values: [HIGH, CRITICAL]
+      
+      # 策略5: 欺诈检测trace (100%采样)
+      - name: fraud-detected-policy
+        type: boolean_attribute
+        boolean_attribute:
+          key: fintech.fraud.detected
+          value: true
+      
+      # 策略6: 包含特定span名称
+      - name: important-operation-policy
+        type: span_name
+        span_name:
+          name_patterns: ["payment", "checkout", "fraud.detect", "risk.assess"]
+      
+      # 策略7: 普通流量 (1%概率采样)
+      - name: general-traffic-policy
+        type: probabilistic
+        probabilistic:
+          sampling_percentage: 1
+
+exporters:
+  jaeger:
+    endpoint: jaeger:14250
+    tls:
+      insecure: true
+  
+  logging:
+    loglevel: info
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp/grpc, otlp/http]
+      processors: [memory_limiter, tail_sampling, batch]
+      exporters: [jaeger, logging]
+  
+  telemetry:
+    logs:
+      level: info
+
+# 采样效果示例:
+# 
+# 输入: 10M traces/天
+# ├─ 错误trace (1%): 100K → 100% 保留 = 100K
+# ├─ 慢trace (0.5%): 50K → 100% 保留 = 50K
+# ├─ VIP用户 (5%): 500K → 100% 保留 = 500K
+# ├─ 高风险交易 (0.2%): 20K → 100% 保留 = 20K
+# ├─ 欺诈检测 (0.1%): 10K → 100% 保留 = 10K
+# ├─ 重要操作 (2%): 200K → 100% 保留 = 200K
+# └─ 普通流量 (91.2%): 9.12M → 1% 采样 = 91.2K
+# 
+# 输出: 971.2K traces/天 (仅9.7%，但包含99.9%关键信息)
+# 成本节省: $1M/月 → $97K/月 (节省90.3%)
+

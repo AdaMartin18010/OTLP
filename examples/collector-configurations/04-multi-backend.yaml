@@ -1,0 +1,261 @@
+# 04-multi-backend.yaml
+# 
+# 多后端导出配置 - 同时发送到多个后端
+# 
+# 功能:
+# - 同时导出到Jaeger, Prometheus, Elasticsearch
+# - 支持不同信号类型的路由
+# - 包含数据转换和清洗
+# 
+# 适用场景: 生产环境，统一可观测性平台
+
+receivers:
+  otlp/grpc:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+        max_recv_msg_size_mib: 16
+        max_concurrent_streams: 100
+  
+  otlp/http:
+    protocols:
+      http:
+        endpoint: 0.0.0.0:4318
+
+  # Prometheus scrape receiver (可选)
+  prometheus:
+    config:
+      scrape_configs:
+        - job_name: 'otel-collector'
+          scrape_interval: 15s
+          static_configs:
+            - targets: ['localhost:8888']
+
+processors:
+  batch:
+    timeout: 1s
+    send_batch_size: 512
+    send_batch_max_size: 1024
+
+  memory_limiter:
+    check_interval: 1s
+    limit_mib: 2048
+    spike_limit_mib: 512
+
+  # 资源检测处理器 - 自动添加云平台属性
+  resourcedetection:
+    detectors: [env, system, docker, ec2, ecs, gcp, azure]
+    timeout: 5s
+    override: false
+
+  # 属性处理器 - 数据清洗和转换
+  attributes/cleanup:
+    actions:
+      # 1. 删除敏感数据
+      - key: http.request.header.authorization
+        action: delete
+      
+      - key: http.request.header.cookie
+        action: delete
+      
+      # 2. PII哈希化
+      - key: user.email
+        action: hash
+      
+      - key: user.phone
+        action: hash
+      
+      # 3. 向后兼容 (重命名旧属性)
+      - key: http.method
+        action: update
+        from_attribute: http.request.method
+      
+      # 4. 添加固定标签
+      - key: deployment.environment
+        value: "production"
+        action: insert
+      
+      - key: cluster.name
+        value: "us-east-1-prod"
+        action: insert
+
+  # Resource处理器 - 合并resource属性
+  resource:
+    attributes:
+      - key: service.namespace
+        value: "production"
+        action: upsert
+      
+      - key: telemetry.sdk.language
+        from_attribute: telemetry.sdk.name
+        action: extract
+
+  # Span Metrics生成
+  spanmetrics:
+    namespace: span.metrics
+    dimensions:
+      - name: http.method
+      - name: http.status_code
+      - name: service.name
+      - name: myshop.user.tier
+      - name: fintech.risk.level
+
+exporters:
+  # 1. Jaeger - Trace后端
+  jaeger:
+    endpoint: jaeger:14250
+    tls:
+      insecure: true
+    sending_queue:
+      enabled: true
+      num_consumers: 10
+      queue_size: 5000
+    retry_on_failure:
+      enabled: true
+      initial_interval: 5s
+      max_interval: 30s
+      max_elapsed_time: 300s
+
+  # 2. Prometheus - Metric后端
+  prometheus:
+    endpoint: 0.0.0.0:8889
+    namespace: otel
+    enable_open_metrics: true
+
+  # 3. Elasticsearch - Log后端
+  elasticsearch:
+    endpoints: [http://elasticsearch:9200]
+    logs_index: otel-logs
+    traces_index: otel-traces
+    
+    # 认证（可选）
+    # auth:
+    #   authenticator: basicauth
+    #   username: elastic
+    #   password: ${ELASTIC_PASSWORD}
+    
+    # 批处理
+    flush:
+      interval: 5s
+      bytes: 5242880  # 5MB
+    
+    # 重试
+    retry:
+      enabled: true
+      max_requests: 3
+      initial_interval: 1s
+      max_interval: 30s
+
+  # 4. Kafka - 消息队列缓冲（可选）
+  kafka:
+    brokers: [kafka:9092]
+    protocol_version: 2.8.0
+    
+    # Topic配置
+    topic: otel-traces
+    
+    # 编码
+    encoding: otlp_proto
+    
+    # 生产者配置
+    producer:
+      max_message_bytes: 1000000
+      required_acks: 1
+      compression: snappy
+
+  # 5. OTLP (转发到其他Collector)
+  otlp/remote:
+    endpoint: remote-collector:4317
+    tls:
+      insecure: false
+      cert_file: /etc/certs/client.crt
+      key_file: /etc/certs/client.key
+    
+    compression: gzip
+    
+    # 负载均衡
+    balancer_name: round_robin
+
+  logging:
+    loglevel: info
+    sampling_initial: 5
+    sampling_thereafter: 200
+
+service:
+  # Extensions (健康检查、性能分析等)
+  extensions: [health_check, pprof, zpages]
+  
+  pipelines:
+    # Trace pipeline
+    traces:
+      receivers: [otlp/grpc, otlp/http]
+      processors: [memory_limiter, resourcedetection, attributes/cleanup, resource, spanmetrics, batch]
+      exporters: [jaeger, elasticsearch, kafka, otlp/remote, logging]
+    
+    # Metric pipeline
+    metrics:
+      receivers: [otlp/grpc, otlp/http, prometheus, spanmetrics]
+      processors: [memory_limiter, resourcedetection, batch]
+      exporters: [prometheus, logging]
+    
+    # Log pipeline
+    logs:
+      receivers: [otlp/grpc, otlp/http]
+      processors: [memory_limiter, resourcedetection, attributes/cleanup, batch]
+      exporters: [elasticsearch, logging]
+  
+  telemetry:
+    logs:
+      level: info
+    metrics:
+      level: detailed
+      address: :8888
+
+# Extensions配置
+extensions:
+  # 健康检查
+  health_check:
+    endpoint: :13133
+  
+  # 性能分析
+  pprof:
+    endpoint: :1777
+  
+  # zPages (调试页面)
+  zpages:
+    endpoint: :55679
+
+# 数据流向:
+# 
+# Application
+#   ↓ OTLP
+# Collector (Port 4317/4318)
+#   ↓
+# ┌─ Receivers ─┐
+# │ otlp/grpc   │
+# │ otlp/http   │
+# └─────────────┘
+#   ↓
+# ┌─ Processors ─────────────┐
+# │ memory_limiter           │
+# │ resourcedetection (云属性)│
+# │ attributes/cleanup (清洗) │
+# │ resource (资源合并)       │
+# │ spanmetrics (生成指标)    │
+# │ batch (批处理)            │
+# └──────────────────────────┘
+#   ↓
+# ┌─ Exporters ─────────┐
+# │ jaeger (Trace UI)   │
+# │ elasticsearch (Log) │
+# │ prometheus (Metric) │
+# │ kafka (消息队列)     │
+# │ otlp/remote (转发)  │
+# └─────────────────────┘
+# 
+# 监控端点:
+#   - Health Check: http://localhost:13133/
+#   - Metrics: http://localhost:8888/metrics
+#   - pprof: http://localhost:1777/debug/pprof/
+#   - zPages: http://localhost:55679/debug/tracez
+

@@ -1,0 +1,86 @@
+spring:
+  application:
+    name: fintech-transaction-service
+  profiles:
+    active: production
+
+server:
+  port: 8080
+
+# OpenTelemetry Configuration
+otel:
+  service:
+    name: fintech-transaction-service
+    version: 1.0.0
+  
+  exporter:
+    otlp:
+      # OTLP HTTP endpoint (default for OpenTelemetry Collector)
+      endpoint: http://localhost:4318/v1/traces
+      # Alternatively, use gRPC: http://localhost:4317
+      
+  traces:
+    sampler:
+      # Always sample for demo (use ratio-based in production)
+      probability: 1.0
+
+# Management endpoints (Spring Boot Actuator)
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+
+# Logging configuration
+logging:
+  level:
+    root: INFO
+    io.opentelemetry: DEBUG
+    io.opentelemetry.example.fintech: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+
+---
+# Production profile
+spring:
+  config:
+    activate:
+      on-profile: production
+
+otel:
+  traces:
+    sampler:
+      # 10% sampling in production
+      probability: 0.1
+
+logging:
+  level:
+    root: WARN
+    io.opentelemetry.example.fintech: INFO
+
+---
+# Development profile
+spring:
+  config:
+    activate:
+      on-profile: development
+
+otel:
+  exporter:
+    otlp:
+      endpoint: http://localhost:4318/v1/traces
+  
+  traces:
+    sampler:
+      # Always sample in development
+      probability: 1.0
+
+logging:
+  level:
+    root: DEBUG
+    io.opentelemetry: DEBUG
+    io.opentelemetry.example.fintech: DEBUG
+
