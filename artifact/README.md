@@ -8,7 +8,8 @@
 
 ## 🎯 Artifact Overview
 
-This artifact contains the complete implementation and evaluation materials for our OTLP formal verification framework presented at ICSE 2026.
+This artifact contains the complete implementation and evaluation materials for
+ our OTLP formal verification framework presented at ICSE 2026.
 
 ### What's Included
 

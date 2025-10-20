@@ -22,6 +22,7 @@ We are applying for all four ACM artifact evaluation badges:
 ### Requirements
 
 The artifact must be:
+
 1. Placed on a publicly accessible archival repository
 2. Have a DOI or permanent link
 3. Include appropriate licenses
@@ -31,8 +32,8 @@ The artifact must be:
 
 | Requirement | Status | Evidence |
 |-------------|--------|----------|
-| Public repository | ✅ | GitHub: https://github.com/anonymous/otlp-verification |
-| Archival copy | ✅ | Zenodo: https://doi.org/10.5281/zenodo.XXXXXXX |
+| Public repository | ✅ | GitHub: <https://github.com/anonymous/otlp-verification> |
+| Archival copy | ✅ | Zenodo: <https://doi.org/10.5281/zenodo.XXXXXXX> |
 | Permanent link | ✅ | DOI: 10.5281/zenodo.XXXXXXX |
 | License | ✅ | Apache 2.0 (see `LICENSE` file) |
 | Complete | ✅ | All source code, data, scripts included |
@@ -72,6 +73,7 @@ cat LICENSE
 ### Requirements
 
 The artifact must be:
+
 1. Documented
 2. Consistent with paper
 3. Complete
@@ -145,6 +147,7 @@ Please verify:
 ### Requirements
 
 The artifact must be:
+
 1. Well-structured
 2. Documented for reuse
 3. Extensible
@@ -183,7 +186,8 @@ src/
 
 ### Extensibility Examples
 
-**Example 1: Add new verification rule**
+**Example 1: Add new verification rule**:
+
 ```rust
 // src/rules/custom.rs
 impl VerificationRule for MyCustomRule {
@@ -193,7 +197,8 @@ impl VerificationRule for MyCustomRule {
 }
 ```
 
-**Example 2: Support new protocol**
+**Example 2: Support new protocol**:
+
 ```rust
 // src/protocols/custom.rs
 impl Protocol for MyProtocol {
@@ -216,6 +221,7 @@ We provide 5 complete examples showing how to:
 5. **Build custom analyzers** (`examples/analyzer/`)
 
 Each example includes:
+
 - Complete source code
 - Build instructions
 - Usage documentation
@@ -249,6 +255,7 @@ Please verify:
 ### Requirements
 
 The artifact must enable:
+
 1. Reproduction of main results
 2. Results consistent with paper (within tolerance)
 3. Clear comparison with paper
@@ -393,10 +400,10 @@ cp evaluation_template.md my_evaluation.md
 
 ## 🔗 Links
 
-- **Artifact repository**: https://github.com/anonymous/otlp-verification
-- **Zenodo archive**: https://doi.org/10.5281/zenodo.XXXXXXX
-- **Documentation**: https://anonymous.github.io/otlp-verification
-- **Issue tracker**: https://github.com/anonymous/otlp-verification/issues
+- **Artifact repository**: <https://github.com/anonymous/otlp-verification>
+- **Zenodo archive**: <https://doi.org/10.5281/zenodo.XXXXXXX>
+- **Documentation**: <https://anonymous.github.io/otlp-verification>
+- **Issue tracker**: <https://github.com/anonymous/otlp-verification/issues>
 
 ---
 
@@ -412,4 +419,3 @@ For artifact evaluation questions:
 **Last Updated**: 2025-10-18  
 **Artifact Version**: 1.0.0  
 **Paper Submission ID**: [Withheld]
-

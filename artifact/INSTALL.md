@@ -30,6 +30,7 @@ df -h .
 ### Step 1: Install Docker
 
 **Linux**:
+
 ```bash
 # Ubuntu/Debian
 curl -fsSL https://get.docker.com -o get-docker.sh
@@ -43,6 +44,7 @@ docker-compose --version
 ```
 
 **macOS**:
+
 ```bash
 # Install Docker Desktop from https://www.docker.com/products/docker-desktop
 # Or using Homebrew:
@@ -50,7 +52,8 @@ brew install --cask docker
 ```
 
 **Windows**:
-1. Install Docker Desktop from https://www.docker.com/products/docker-desktop
+
+1. Install Docker Desktop from <https://www.docker.com/products/docker-desktop>
 2. Enable WSL2 backend
 3. Restart computer
 
@@ -102,6 +105,7 @@ docker-compose exec verifier bash
 ### Step 1: Install System Dependencies
 
 **Ubuntu/Debian**:
+
 ```bash
 sudo apt-get update
 sudo apt-get install -y \
@@ -115,6 +119,7 @@ sudo apt-get install -y \
 ```
 
 **macOS**:
+
 ```bash
 # Install Homebrew if not already installed
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
@@ -124,6 +129,7 @@ brew install git curl python3
 ```
 
 **Windows (WSL2)**:
+
 ```bash
 # Inside WSL2 Ubuntu
 sudo apt-get update
@@ -147,6 +153,7 @@ cargo --version
 ### Step 3: Install Coq
 
 **Using opam (Recommended)**:
+
 ```bash
 # Install opam
 bash -c "sh <(curl -fsSL https://raw.githubusercontent.com/ocaml/opam/master/shell/install.sh)"
@@ -163,6 +170,7 @@ coqc --version   # Should show 8.17.0
 ```
 
 **Alternative (apt for Ubuntu)**:
+
 ```bash
 sudo add-apt-repository ppa:avsm/ppa
 sudo apt-get update
@@ -371,6 +379,7 @@ chmod +x scripts/*.sh
 ## 🔒 Security Note
 
 This artifact:
+
 - Does NOT require root/admin privileges (except for initial setup)
 - Does NOT modify system files outside the project directory
 - Does NOT connect to external services (except for data download)
@@ -386,6 +395,7 @@ If you need to install without internet access:
    - Link: [Available on request from authors]
 
 2. Extract and run:
+
    ```bash
    tar -xzf otlp-artifact-offline.tar.gz
    cd otlp-artifact-offline
@@ -397,6 +407,7 @@ If you need to install without internet access:
 ## ⚡ Quick Installation Summary
 
 **With Docker** (5-10 min):
+
 ```bash
 git clone <repo> && cd artifact
 docker-compose build && docker-compose up -d
@@ -404,6 +415,7 @@ docker-compose exec verifier ./scripts/quick_validation.sh
 ```
 
 **Without Docker** (15-30 min):
+
 ```bash
 git clone <repo> && cd artifact
 ./scripts/install_deps.sh         # Installs all dependencies
@@ -436,9 +448,8 @@ After successful installation:
 
 ---
 
-**Installation Complete! 🎉**
+**Installation Complete! 🎉**-
 
 Ready to reproduce results? → Continue to `EXPERIMENTS.md`
 
 Having issues? → Check `docs/FAQ.md` or contact us
-

@@ -140,6 +140,7 @@ results/reproduced/rq1/
 ### Comparison Tolerance
 
 Results should match paper within:
+
 - **Violation counts**: ±2% (due to non-deterministic sampling)
 - **Precision**: ±0.5%
 - **Recall**: ±0.5%
@@ -455,11 +456,13 @@ Recommended allocation for artifact evaluation:
 When evaluating, please report:
 
 1. **System specifications**:
+
    ```bash
    ./scripts/system_info.sh > my_system.txt
    ```
 
 2. **Experiment results**:
+
    ```bash
    cp -r results/reproduced results/my_reproduction
    ```
@@ -469,6 +472,7 @@ When evaluating, please report:
    - Include error logs if any
 
 4. **Comparison summary**:
+
    ```bash
    ./scripts/generate_report.sh > comparison_report.txt
    ```
@@ -531,9 +535,9 @@ When evaluating, please report:
 ---
 
 **Ready to reproduce? Start with:**
+
 ```bash
 ./scripts/reproduce_all.sh
 ```
 
 **Questions?** Check `docs/FAQ.md` or contact us.
-

@@ -108,6 +108,7 @@ artifact/
 ### RQ1: Detection Accuracy
 
 **Claims**:
+
 - 6,167 violations detected
 - 97.5% precision
 - 94.1% recall
@@ -117,6 +118,7 @@ artifact/
 ### RQ2: Performance Overhead
 
 **Claims**:
+
 - 3.7ms per 100-span batch
 - < 1% overhead
 - Linear scalability
@@ -126,6 +128,7 @@ artifact/
 ### RQ3: Production Scalability
 
 **Claims**:
+
 - 9.33M traces analyzed
 - 0.8% average overhead
 - Handles millions of traces/day
@@ -135,6 +138,7 @@ artifact/
 ### Formal Correctness
 
 **Claims**:
+
 - 8 key theorems proven
 - Type system soundness
 - Algebraic correctness
@@ -252,6 +256,7 @@ cargo build --release
 | **Total** | **13,100** | **29** | **100%** |
 
 Additional documentation (to be included):
+
 - API.md: ~6,500 words
 - ARCHITECTURE.md: ~4,200 words
 - EXTENDING.md: ~3,800 words
@@ -415,4 +420,3 @@ With this comprehensive artifact package, we are confident in achieving all four
 4. ✅ **Reproduced**: All results reproducible
 
 This represents a gold standard artifact for academic research in software engineering.
-
