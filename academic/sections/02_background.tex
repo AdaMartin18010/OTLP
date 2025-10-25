@@ -1,167 +1,270 @@
 % Section 2: Background
+% Based on ICSE2026_Paper_Draft.md (2025-10-20)
 
 \section{Background}
 \label{sec:background}
 
-This section provides the necessary background on \otlp, distributed tracing concepts, and formal verification techniques that underpin our work.
+This section provides essential background on OpenTelemetry, OTLP, Semantic Conventions, and formal verification techniques that form the foundation of our work.
+
+\subsection{OpenTelemetry and Distributed Tracing}
+\label{sec:opentelemetry}
+
+\textbf{OpenTelemetry Architecture}:
+
+OpenTelemetry~\cite{opentelemetry2023} is a comprehensive observability framework consisting of:
+
+\begin{itemize}
+\item \textbf{Instrumentation SDKs}: Libraries for 20+ languages (Java, Python, Go, JavaScript, C++, Rust, etc.) that instrument applications to generate telemetry data
+\item \textbf{OpenTelemetry Collector}: A vendor-agnostic data pipeline for receiving, processing, and exporting telemetry
+\item \textbf{Semantic Conventions}: Standardized naming for attributes, metrics, and spans across different domains
+\item \textbf{Protocol (OTLP)}: The wire protocol for transmitting telemetry data
+\end{itemize}
+
+\textbf{Distributed Tracing Concepts}:
+
+A \textbf{trace} represents a single request's journey through a distributed system. Each trace consists of:
+
+\begin{itemize}
+\item \textbf{Spans}: Individual units of work, representing operations within services
+\item \textbf{Trace Context}: Global trace ID and parent span ID propagated across service boundaries
+\item \textbf{Resource}: Information about the entity producing telemetry (service name, version, host)
+\item \textbf{Attributes}: Key-value pairs providing contextual information
+\end{itemize}
+
+\textbf{Example}: When a user places an order in an e-commerce system:
+
+\begin{enumerate}
+\item Frontend service creates a root span (traceID: \texttt{abc123})
+\item Payment service creates a child span (traceID: \texttt{abc123}, parentSpanID: root)
+\item Inventory service creates another child span
+\item Each span records timing, status, and contextual attributes
+\item All spans are exported to a backend for storage and visualization
+\end{enumerate}
+
+\textbf{Challenges in Distributed Tracing}:
+
+\begin{itemize}
+\item \textbf{Context Propagation}: Maintaining trace context across asynchronous operations, message queues, and HTTP requests
+\item \textbf{Clock Skew}: Services running on different machines with unsynchronized clocks
+\item \textbf{Sampling}: Deciding which traces to keep (typically $<$1\% due to volume)
+\item \textbf{Data Volume}: Large-scale systems generate millions of spans per second
+\end{itemize}
 
 \subsection{OpenTelemetry Protocol (OTLP)}
-\label{sec:background-otlp}
+\label{sec:otlp}
 
-OpenTelemetry is an open-source observability framework that provides a unified approach to collecting, processing, and exporting telemetry data. At its core is the OpenTelemetry Protocol (\otlp), which defines a vendor-neutral format for transmitting telemetry data between instrumented applications and observability backends.
+\textbf{Protocol Overview}:
 
-\textbf{Data Model}: \otlp supports three primary signal types, collectively known as the ``three pillars of observability'':
+OTLP v1.3.0 (latest as of 2025) is defined using Protocol Buffers~\cite{protobuf} and supports three signal types:
+
+\begin{itemize}
+\item \textbf{Traces}: Request flows through services
+\item \textbf{Metrics}: Numerical measurements (counters, gauges, histograms)
+\item \textbf{Logs}: Timestamped text records with structured data
+\end{itemize}
+
+\textbf{OTLP Data Model for Traces} (simplified):
+
+\begin{lstlisting}[style=otlpcode,language=protobuf,caption={OTLP Trace Data Model (Protocol Buffers)}]
+message TracesData {
+  repeated ResourceSpans resource_spans = 1;
+}
+
+message ResourceSpans {
+  Resource resource = 1;  // Service/host information
+  repeated ScopeSpans scope_spans = 2;
+}
+
+message ScopeSpans {
+  InstrumentationScope scope = 1;  // Library info
+  repeated Span spans = 2;
+}
+
+message Span {
+  bytes trace_id = 1;           // 16 bytes (128-bit)
+  bytes span_id = 2;            // 8 bytes (64-bit)
+  bytes parent_span_id = 3;     // 8 bytes, empty for root
+  string name = 4;              // Operation name
+  SpanKind kind = 5;            // INTERNAL, CLIENT, SERVER
+  uint64 start_time = 6;        // Unix nanoseconds
+  uint64 end_time = 7;          // Unix nanoseconds
+  repeated KeyValue attributes = 8;  // Metadata
+  Status status = 9;            // OK, ERROR, UNSET
+  repeated Event events = 10;   // Timestamped events
+  repeated Link links = 11;     // Links to other spans
+}
+\end{lstlisting}
+
+\textbf{Key Protocol Properties}:
 
 \begin{enumerate}
-\item \textbf{Traces}: Represent the execution path of requests through distributed systems. A trace consists of one or more spans, where each span represents a single operation (e.g., an HTTP request, a database query, or a function call). Spans contain:
-   \begin{itemize}
-   \item Unique identifiers (\texttt{trace\_id}, \texttt{span\_id})
-   \item Parent-child relationships (via \texttt{parent\_span\_id})
-   \item Timing information (\texttt{start\_time}, \texttt{end\_time})
-   \item Attributes (key-value pairs describing the operation)
-   \item Events (timestamped logs within the span)
-   \item Status (success, error, or unset)
-   \end{itemize}
-
-\item \textbf{Metrics}: Quantitative measurements of system behavior (e.g., request count, latency, error rate). \otlp supports various metric types including counters, gauges, and histograms.
-
-\item \textbf{Logs}: Timestamped text records of events. \otlp logs are structured and can be correlated with traces and metrics through trace context.
+\item \textbf{Hierarchical Structure}: Resource $\rightarrow$ Scope $\rightarrow$ Span (3 levels)
+\item \textbf{Immutable IDs}: Trace ID and Span ID are globally unique and immutable
+\item \textbf{Parent-Child Relationships}: \texttt{parent\_span\_id} creates a directed acyclic graph (DAG)
+\item \textbf{Temporal Constraints}: \texttt{start\_time} $\leq$ \texttt{end\_time}, parent span contains child spans temporally
+\item \textbf{Extensibility}: Attributes allow arbitrary key-value pairs
 \end{enumerate}
 
-\textbf{Context Propagation}: A critical aspect of distributed tracing is context propagation---the mechanism by which trace context (trace ID and span ID) is transmitted across service boundaries. \otlp follows the W3C Trace Context standard~\cite{w3c-trace-context}, encoding context in HTTP headers or message metadata. Proper context propagation ensures that spans from different services can be correctly assembled into complete traces.
+\textbf{Informal Protocol Constraints} (from specification):
 
-\textbf{Transport and Encoding}: \otlp supports two transport protocols:
 \begin{itemize}
-\item \textbf{gRPC}: Binary protocol using Protocol Buffers encoding, optimized for performance
-\item \textbf{HTTP/JSON}: Text-based protocol for ease of debugging and compatibility
+\item \textbf{C1}: Trace ID must be 16 bytes, non-zero
+\item \textbf{C2}: Span ID must be 8 bytes, non-zero
+\item \textbf{C3}: If \texttt{parent\_span\_id} is non-empty, it must refer to a valid span in the same trace
+\item \textbf{C4}: Start time must be $\leq$ end time
+\item \textbf{C5}: Attribute keys must be non-empty strings
+\item \textbf{C6}: Resource and InstrumentationScope are shared across multiple spans for efficiency
 \end{itemize}
 
-The protocol also supports batching (multiple spans/metrics/logs in a single request) and compression (gzip) to reduce network overhead.
+\textbf{Problem}: These constraints are expressed informally in prose. Our work provides \textbf{formal semantics} that make these constraints mathematically precise and verifiable.
 
-\textbf{Example}: Consider a simple e-commerce request where a user views a product:
+\subsection{Semantic Conventions}
+\label{sec:semantic-conventions}
 
-\begin{small}
-\begin{verbatim}
-Trace: view_product_request
-  ├─ Span 1 (frontend): handle_http_request [0-120ms]
-  │   └─ Span 2 (api-gateway): route_request [10-110ms]
-  │       ├─ Span 3 (product-service): get_product [20-80ms]
-  │       │   └─ Span 4 (database): SELECT query [25-75ms]
-  │       └─ Span 5 (inventory-service): check_stock [85-105ms]
-  │           └─ Span 6 (cache): GET operation [90-95ms]
-\end{verbatim}
-\end{small}
+\textbf{Purpose}:
 
-Each span has attributes like \texttt{http.method: "GET"}, \texttt{db.system: "postgresql"}, and \texttt{service.name: "product-service"}. The parent-child relationships form a tree structure representing the call hierarchy.
+Semantic Conventions~\cite{otel-semconv} define standardized naming for span names, attributes, metrics, and resource attributes to ensure consistency across different implementations and domains.
 
-\subsection{Distributed Tracing Challenges}
-\label{sec:background-challenges}
+\textbf{Example Conventions} (from v1.29.0):
 
-While distributed tracing is powerful, several challenges make it difficult to ensure correctness:
+\textbf{HTTP Spans}:
 
-\textbf{Clock Synchronization}: In distributed systems, different nodes have independent clocks that may drift relative to each other. When spans from multiple services are aggregated, clock drift can cause apparent violations of causality. For example, if Service A's clock is 5ms ahead of Service B's clock, a child span in Service B might appear to start before its parent in Service A completes. \otlp relies on timestamps from different sources being ``close enough'' but does not enforce strict clock synchronization.
-
-\textbf{Asynchronous Operations}: Modern applications extensively use asynchronous processing (message queues, background workers, async/await patterns). Asynchronous operations complicate tracing because:
 \begin{itemize}
-\item The parent span may complete before child spans finish
-\item Context may be lost when crossing asynchronous boundaries
-\item Span ordering becomes less deterministic
-\end{itemize}
-
-\textbf{Network Failures and Retries}: In distributed systems, network partitions and transient failures are common. \otlp exporters must handle retries, buffering, and eventual consistency. This introduces the possibility of duplicate spans, out-of-order arrival, and incomplete traces.
-
-\textbf{Sampling and Load Shedding}: To manage data volume, \otlp implementations employ sampling (keeping only a fraction of traces) and load shedding (dropping data under high load). These mechanisms must be carefully designed to:
-\begin{itemize}
-\item Not bias results (e.g., dropping all error traces)
-\item Maintain consistency (all spans of a sampled trace should be kept)
-\item Preserve important signals (always keep error traces)
-\end{itemize}
-
-\textbf{Semantic Complexity}: \otlp defines rich semantic conventions for different operation types (HTTP, RPC, database, messaging, etc.). Each convention has specific required and optional attributes with domain-specific validation rules. For example, \texttt{http.status\_code} must be an integer between 100--599, and \texttt{db.system} must be from a predefined list of database names. Ensuring all implementations correctly follow these conventions is challenging.
-
-\textbf{Example Failure}: In our preliminary study of a large e-commerce platform, we found:
-\begin{itemize}
-\item \textbf{Clock drift violations}: 561 out of 5.2M traces (0.011\%) showed child spans starting before parent spans due to 10--50ms clock drift between services
-\item \textbf{Context loss}: 374 traces (0.007\%) had orphaned spans with no valid parent, caused by context propagation failures in a service mesh proxy
-\item \textbf{Semantic violations}: 187 spans (0.004\%) had invalid attribute values, such as \texttt{http.status\_code: "OK"} (string instead of integer) or \texttt{db.system: "mysql5"} (non-standard name)
-\end{itemize}
-
-These seemingly small percentages represent real production issues affecting thousands of requests daily.
-
-\subsection{Formal Verification Background}
-\label{sec:background-formal}
-
-Formal verification uses mathematical techniques to prove that a system satisfies its specification. We employ several formal methods:
-
-\textbf{Type Systems}: A type system assigns types to program expressions and enforces constraints through type checking. A sound type system guarantees that well-typed programs cannot violate certain invariants. For \otlp, we use:
-\begin{itemize}
-\item \textbf{Dependent types}: Types that depend on values, e.g., \texttt{Span[parent\_id]} ensures the span's parent exists
-\item \textbf{Refinement types}: Types with predicates, e.g., \texttt{\{x: Int | 100 $\leq$ x $\leq$ 599\}} for HTTP status codes
-\item \textbf{Type soundness}: The property that well-typed programs don't ``go wrong'' (don't violate invariants)
-\end{itemize}
-
-\textbf{Algebraic Structures}: Algebraic structures provide abstract mathematical frameworks for reasoning about composition and combination:
-\begin{itemize}
-\item \textbf{Monoid}: A set with an associative binary operation and an identity element. Span composition forms a monoid where the operation is sequential composition ($\oplus$) and the identity is an empty span.
-\item \textbf{Lattice}: A partially ordered set with join ($\sqcup$) and meet ($\sqcap$) operations. Trace aggregation forms a lattice where join is union and meet is intersection.
-\item \textbf{Category Theory}: A framework for describing structure-preserving transformations. Different \otlp SDK implementations can be viewed as functors between categories, ensuring interoperability.
-\end{itemize}
-
-\textbf{Flow Analysis}: Flow analysis tracks how information flows through programs:
-\begin{itemize}
-\item \textbf{Control Flow Analysis (CFA)}: Constructs a call graph showing which functions can call which. For \otlp, this verifies that span parent-child relationships respect the call hierarchy.
-\item \textbf{Data Flow Analysis (DFA)}: Tracks how values propagate. For \otlp, this verifies that trace context propagates correctly across service boundaries.
-\item \textbf{Execution Flow Analysis}: Analyzes temporal ordering of events, ensuring causality is preserved.
-\end{itemize}
-
-\textbf{Temporal Logic}: Temporal logic extends classical logic with operators for reasoning about time:
-\begin{itemize}
-\item \textbf{Linear Temporal Logic (LTL)}: Describes properties over linear time sequences. Operators include:
+\item Span name: \texttt{\{http.request.method\} \{http.route\}}
+\item Required attributes:
   \begin{itemize}
-  \item $\Box$ (always): The property holds at all future times
-  \item $\Diamond$ (eventually): The property holds at some future time
-  \item $\bigcirc$ (next): The property holds at the next time step
-  \item $\mathcal{U}$ (until): One property holds until another becomes true
+  \item \texttt{http.request.method}: HTTP method (GET, POST, etc.)
+  \item \texttt{http.response.status\_code}: HTTP status code (200, 404, 500, etc.)
+  \item \texttt{url.full}: Full request URL
   \end{itemize}
-  Example: $\Box(\textit{span.start} \rightarrow \Diamond\textit{span.end})$ means ``if a span starts, it must eventually end''
-
-\item \textbf{Computation Tree Logic (CTL)}: Describes properties over branching-time tree structures. Useful for analyzing systems with non-deterministic behavior.
+\item Optional attributes:
+  \begin{itemize}
+  \item \texttt{user\_agent.original}: User agent string
+  \item \texttt{http.request.body.size}: Request body size in bytes
+  \end{itemize}
 \end{itemize}
 
-\textbf{Model Checking}: An automated technique for verifying whether a system model satisfies temporal logic specifications. Model checking explores all possible system states to find violations. For \otlp, we use model checking to verify properties like causality preservation and span completeness.
+\textbf{Database Spans}:
 
-\textbf{Theorem Proving}: Interactive or automated systems for proving mathematical theorems. We use:
 \begin{itemize}
-\item \textbf{Coq}: An interactive theorem prover based on dependent type theory. We encode \otlp semantics in Coq and prove correctness properties.
-\item \textbf{Isabelle/HOL}: A generic theorem prover supporting higher-order logic. We use Isabelle to prove algebraic properties of span composition and trace aggregation.
+\item Span name: \texttt{\{db.operation.name\} \{db.collection.name\}}
+\item Required attributes:
+  \begin{itemize}
+  \item \texttt{db.system}: Database system (postgresql, mysql, mongodb)
+  \item \texttt{db.operation.name}: Operation (SELECT, INSERT, findOne)
+  \end{itemize}
+\item Optional attributes:
+  \begin{itemize}
+  \item \texttt{db.query.text}: Database query statement
+  \item \texttt{db.collection.name}: Collection/table name
+  \end{itemize}
 \end{itemize}
 
-\subsection{Running Example}
-\label{sec:background-example}
+\textbf{GenAI Spans} (NEW in v1.29.0):
 
-Throughout this paper, we use a running example from an e-commerce platform to illustrate concepts and violations. The example system consists of:
-
-\textbf{Services}:
 \begin{itemize}
-\item \texttt{frontend}: Web server handling HTTP requests (Node.js)
-\item \texttt{api-gateway}: Request routing and authentication (Go)
-\item \texttt{product-service}: Product catalog management (Java)
-\item \texttt{inventory-service}: Stock tracking (Python)
-\item \texttt{database}: PostgreSQL
-\item \texttt{cache}: Redis
+\item Span name: \texttt{gen\_ai.chat}
+\item Required attributes:
+  \begin{itemize}
+  \item \texttt{gen\_ai.system}: AI system (openai, anthropic, gemini)
+  \item \texttt{gen\_ai.request.model}: Model name (gpt-4, claude-3)
+  \end{itemize}
+\item Optional attributes:
+  \begin{itemize}
+  \item \texttt{gen\_ai.request.temperature}: Temperature parameter
+  \item \texttt{gen\_ai.response.finish\_reasons}: Completion reasons
+  \item \texttt{gen\_ai.usage.input\_tokens}: Token count
+  \end{itemize}
 \end{itemize}
 
-\textbf{Common Violations} we detect in this example:
-\begin{enumerate}
-\item \textbf{Clock Drift}: If the \texttt{product-service} host's clock is 5ms fast, Span 3 might record Start: T+15ms, making it appear to start before its parent Span 2 (which starts at T+10ms). Our framework detects this causality violation.
+\textbf{Importance}: Semantic Conventions enable cross-platform observability and standardized analysis. Our verification framework ensures implementations comply with these conventions.
 
-\item \textbf{Context Loss}: If the \texttt{api-gateway} fails to propagate trace context to \texttt{inventory-service}, Span 5 would have a new Trace ID, creating an orphaned subtrace. Our data flow analysis detects this.
+\subsection{Formal Verification Techniques}
+\label{sec:formal-techniques}
 
-\item \textbf{Invalid Attributes}: If Span 4 has \texttt{db.system: "postgres"} instead of the standard \texttt{"postgresql"}, our semantic validator flags this as a convention violation.
+We employ five complementary formal verification techniques:
 
-\item \textbf{Incomplete Trace}: If Span 2 completes but Span 5 is never exported (due to a crash in \texttt{inventory-service}), the trace is incomplete. Our completeness checker detects that Span 2 has a child reference that never materialized.
+\subsubsection{Type Systems}
+\label{sec:type-systems}
 
-\item \textbf{Type Violations}: If Span 1 has \texttt{http.status\_code: "200"} (string) instead of \texttt{200} (integer), our type checker flags this as a type error.
-\end{enumerate}
+Type systems~\cite{pierce2002types} assign types to program expressions and enforce constraints statically. Key concepts:
 
-This running example will be referenced throughout the paper to illustrate how our verification framework detects and explains such violations.
+\begin{itemize}
+\item \textbf{Typing Judgments}: $\Gamma \vdash e : \tau$ means expression $e$ has type $\tau$ under context $\Gamma$
+\item \textbf{Typing Rules}: Inference rules that derive type judgments
+\item \textbf{Type Soundness}: Well-typed programs don't "go wrong" (Progress + Preservation)
+\end{itemize}
+
+\textbf{Application to OTLP}: We design a type system where OTLP constraints (e.g., valid IDs, temporal ordering) are encoded as type rules, ensuring protocol correctness at compile time.
+
+\subsubsection{Operational Semantics}
+\label{sec:operational-semantics}
+
+Operational semantics~\cite{plotkin1981structural} define program execution as a transition system:
+
+\begin{itemize}
+\item \textbf{States}: Configurations representing program state
+\item \textbf{Reduction Rules}: $\sigma \rightarrow \sigma'$ means state $\sigma$ transitions to $\sigma'$
+\item \textbf{Evaluation}: Programs execute by applying reduction rules
+\end{itemize}
+
+\textbf{Application to OTLP}: We model span operations (create, propagate, export) as reduction rules, enabling formal reasoning about trace assembly.
+
+\subsubsection{Algebraic Structures}
+\label{sec:algebraic-structures}
+
+Algebraic structures~\cite{maclane1998categories,birkhoff1940lattice} capture compositional properties:
+
+\begin{itemize}
+\item \textbf{Monoids}: Sets with associative binary operation and identity
+\item \textbf{Lattices}: Partially ordered sets with meet and join operations
+\item \textbf{Categories}: Objects and morphisms with composition
+\end{itemize}
+
+\textbf{Application to OTLP}: We prove traces form monoids (composition), span relationships form lattices (hierarchy), and transformations form categories (pipelines).
+
+\subsubsection{Temporal Logic}
+\label{sec:temporal-logic}
+
+Temporal logic~\cite{pnueli1977temporal,clarke1999model} specifies properties over time:
+
+\begin{itemize}
+\item \textbf{Linear Temporal Logic (LTL)}: Properties over single execution paths
+  \begin{itemize}
+  \item $\square \phi$: $\phi$ always holds
+  \item $\Diamond \phi$: $\phi$ eventually holds
+  \item $\phi \mathcal{U} \psi$: $\phi$ holds until $\psi$
+  \end{itemize}
+\item \textbf{Computation Tree Logic (CTL)}: Properties over all possible executions
+  \begin{itemize}
+  \item $\text{AG } \phi$: $\phi$ holds on all paths, all states
+  \item $\text{EF } \phi$: $\phi$ holds on some path, some state
+  \end{itemize}
+\end{itemize}
+
+\textbf{Application to OTLP}: We specify OTLP temporal properties (e.g., causality) in LTL/CTL and verify them using model checking.
+
+\subsubsection{Theorem Proving}
+\label{sec:theorem-proving}
+
+Interactive theorem provers~\cite{bertot2013coq,nipkow2002isabelle} mechanize mathematical proofs:
+
+\begin{itemize}
+\item \textbf{Coq}: Based on the Calculus of Inductive Constructions
+\item \textbf{Isabelle/HOL}: Based on higher-order logic
+\end{itemize}
+
+\textbf{Application to OTLP}: We formalize OTLP semantics and verify theorems in Coq (1,500 lines) and Isabelle/HOL (640 lines), ensuring proof correctness.
+
+\subsection{Related Formal Frameworks}
+\label{sec:related-frameworks}
+
+Several formal frameworks have been applied to distributed systems:
+
+\textbf{TLA+ for Distributed Protocols}~\cite{lamport2002specifying}: Used to verify consensus algorithms (Raft, Paxos) and distributed databases. However, TLA+ focuses on protocol state machines, not observability data correctness.
+
+\textbf{Session Types for Communication}~\cite{honda1993types,honda2008multiparty}: Ensure communication protocol correctness through types. Not designed for telemetry data with hierarchical structure and temporal constraints.
+
+\textbf{Dependent Types for Verification}~\cite{xi1999dependent}: Encode rich invariants in types (e.g., array bounds). Could express OTLP constraints but lack OTLP-specific reasoning principles.
+
+\textbf{Our Distinction}: We develop the first formal framework specifically for observability protocols, combining type systems, algebraic structures, and multi-flow analysis to address OTLP's unique challenges.
