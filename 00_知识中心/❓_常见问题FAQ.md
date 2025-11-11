@@ -26,6 +26,7 @@
 ### Q1.1: Trace和Span有什么区别？
 
 **答案**:
+
 ```
 Trace (追踪):
   - 一次完整的请求流程
@@ -50,6 +51,7 @@ Span (片段):
 ### Q1.2: OTLP和OpenTelemetry是什么关系？
 
 **答案**:
+
 ```
 OpenTelemetry:
   - 完整的可观测性框架
@@ -69,6 +71,7 @@ OTLP (OpenTelemetry Protocol):
 **答案**:
 
 **问题场景**:
+
 ```
 微服务架构:
   用户请求 → 30+个服务
@@ -81,6 +84,7 @@ OTLP (OpenTelemetry Protocol):
 ```
 
 **分布式追踪的解决**:
+
 ```
 ✓ 统一的TraceID关联所有日志
 ✓ 完整的请求调用链路
@@ -103,6 +107,7 @@ OTLP (OpenTelemetry Protocol):
 | **典型用途** | 监控告警 | 问题诊断 | 性能分析 |
 
 **示例**:
+
 ```
 场景: API响应慢
 
@@ -126,6 +131,7 @@ Trace告诉你:
 **答案**:
 
 **SpanKind类型**:
+
 ```
 1. CLIENT: 发起请求的客户端
    例: HTTP客户端、gRPC客户端、数据库客户端
@@ -144,6 +150,7 @@ Trace告诉你:
 ```
 
 **作用**:
+
 1. **自动建立父子关系**: CLIENT Span → SERVER Span
 2. **正确计算延迟**: 区分网络时间和处理时间
 3. **可视化调用图**: 清晰展示服务间调用
@@ -158,6 +165,7 @@ Trace告诉你:
 **答案**:
 
 根据您的应用语言选择：
+
 ```
 Java:     opentelemetry-java
 Python:   opentelemetry-python
@@ -168,6 +176,7 @@ Rust:     opentelemetry-rust
 ```
 
 **成熟度参考** (2025年):
+
 ```
 ⭐⭐⭐⭐⭐ Stable (生产就绪):
   - Java, Python, Node.js, Go, .NET
@@ -186,6 +195,7 @@ Rust:     opentelemetry-rust
 **推荐策略**: 自动埋点 + 手动埋点
 
 **自动埋点 (Auto-Instrumentation)**:
+
 ```
 优点:
   ✓ 无需修改代码
@@ -204,6 +214,7 @@ Rust:     opentelemetry-rust
 ```
 
 **手动埋点 (Manual Instrumentation)**:
+
 ```
 优点:
   ✓ 完全控制
@@ -222,6 +233,7 @@ Rust:     opentelemetry-rust
 ```
 
 **最佳实践**:
+
 ```typescript
 // 1. 启用自动埋点 (HTTP, DB, Redis等)
 require('./tracing');  // 自动埋点配置
@@ -259,6 +271,7 @@ async function processOrder(order) {
 **不是必须的**，但强烈推荐：
 
 **不使用Collector** (直接导出):
+
 ```
 应用 → OTLP Exporter → Backend (Jaeger/Zipkin)
 
@@ -274,6 +287,7 @@ async function processOrder(order) {
 ```
 
 **使用Collector** (推荐):
+
 ```
 应用 → Collector → Backend
 
@@ -291,12 +305,14 @@ async function processOrder(order) {
 ```
 
 **何时可以不用Collector**:
+
 - 单体应用
 - 开发/测试环境
 - 快速验证POC
 - 流量很小
 
 **何时必须用Collector**:
+
 - 生产环境
 - 微服务架构
 - 高流量应用
@@ -346,6 +362,7 @@ OTEL_TRACES_SAMPLER_ARG=0.01  # 1%采样
 ```
 
 **使用**:
+
 ```bash
 # 加载配置
 source dev.env
@@ -414,6 +431,7 @@ const instrumentations = getNodeAutoInstrumentations({
 ```
 
 **性能开销参考**:
+
 ```
 良好配置:
   - CPU: +1-2%
@@ -431,6 +449,7 @@ const instrumentations = getNodeAutoInstrumentations({
 **答案**:
 
 **语义约定** (推荐):
+
 ```typescript
 // 遵循OpenTelemetry语义约定
 span.setAttribute('http.method', 'POST');
@@ -449,6 +468,7 @@ span.setAttribute('messaging.operation', 'publish');
 ```
 
 **自定义业务属性** (加前缀):
+
 ```typescript
 // 用户相关
 span.setAttribute('app.user.id', '12345');
@@ -468,6 +488,7 @@ span.setAttribute('app.shipping.method', 'express');
 ```
 
 **数组属性**:
+
 ```typescript
 // OpenTelemetry支持数组
 span.setAttribute('app.order.item_ids', ['item1', 'item2', 'item3']);
@@ -475,6 +496,7 @@ span.setAttribute('app.user.permissions', ['read', 'write', 'delete']);
 ```
 
 **避免的做法**:
+
 ```typescript
 // ✗ 不要放敏感信息
 span.setAttribute('user.password', password);  // ✗ 危险！
@@ -495,6 +517,7 @@ span.setAttribute('user.status', 'active');  // ✓ 正确
 **答案**:
 
 **Promise**:
+
 ```typescript
 const tracer = trace.getTracer('my-service');
 
@@ -520,6 +543,7 @@ async function fetchUserData(userId) {
 ```
 
 **回调函数**:
+
 ```typescript
 const { context } = require('@opentelemetry/api');
 
@@ -547,6 +571,7 @@ function legacyAsyncOperation(callback) {
 ```
 
 **EventEmitter**:
+
 ```typescript
 const { context, trace } = require('@opentelemetry/api');
 
@@ -585,6 +610,7 @@ processor.on('order:created', (order) => {
 Context传播是在分布式系统中跨服务边界传递追踪信息的机制。
 
 **为什么需要**:
+
 ```
 没有Context传播:
   Service A → Service B → Service C
@@ -605,6 +631,7 @@ Context传播是在分布式系统中跨服务边界传递追踪信息的机制�
 ```
 
 **如何传播**:
+
 ```
 HTTP: 通过HTTP头传递
   traceparent: 00-{trace-id}-{span-id}-{flags}
@@ -630,12 +657,14 @@ gRPC: 通过metadata传递
 | **采用度** | 快速增长 | 广泛使用 |
 
 **W3C Trace Context**:
+
 ```http
 traceparent: 00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01
 tracestate: vendor1=data,vendor2=info
 ```
 
 **B3**:
+
 ```http
 X-B3-TraceId: 4bf92f3577b34da6a3ce929d0e0e4736
 X-B3-SpanId: 00f067aa0ba902b7
@@ -644,11 +673,13 @@ X-B3-Sampled: 1
 ```
 
 **或B3单头格式**:
+
 ```http
 b3: 4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-1-05e3ac9a4f6e3b90
 ```
 
 **推荐**:
+
 - 新项目: W3C Trace Context
 - 兼容Zipkin: 同时支持两者
 - OpenTelemetry默认: W3C Trace Context
@@ -710,6 +741,7 @@ async function consumeMessage(message) {
 ```
 
 **RabbitMQ示例**:
+
 ```typescript
 // 发送消息
 const headers = {};
@@ -741,6 +773,7 @@ channel.consume('queue', (msg) => {
 **答案**:
 
 **通用建议**:
+
 ```
 流量级别         推荐采样率    说明
 ─────────────────────────────────────────
@@ -751,6 +784,7 @@ channel.consume('queue', (msg) => {
 ```
 
 **但要考虑**:
+
 ```
 ✓ 错误必须100%采样
 ✓ 慢请求必须100%采样
@@ -759,6 +793,7 @@ channel.consume('queue', (msg) => {
 ```
 
 **示例配置**:
+
 ```yaml
 # Collector Tail Sampling配置
 processors:
@@ -792,6 +827,7 @@ processors:
 **答案**:
 
 **Head Sampling** (SDK中):
+
 ```
 决策时机: Trace开始时
 优点:
@@ -807,6 +843,7 @@ processors:
 ```
 
 **Tail Sampling** (Collector中):
+
 ```
 决策时机: Trace完成后
 优点:
@@ -824,6 +861,7 @@ processors:
 ```
 
 **推荐组合**:
+
 ```
 SDK: ParentBased采样 (遵循上游决策)
   ↓
@@ -844,6 +882,7 @@ Collector: Tail Sampling (智能决策)
 **答案**:
 
 **典型开销** (良好配置):
+
 ```
 每个请求:
   - Span创建: ~0.1ms
@@ -860,6 +899,7 @@ Collector: Tail Sampling (智能决策)
 ```
 
 **高开销场景** (配置不当):
+
 ```
 ❌ 同步导出:
   每个Span立即发送 → 增加5-10ms
@@ -872,6 +912,7 @@ Collector: Tail Sampling (智能决策)
 ```
 
 **优化建议**:
+
 ```typescript
 // ✓ 1. 使用批量异步导出
 const processor = new BatchSpanProcessor(exporter, {
@@ -895,6 +936,7 @@ span.setAttribute('data', data.substring(0, 1000));
 **答案**:
 
 **内存消耗来源**:
+
 ```
 1. Span缓冲队列: ~1MB per 1000 spans
 2. Context存储: ~100KB
@@ -972,6 +1014,7 @@ telnet localhost 4318
 ```
 
 **常见原因**:
+
 ```
 ❌ tracing初始化在其他import之后
    require('./tracing');  // ← 必须第一行
@@ -995,6 +1038,7 @@ telnet localhost 4318
 **答案**:
 
 **症状**:
+
 ```
 只看到部分Span，不是完整的Trace
 ```
@@ -1002,6 +1046,7 @@ telnet localhost 4318
 **可能原因和解决**:
 
 **1. Context传播失败**:
+
 ```typescript
 // ✗ 错误: 创建新Trace
 async function callService() {
@@ -1023,6 +1068,7 @@ async function callService() {
 ```
 
 **2. 异步操作丢失Context**:
+
 ```typescript
 // ✗ 错误: setTimeout丢失Context
 span.end();
@@ -1043,6 +1089,7 @@ setTimeout(() => {
 ```
 
 **3. 不同服务采样决策不一致**:
+
 ```
 Service A: 采样 (sampled=1)
   → Service B: 未采样 (sampled=0)  ← 冲突！
@@ -1052,6 +1099,7 @@ Service A: 采样 (sampled=1)
 ```
 
 **4. Span丢失 (Collector/Backend问题)**:
+
 ```bash
 # 检查Collector是否正常
 # 查看dropped spans数量
@@ -1069,6 +1117,7 @@ curl http://localhost:8888/metrics | grep dropped
 **答案**:
 
 **推荐保留期**:
+
 ```
 热数据 (可快速查询):
   - 最近7天: 100%数据
@@ -1087,6 +1136,7 @@ curl http://localhost:8888/metrics | grep dropped
 ```
 
 **存储成本估算**:
+
 ```
 假设:
   - 1万QPS
@@ -1107,6 +1157,7 @@ curl http://localhost:8888/metrics | grep dropped
 ```
 
 **优化策略**:
+
 ```
 1. 智能采样
    - 错误: 100%
@@ -1145,6 +1196,7 @@ curl http://localhost:8888/metrics | grep dropped
 **推荐场景**:
 
 **Jaeger** - 企业级生产环境:
+
 ```
 ✓ 需要强大的查询能力
 ✓ 大规模部署
@@ -1157,6 +1209,7 @@ curl http://localhost:8888/metrics | grep dropped
 ```
 
 **Zipkin** - 快速启动:
+
 ```
 ✓ 简单场景
 ✓ 快速验证
@@ -1168,6 +1221,7 @@ curl http://localhost:8888/metrics | grep dropped
 ```
 
 **Tempo** - 云原生 + Grafana生态:
+
 ```
 ✓ 已使用Grafana
 ✓ 需要低成本存储
@@ -1188,6 +1242,7 @@ curl http://localhost:8888/metrics | grep dropped
 **答案**:
 
 **步骤1: 使用过滤器**:
+
 ```
 Jaeger UI → Search
   ├─ Service: 选择你的服务
@@ -1197,6 +1252,7 @@ Jaeger UI → Search
 ```
 
 **步骤2: 排序**:
+
 ```
 结果列表 → 点击 "Duration" 列
   → 按持续时间降序排列
@@ -1204,6 +1260,7 @@ Jaeger UI → Search
 ```
 
 **步骤3: 分析Trace**:
+
 ```
 点击慢Trace → Timeline视图
   → 找到最长的Span
@@ -1212,6 +1269,7 @@ Jaeger UI → Search
 ```
 
 **高级技巧**:
+
 ```
 1. 使用Tags过滤:
    Tags: http.status_code=500
@@ -1234,6 +1292,7 @@ Jaeger UI → Search
 **答案**:
 
 **Jaeger中查看**:
+
 ```
 Jaeger UI → System Architecture → DAG
   
@@ -1245,6 +1304,7 @@ Jaeger UI → System Architecture → DAG
 ```
 
 **使用Trace分析**:
+
 ```
 1. 选择一个复杂的Trace
 2. 查看 "Span Graph" 视图
@@ -1257,6 +1317,7 @@ Jaeger UI → System Architecture → DAG
 ```
 
 **导出依赖数据**:
+
 ```bash
 # Jaeger提供依赖API
 curl http://localhost:16686/api/dependencies?endTs=$(date +%s)000&lookback=86400000
@@ -1289,6 +1350,7 @@ curl http://localhost:16686/api/dependencies?endTs=$(date +%s)000&lookback=86400
 **部署模式**:
 
 **1. Sidecar模式** (每个服务一个):
+
 ```
 优点:
   ✓ 隔离性好
@@ -1302,6 +1364,7 @@ curl http://localhost:16686/api/dependencies?endTs=$(date +%s)000&lookback=86400
 ```
 
 **2. 节点Agent模式** (每个节点一个):
+
 ```
 优点:
   ✓ 资源效率高
@@ -1314,6 +1377,7 @@ curl http://localhost:16686/api/dependencies?endTs=$(date +%s)000&lookback=86400
 ```
 
 **3. 集中式Gateway模式** (集群级):
+
 ```
 优点:
   ✓ 易于管理
@@ -1328,6 +1392,7 @@ curl http://localhost:16686/api/dependencies?endTs=$(date +%s)000&lookback=86400
 ```
 
 **推荐架构** (混合模式):
+
 ```
 应用 → Node Agent → Gateway Collector → Backend
 
@@ -1348,6 +1413,7 @@ Gateway Collector:
 ```
 
 **Kubernetes部署示例**:
+
 ```yaml
 # DaemonSet部署 (每个节点一个Agent)
 apiVersion: apps/v1
@@ -1395,6 +1461,7 @@ spec:
 **答案**:
 
 **1. Collector高可用**:
+
 ```
 - 部署多个副本 (至少3个)
 - 使用负载均衡
@@ -1437,6 +1504,7 @@ spec:
 ```
 
 **2. Backend高可用**:
+
 ```
 Jaeger:
   - Cassandra/ES集群 (3+节点)
@@ -1449,6 +1517,7 @@ Tempo:
 ```
 
 **3. 应用端容错**:
+
 ```typescript
 // 使用超时
 const exporter = new OTLPTraceExporter({
@@ -1473,6 +1542,7 @@ try {
 ```
 
 **4. 数据不丢失**:
+
 ```
 应用端:
   - 本地队列缓冲 (2048 spans)
@@ -1514,4 +1584,3 @@ Collector:
 **维护**: OTLP项目组  
 **更新频率**: 每月  
 **贡献**: 欢迎提交新问题
-
