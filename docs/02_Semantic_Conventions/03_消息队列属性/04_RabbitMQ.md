@@ -1,6 +1,6 @@
 # RabbitMQ语义约定详解
 
-> **企业级消息队列**: RabbitMQ Tracing与Metrics完整规范  
+> **企业级消息队列**: RabbitMQ Tracing与Metrics完整规范
 > **最后更新**: 2025年10月8日
 
 ---
@@ -330,7 +330,7 @@ package main
 import (
     "context"
     "time"
-    
+
     amqp "github.com/rabbitmq/amqp091-go"
     "go.opentelemetry.io/otel"
     "go.opentelemetry.io/otel/attribute"
@@ -346,7 +346,7 @@ func PublishWithTracing(
     body []byte,
 ) error {
     tracer := otel.Tracer("rabbitmq-publisher")
-    
+
     // 创建Producer Span
     ctx, span := tracer.Start(ctx, "rabbitmq.publish",
         trace.WithSpanKind(trace.SpanKindProducer),
@@ -363,14 +363,14 @@ func PublishWithTracing(
         ),
     )
     defer span.End()
-    
+
     // 创建消息
     messageID := generateMessageID()
     headers := make(amqp.Table)
-    
+
     // 注入Trace Context
     injectTraceContext(ctx, headers)
-    
+
     msg := amqp.Publishing{
         MessageId:    messageID,
         Timestamp:    time.Now(),
@@ -379,12 +379,12 @@ func PublishWithTracing(
         Headers:      headers,
         Body:         body,
     }
-    
+
     // 添加消息ID到span
     span.SetAttributes(
         attribute.String("messaging.message.id", messageID),
     )
-    
+
     // 发布消息
     err := ch.PublishWithContext(
         ctx,
@@ -394,13 +394,13 @@ func PublishWithTracing(
         false, // immediate
         msg,
     )
-    
+
     if err != nil {
         span.RecordError(err)
         span.SetStatus(codes.Error, "publish failed")
         return err
     }
-    
+
     span.SetStatus(codes.Ok, "published")
     return nil
 }
@@ -413,26 +413,26 @@ func PublishWithConfirms(
     body []byte,
 ) error {
     tracer := otel.Tracer("rabbitmq-publisher")
-    
+
     ctx, span := tracer.Start(ctx, "rabbitmq.publish.confirmed",
         trace.WithSpanKind(trace.SpanKindProducer),
     )
     defer span.End()
-    
+
     // 启用Publisher Confirms
     if err := ch.Confirm(false); err != nil {
         span.RecordError(err)
         return err
     }
-    
+
     confirms := ch.NotifyPublish(make(chan amqp.Confirmation, 1))
-    
+
     // 发布消息
     err := PublishWithTracing(ctx, ch, exchange, routingKey, body)
     if err != nil {
         return err
     }
-    
+
     // 等待确认
     select {
     case confirm := <-confirms:
@@ -459,7 +459,7 @@ func ConsumeWithTracing(
     handler func(context.Context, amqp.Delivery) error,
 ) error {
     tracer := otel.Tracer("rabbitmq-consumer")
-    
+
     // 声明Queue
     q, err := ch.QueueDeclare(
         queueName,
@@ -472,7 +472,7 @@ func ConsumeWithTracing(
     if err != nil {
         return err
     }
-    
+
     // 设置Qos
     err = ch.Qos(
         10,    // prefetch count
@@ -482,7 +482,7 @@ func ConsumeWithTracing(
     if err != nil {
         return err
     }
-    
+
     // 开始消费
     msgs, err := ch.Consume(
         q.Name,
@@ -496,12 +496,12 @@ func ConsumeWithTracing(
     if err != nil {
         return err
     }
-    
+
     // 处理消息
     for msg := range msgs {
         // 提取Trace Context
         ctx := extractTraceContext(msg.Headers)
-        
+
         // 创建Consumer Span
         ctx, span := tracer.Start(ctx, "rabbitmq.receive",
             trace.WithSpanKind(trace.SpanKindConsumer),
@@ -512,33 +512,33 @@ func ConsumeWithTracing(
                 semconv.MessagingProtocolKey.String("AMQP"),
                 attribute.String("messaging.message.id", msg.MessageId),
                 attribute.String("messaging.rabbitmq.routing_key", msg.RoutingKey),
-                attribute.Int64("messaging.rabbitmq.delivery_tag", 
+                attribute.Int64("messaging.rabbitmq.delivery_tag",
                     int64(msg.DeliveryTag)),
-                attribute.Bool("messaging.rabbitmq.redelivered", 
+                attribute.Bool("messaging.rabbitmq.redelivered",
                     msg.Redelivered),
                 attribute.Int("messaging.message.body.size", len(msg.Body)),
             ),
         )
-        
+
         // 处理消息
         err := handler(ctx, msg)
-        
+
         if err != nil {
             span.RecordError(err)
             span.SetStatus(codes.Error, "handler failed")
-            
+
             // Nack with requeue
             msg.Nack(false, true)
         } else {
             span.SetStatus(codes.Ok, "processed")
-            
+
             // Ack
             msg.Ack(false)
         }
-        
+
         span.End()
     }
-    
+
     return nil
 }
 ```
@@ -554,7 +554,7 @@ func RPCCallWithTracing(
     body []byte,
 ) ([]byte, error) {
     tracer := otel.Tracer("rabbitmq-rpc-client")
-    
+
     ctx, span := tracer.Start(ctx, "rabbitmq.rpc.call",
         trace.WithSpanKind(trace.SpanKindClient),
         trace.WithAttributes(
@@ -564,7 +564,7 @@ func RPCCallWithTracing(
         ),
     )
     defer span.End()
-    
+
     // 声明reply queue
     replyQueue, err := ch.QueueDeclare(
         "",    // name (auto-generated)
@@ -578,14 +578,14 @@ func RPCCallWithTracing(
         span.RecordError(err)
         return nil, err
     }
-    
+
     // 生成correlation ID
     correlationID := generateCorrelationID()
-    
+
     // 注入trace context
     headers := make(amqp.Table)
     injectTraceContext(ctx, headers)
-    
+
     // 发布请求
     err = ch.PublishWithContext(
         ctx,
@@ -604,12 +604,12 @@ func RPCCallWithTracing(
         span.RecordError(err)
         return nil, err
     }
-    
+
     span.SetAttributes(
         attribute.String("messaging.message.correlation_id", correlationID),
         attribute.String("messaging.rabbitmq.reply_to", replyQueue.Name),
     )
-    
+
     // 等待响应
     msgs, err := ch.Consume(
         replyQueue.Name,
@@ -624,7 +624,7 @@ func RPCCallWithTracing(
         span.RecordError(err)
         return nil, err
     }
-    
+
     select {
     case msg := <-msgs:
         if msg.CorrelationId == correlationID {
@@ -635,7 +635,7 @@ func RPCCallWithTracing(
         span.SetStatus(codes.Error, "rpc timeout")
         return nil, ErrRPCTimeout
     }
-    
+
     return nil, ErrRPCFailed
 }
 
@@ -646,7 +646,7 @@ func RPCServerWithTracing(
     handler func(context.Context, []byte) ([]byte, error),
 ) error {
     tracer := otel.Tracer("rabbitmq-rpc-server")
-    
+
     msgs, err := ch.Consume(
         queueName,
         "",
@@ -659,24 +659,24 @@ func RPCServerWithTracing(
     if err != nil {
         return err
     }
-    
+
     for msg := range msgs {
         // 提取context
         ctx := extractTraceContext(msg.Headers)
-        
+
         ctx, span := tracer.Start(ctx, "rabbitmq.rpc.handle",
             trace.WithSpanKind(trace.SpanKindServer),
             trace.WithAttributes(
                 semconv.MessagingSystemKey.String("rabbitmq"),
                 semconv.MessagingOperationKey.String("rpc"),
-                attribute.String("messaging.message.correlation_id", 
+                attribute.String("messaging.message.correlation_id",
                     msg.CorrelationId),
             ),
         )
-        
+
         // 处理请求
         response, err := handler(ctx, msg.Body)
-        
+
         if err != nil {
             span.RecordError(err)
             span.SetStatus(codes.Error, "handler failed")
@@ -684,11 +684,11 @@ func RPCServerWithTracing(
             span.End()
             continue
         }
-        
+
         // 注入trace context到响应
         responseHeaders := make(amqp.Table)
         injectTraceContext(ctx, responseHeaders)
-        
+
         // 发送响应
         err = ch.PublishWithContext(
             ctx,
@@ -702,7 +702,7 @@ func RPCServerWithTracing(
                 Body:          response,
             },
         )
-        
+
         if err != nil {
             span.RecordError(err)
             msg.Nack(false, true)
@@ -710,10 +710,10 @@ func RPCServerWithTracing(
             span.SetStatus(codes.Ok, "replied")
             msg.Ack(false)
         }
-        
+
         span.End()
     }
-    
+
     return nil
 }
 ```
@@ -754,13 +754,13 @@ def publish_with_tracing(
         # 注入trace context
         headers = {}
         propagate.inject(headers)
-        
+
         # 发布消息
         properties = pika.BasicProperties(
             delivery_mode=2,  # persistent
             headers=headers,
         )
-        
+
         try:
             channel.basic_publish(
                 exchange=exchange,
@@ -784,7 +784,7 @@ def consume_with_tracing(
         # 提取trace context
         headers = properties.headers or {}
         ctx = propagate.extract(headers)
-        
+
         # 创建span
         with tracer.start_as_current_span(
             "rabbitmq.receive",
@@ -803,30 +803,30 @@ def consume_with_tracing(
             try:
                 # 处理消息
                 handler(body)
-                
+
                 # ACK
                 ch.basic_ack(delivery_tag=method.delivery_tag)
                 span.set_status(Status(StatusCode.OK))
             except Exception as e:
                 span.record_exception(e)
                 span.set_status(Status(StatusCode.ERROR))
-                
+
                 # NACK with requeue
                 ch.basic_nack(
                     delivery_tag=method.delivery_tag,
                     requeue=True
                 )
-    
+
     # 设置Qos
     channel.basic_qos(prefetch_count=10)
-    
+
     # 开始消费
     channel.basic_consume(
         queue=queue_name,
         on_message_callback=callback,
         auto_ack=False
     )
-    
+
     channel.start_consuming()
 ```
 
@@ -861,19 +861,19 @@ async def publish_async_with_tracing(
         # 注入trace context
         headers = {}
         propagate.inject(headers)
-        
+
         # 获取exchange
         exchange = await channel.get_exchange(exchange_name)
-        
+
         # 创建消息
         message = aio_pika.Message(
             body=body,
             delivery_mode=aio_pika.DeliveryMode.PERSISTENT,
             headers=headers,
         )
-        
+
         span.set_attribute("messaging.message.body.size", len(body))
-        
+
         try:
             # 发布
             await exchange.publish(
@@ -897,17 +897,17 @@ async def consume_async_with_tracing(
         queue_name,
         durable=True,
     )
-    
+
     # 设置Qos
     await channel.set_qos(prefetch_count=10)
-    
+
     async with queue.iterator() as queue_iter:
         async for message in queue_iter:
             async with message.process():
                 # 提取trace context
                 headers = message.headers or {}
                 ctx = propagate.extract(headers)
-                
+
                 # 创建span
                 with tracer.start_as_current_span(
                     "rabbitmq.receive",
@@ -1046,7 +1046,7 @@ func StartWorkerPool(
         go func(workerID int) {
             ch, _ := conn.Channel()
             defer ch.Close()
-            
+
             ConsumeWithTracing(ch, queueName, handler)
         }(i)
     }
@@ -1103,15 +1103,15 @@ func StartWorkerPool(
 func WorkQueueExample() {
     conn, _ := amqp.Dial("amqp://guest:guest@localhost:5672/")
     defer conn.Close()
-    
+
     // Producer
     go func() {
         ch, _ := conn.Channel()
         defer ch.Close()
-        
+
         // 声明queue
         q, _ := ch.QueueDeclare("tasks", true, false, false, false, nil)
-        
+
         // 发布任务
         for i := 0; i < 100; i++ {
             body := []byte(fmt.Sprintf("Task %d", i))
@@ -1125,14 +1125,14 @@ func WorkQueueExample() {
             time.Sleep(100 * time.Millisecond)
         }
     }()
-    
+
     // Workers
     for i := 0; i < 5; i++ {
         go func(workerID int) {
             ch, _ := conn.Channel()
             defer ch.Close()
-            
-            ConsumeWithTracing(ch, "tasks", 
+
+            ConsumeWithTracing(ch, "tasks",
                 func(ctx context.Context, msg amqp.Delivery) error {
                     log.Printf("Worker %d: %s", workerID, msg.Body)
                     time.Sleep(1 * time.Second) // 模拟处理
@@ -1140,7 +1140,7 @@ func WorkQueueExample() {
                 })
         }(i)
     }
-    
+
     select {}
 }
 ```
@@ -1152,10 +1152,10 @@ func WorkQueueExample() {
 func TopicExchangeExample() {
     conn, _ := amqp.Dial("amqp://guest:guest@localhost:5672/")
     defer conn.Close()
-    
+
     ch, _ := conn.Channel()
     defer ch.Close()
-    
+
     // 声明topic exchange
     err := ch.ExchangeDeclare(
         "logs_topic", // name
@@ -1166,22 +1166,22 @@ func TopicExchangeExample() {
         false,        // no-wait
         nil,          // arguments
     )
-    
+
     // 订阅不同的routing key pattern
     patterns := []string{
         "*.error",        // 所有error日志
         "auth.*",         // auth服务所有日志
         "order.critical", // order关键日志
     }
-    
+
     for _, pattern := range patterns {
         go func(p string) {
             ch, _ := conn.Channel()
             q, _ := ch.QueueDeclare("", false, true, true, false, nil)
-            
+
             // 绑定
             ch.QueueBind(q.Name, p, "logs_topic", false, nil)
-            
+
             // 消费
             ConsumeWithTracing(ch, q.Name,
                 func(ctx context.Context, msg amqp.Delivery) error {
@@ -1190,7 +1190,7 @@ func TopicExchangeExample() {
                 })
         }(pattern)
     }
-    
+
     // 发布不同routing key的消息
     routingKeys := []string{
         "auth.info",
@@ -1198,7 +1198,7 @@ func TopicExchangeExample() {
         "order.info",
         "order.critical",
     }
-    
+
     for _, rk := range routingKeys {
         body := []byte(fmt.Sprintf("Log message: %s", rk))
         PublishWithTracing(
@@ -1214,9 +1214,9 @@ func TopicExchangeExample() {
 
 ---
 
-**文档状态**: ✅ 完成  
-**RabbitMQ版本**: v3.12+  
-**AMQP版本**: 0.9.1  
+**文档状态**: ✅ 完成
+**RabbitMQ版本**: v3.12+
+**AMQP版本**: 0.9.1
 **适用场景**: 企业消息队列、微服务通信、任务队列
 
 **关键特性**:

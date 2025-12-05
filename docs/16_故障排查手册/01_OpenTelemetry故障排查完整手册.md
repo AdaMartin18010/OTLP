@@ -1,14 +1,14 @@
 # OpenTelemetry故障排查完整手册
 
-> **实战指南**: 生产环境故障诊断与解决  
+> **实战指南**: 生产环境故障诊断与解决
 > **最后更新**: 2025年10月8日
 
 ---
 
-## 目录
+## 📋 目录
 
 - [OpenTelemetry故障排查完整手册](#opentelemetry故障排查完整手册)
-  - [目录](#目录)
+  - [📋 目录](#-目录)
   - [1. 快速诊断流程](#1-快速诊断流程)
     - [1.1 故障分类](#11-故障分类)
     - [1.2 诊断决策树](#12-诊断决策树)
@@ -86,10 +86,10 @@
 快速诊断决策树:
 
 问题: 完全没有数据？
-├─ 是 → 
+├─ 是 →
 │  ├─ SDK正常初始化？
 │  │  ├─ 否 → 检查SDK配置
-│  │  └─ 是 → 
+│  │  └─ 是 →
 │  │     ├─ Collector可达？
 │  │     │  ├─ 否 → 检查网络/DNS
 │  │     │  └─ 是 → 检查认证/TLS
@@ -97,7 +97,7 @@
 │  │        └─ 检查Exporter配置
 │  └─
 └─ 否 → 部分数据丢失？
-   ├─ 是 → 
+   ├─ 是 →
    │  ├─ 特定时间段？
    │  │  └─ 检查Collector日志
    │  ├─ 特定服务？
@@ -135,18 +135,18 @@ func debugSDK() {
     exporter, _ := stdouttrace.New(
         stdouttrace.WithPrettyPrint(),
     )
-    
+
     tp := trace.NewTracerProvider(
         trace.WithBatcher(exporter),
     )
     otel.SetTracerProvider(tp)
-    
+
     // 创建测试Span
     ctx := context.Background()
     tracer := otel.Tracer("debug")
     _, span := tracer.Start(ctx, "test-span")
     span.End()
-    
+
     // 强制Flush
     tp.ForceFlush(ctx)
     tp.Shutdown(ctx)
@@ -223,13 +223,13 @@ func profileSDK() {
     f, _ := os.Create("cpu.prof")
     pprof.StartCPUProfile(f)
     defer pprof.StopCPUProfile()
-    
+
     // 2. 内存Profiling
     runtime.GC()
     f2, _ := os.Create("mem.prof")
     pprof.WriteHeapProfile(f2)
     f2.Close()
-    
+
     // 3. Goroutine Profiling
     f3, _ := os.Create("goroutine.prof")
     pprof.Lookup("goroutine").WriteTo(f3, 0)
@@ -239,7 +239,7 @@ func profileSDK() {
 // 监控SDK内部指标
 func monitorSDKMetrics() {
     meter := otel.Meter("sdk-monitoring")
-    
+
     // 导出队列大小
     queueSize, _ := meter.Int64ObservableGauge("otel.exporter.queue_size")
     // 导出延迟
@@ -378,7 +378,7 @@ service:
   telemetry:
     logs:
       level: debug  # 临时调试用
-      
+
 # 2. 添加日志导出器验证数据
 exporters:
   logging:
@@ -498,7 +498,7 @@ echo "=== Diagnostics Complete ==="
   caCert, _ := os.ReadFile("/path/to/ca.crt")
   caCertPool := x509.NewCertPool()
   caCertPool.AppendCertsFromPEM(caCert)
-  
+
   tlsConfig := &tls.Config{
       RootCAs: caCertPool,
   }
@@ -583,10 +583,10 @@ echo "=== Diagnostics Complete ==="
 // 1. 正确传播Context (HTTP)
 func httpClientWithContext(ctx context.Context) {
     req, _ := http.NewRequestWithContext(ctx, "GET", url, nil)
-    
+
     // Context自动注入到Header
     otel.GetTextMapPropagator().Inject(ctx, propagation.HeaderCarrier(req.Header))
-    
+
     resp, _ := http.DefaultClient.Do(req)
 }
 
@@ -596,7 +596,7 @@ func asyncTask(parentCtx context.Context) {
         // 创建新Span，继承parent context
         ctx, span := otel.Tracer("async").Start(parentCtx, "async-task")
         defer span.End()
-        
+
         // ... 异步任务
     }()
 }
@@ -625,7 +625,7 @@ func validateSpanAttributes(span trace.Span) {
         "http.url",
         "http.status_code",
     }
-    
+
     // 使用ReadOnlySpan检查
     if ros, ok := span.(trace.ReadOnlySpan); ok {
         attrs := ros.Attributes()
@@ -668,7 +668,7 @@ curl -w "@curl-format.txt" -o /dev/null -s http://collector:4318/v1/traces
 
 # 2. 分析延迟分布
 # Prometheus查询:
-histogram_quantile(0.99, 
+histogram_quantile(0.99,
   rate(otelcol_exporter_send_failed_spans_bucket[5m])
 )
 
@@ -692,7 +692,7 @@ processors:
     check_interval: 1s
     limit_mib: 512
     spike_limit_mib: 128
-    
+
   # 批处理优化
   batch:
     timeout: 10s
@@ -839,7 +839,7 @@ spec:
           limits:
             cpu: 1000m
             memory: 512Mi
-        
+
         # 健康检查
         livenessProbe:
           httpGet:
@@ -847,14 +847,14 @@ spec:
             port: 13133
           initialDelaySeconds: 10
           periodSeconds: 5
-          
+
         readinessProbe:
           httpGet:
             path: /
             port: 13133
           initialDelaySeconds: 5
           periodSeconds: 3
-        
+
         # 环境变量
         env:
         - name: GOGC
@@ -905,7 +905,7 @@ spec:
 排查:
   # 检查Jaeger健康
   curl http://jaeger:14269/health
-  
+
   # 检查Collector配置
   exporters:
     jaeger:
@@ -917,10 +917,10 @@ spec:
 排查:
   # 检查Elasticsearch/Cassandra
   curl http://elasticsearch:9200/_cat/indices?v
-  
+
   # 检查Jaeger Query
   curl http://jaeger:16686/api/services
-  
+
   # 检查时间范围和Service名称
 
 问题3: 查询慢
@@ -1039,7 +1039,7 @@ builder --config=builder-config.yaml
 案例1: 数据延迟增加
 现象: P99延迟从100ms增加到2s
 根因: Backend Elasticsearch磁盘满
-解决: 
+解决:
   1. 清理旧索引
   2. 增加磁盘空间
   3. 配置自动清理策略
@@ -1101,6 +1101,6 @@ builder --config=builder-config.yaml
 
 ---
 
-**文档状态**: ✅ 完成  
-**适用版本**: OpenTelemetry v1.28+  
+**文档状态**: ✅ 完成
+**适用版本**: OpenTelemetry v1.28+
 **更新频率**: 持续更新

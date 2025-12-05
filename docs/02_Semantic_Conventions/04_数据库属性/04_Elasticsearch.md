@@ -1,6 +1,6 @@
 # Elasticsearch语义约定详解
 
-> **搜索与分析引擎**: Elasticsearch Tracing与Metrics完整规范  
+> **搜索与分析引擎**: Elasticsearch Tracing与Metrics完整规范
 > **最后更新**: 2025年10月8日
 
 ---
@@ -109,7 +109,7 @@ func IndexDocumentWithTracing(
     doc interface{},
 ) error {
     tracer := otel.Tracer("es-client")
-    
+
     ctx, span := tracer.Start(ctx, "elasticsearch.index",
         trace.WithSpanKind(trace.SpanKindClient),
         trace.WithAttributes(
@@ -119,7 +119,7 @@ func IndexDocumentWithTracing(
         ),
     )
     defer span.End()
-    
+
     // 索引文档
     body, _ := json.Marshal(doc)
     res, err := client.Index(
@@ -128,14 +128,14 @@ func IndexDocumentWithTracing(
         client.Index.WithDocumentID(docID),
         client.Index.WithContext(ctx),
     )
-    
+
     if err != nil {
         span.RecordError(err)
         span.SetStatus(codes.Error, "index failed")
         return err
     }
     defer res.Body.Close()
-    
+
     span.SetStatus(codes.Ok, "indexed")
     return nil
 }
@@ -150,7 +150,7 @@ func BulkIndexWithTracing(
     docs []interface{},
 ) error {
     tracer := otel.Tracer("es-client")
-    
+
     ctx, span := tracer.Start(ctx, "elasticsearch.bulk",
         trace.WithSpanKind(trace.SpanKindClient),
         trace.WithAttributes(
@@ -160,7 +160,7 @@ func BulkIndexWithTracing(
         ),
     )
     defer span.End()
-    
+
     // 构建批量请求
     var buf bytes.Buffer
     for _, doc := range docs {
@@ -172,20 +172,20 @@ func BulkIndexWithTracing(
         json.NewEncoder(&buf).Encode(meta)
         json.NewEncoder(&buf).Encode(doc)
     }
-    
+
     // 执行批量操作
     res, err := client.Bulk(
         bytes.NewReader(buf.Bytes()),
         client.Bulk.WithContext(ctx),
     )
-    
+
     if err != nil {
         span.RecordError(err)
         span.SetStatus(codes.Error, "bulk failed")
         return err
     }
     defer res.Body.Close()
-    
+
     span.SetStatus(codes.Ok, "bulk completed")
     return nil
 }
@@ -236,11 +236,11 @@ def search_with_tracing(client: Elasticsearch, index: str, query: dict):
     ) as span:
         try:
             response = client.search(index=index, query=query)
-            
+
             hits = response['hits']['total']['value']
             span.set_attribute("db.response.returned_count", hits)
             span.set_status(Status(StatusCode.OK))
-            
+
             return response
         except Exception as e:
             span.record_exception(e)
@@ -279,8 +279,8 @@ def search_with_tracing(client: Elasticsearch, index: str, query: dict):
 
 ---
 
-**文档状态**: ✅ 完成  
-**Elasticsearch版本**: 7.x / 8.x  
+**文档状态**: ✅ 完成
+**Elasticsearch版本**: 7.x / 8.x
 **适用场景**: 全文搜索、日志分析、实时分析
 
 **关键特性**:

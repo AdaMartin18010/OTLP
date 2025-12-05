@@ -1,14 +1,14 @@
 # GenAI Observability: 生成式AI可观测性
 
-> **规范版本**: v1.30.0 (Experimental)  
+> **规范版本**: v1.30.0 (Experimental)
 > **最后更新**: 2025年10月8日
 
 ---
 
-## 目录
+## 📋 目录
 
 - [GenAI Observability: 生成式AI可观测性](#genai-observability-生成式ai可观测性)
-  - [目录](#目录)
+  - [📋 目录](#-目录)
   - [1. 概述](#1-概述)
     - [1.1 为什么需要GenAI可观测性](#11-为什么需要genai可观测性)
     - [1.2 特殊挑战](#12-特殊挑战)
@@ -210,7 +210,7 @@ Prompt属性:
 │ gen_ai.completion.0.content│string │ "Here is..."       │
 └──────────────────────────┴─────────┴────────────────────┘
 
-注意: 
+注意:
 ⚠️ Prompt和Completion可能包含敏感数据
 ⚠️ 生产环境可能需要脱敏或不记录
 
@@ -293,10 +293,10 @@ func (c *CostCalculator) Calculate(model string, inputTokens, outputTokens int) 
     if !ok {
         return 0
     }
-    
+
     inputCost := float64(inputTokens) * price.InputPer1K / 1000
     outputCost := float64(outputTokens) * price.OutputPer1K / 1000
-    
+
     return inputCost + outputCost
 }
 
@@ -304,10 +304,10 @@ func (c *CostCalculator) Calculate(model string, inputTokens, outputTokens int) 
 func trackLLMCall(ctx context.Context, model string, inputTokens, outputTokens int) {
     _, span := tracer.Start(ctx, "llm.call")
     defer span.End()
-    
+
     calc := NewCostCalculator()
     cost := calc.Calculate(model, inputTokens, outputTokens)
-    
+
     span.SetAttributes(
         attribute.String("gen_ai.system", "openai"),
         attribute.String("gen_ai.request.model", model),
@@ -316,12 +316,12 @@ func trackLLMCall(ctx context.Context, model string, inputTokens, outputTokens i
         attribute.Int("gen_ai.usage.total_tokens", inputTokens+outputTokens),
         attribute.Float64("gen_ai.cost.usd", cost),
     )
-    
+
     // 记录指标
     costCounter.Add(ctx, cost, metric.WithAttributes(
         attribute.String("model", model),
     ))
-    
+
     tokenCounter.Add(ctx, int64(inputTokens+outputTokens), metric.WithAttributes(
         attribute.String("model", model),
         attribute.String("type", "total"),
@@ -358,21 +358,21 @@ sum(rate(gen_ai_cost_usd_total[24h])) * 24 * 30  # 月成本预估
 // 延迟追踪
 func monitorLLMLatency(ctx context.Context) {
     meter := otel.Meter("genai")
-    
+
     // Histogram: LLM响应延迟
     latencyHistogram, _ := meter.Float64Histogram(
         "gen_ai.latency",
         metric.WithDescription("LLM response latency"),
         metric.WithUnit("ms"),
     )
-    
+
     // Time to First Token (TTFT)
     ttftHistogram, _ := meter.Float64Histogram(
         "gen_ai.ttft",
         metric.WithDescription("Time to first token"),
         metric.WithUnit("ms"),
     )
-    
+
     // Tokens per second
     tpsGauge, _ := meter.Float64Histogram(
         "gen_ai.tokens_per_second",
@@ -385,10 +385,10 @@ func monitorLLMLatency(ctx context.Context) {
 func callLLM(ctx context.Context, prompt string) (string, error) {
     ctx, span := tracer.Start(ctx, "llm.call")
     defer span.End()
-    
+
     start := time.Now()
     firstTokenTime := time.Time{}
-    
+
     // 流式响应
     stream, err := client.CreateChatCompletionStream(ctx, request)
     if err != nil {
@@ -396,10 +396,10 @@ func callLLM(ctx context.Context, prompt string) (string, error) {
         return "", err
     }
     defer stream.Close()
-    
+
     var response strings.Builder
     tokenCount := 0
-    
+
     for {
         chunk, err := stream.Recv()
         if err == io.EOF {
@@ -409,40 +409,40 @@ func callLLM(ctx context.Context, prompt string) (string, error) {
             span.RecordError(err)
             return "", err
         }
-        
+
         // 记录第一个token时间
         if firstTokenTime.IsZero() {
             firstTokenTime = time.Now()
             ttft := firstTokenTime.Sub(start).Milliseconds()
-            
+
             span.SetAttributes(attribute.Int64("gen_ai.ttft_ms", ttft))
             ttftHistogram.Record(ctx, float64(ttft))
         }
-        
+
         response.WriteString(chunk.Choices[0].Delta.Content)
         tokenCount++
     }
-    
+
     duration := time.Since(start)
-    
+
     // 记录延迟
     latencyHistogram.Record(ctx, float64(duration.Milliseconds()),
         metric.WithAttributes(
             attribute.String("model", "gpt-4"),
         ),
     )
-    
+
     // 记录Tokens/s
     if duration.Seconds() > 0 {
         tps := float64(tokenCount) / duration.Seconds()
         tpsGauge.Record(ctx, tps)
     }
-    
+
     span.SetAttributes(
         attribute.Int64("gen_ai.latency_ms", duration.Milliseconds()),
         attribute.Int("gen_ai.output_tokens", tokenCount),
     )
-    
+
     return response.String(), nil
 }
 ```
@@ -464,25 +464,25 @@ type QualityMetrics struct {
 func evaluateQuality(ctx context.Context, prompt, completion string) QualityMetrics {
     // 使用另一个LLM评估质量
     evaluator := NewQualityEvaluator()
-    
+
     metrics := evaluator.Evaluate(ctx, prompt, completion)
-    
+
     // 记录指标
     meter := otel.Meter("genai.quality")
-    
+
     relevanceGauge, _ := meter.Float64Histogram("gen_ai.quality.relevance")
     relevanceGauge.Record(ctx, metrics.relevance)
-    
+
     coherenceGauge, _ := meter.Float64Histogram("gen_ai.quality.coherence")
     coherenceGauge.Record(ctx, metrics.coherence)
-    
+
     // 检测低质量输出
     if metrics.relevance < 0.5 {
-        logger.Warn("Low relevance score", 
+        logger.Warn("Low relevance score",
             "prompt", prompt[:100],
             "score", metrics.relevance)
     }
-    
+
     return metrics
 }
 
@@ -490,38 +490,38 @@ func evaluateQuality(ctx context.Context, prompt, completion string) QualityMetr
 func detectHallucination(ctx context.Context, completion string, sources []string) bool {
     // 检查输出是否基于可靠来源
     checker := NewFactChecker()
-    
+
     isGrounded := checker.Check(ctx, completion, sources)
-    
+
     if !isGrounded {
         // 记录幻觉事件
         span := trace.SpanFromContext(ctx)
         span.AddEvent("hallucination_detected", trace.WithAttributes(
             attribute.String("completion", completion[:100]),
         ))
-        
+
         hallucinationCounter.Add(ctx, 1)
     }
-    
+
     return !isGrounded
 }
 
 // 安全检测
 func detectUnsafeContent(ctx context.Context, text string) []string {
     detector := NewSafetyDetector()
-    
+
     violations := detector.Detect(ctx, text)
-    
+
     if len(violations) > 0 {
         span := trace.SpanFromContext(ctx)
         span.SetAttributes(
             attribute.Bool("gen_ai.unsafe_content", true),
             attribute.StringSlice("gen_ai.violations", violations),
         )
-        
+
         safetyViolationCounter.Add(ctx, int64(len(violations)))
     }
-    
+
     return violations
 }
 ```
@@ -537,7 +537,7 @@ package genai
 
 import (
     "context"
-    
+
     "github.com/sashabaranov/go-openai"
     "go.opentelemetry.io/otel"
     "go.opentelemetry.io/otel/attribute"
@@ -562,12 +562,12 @@ func (c *InstrumentedClient) CreateChatCompletion(
     ctx context.Context,
     req openai.ChatCompletionRequest,
 ) (openai.ChatCompletionResponse, error) {
-    
+
     ctx, span := c.tracer.Start(ctx, "openai.chat.completion",
         trace.WithSpanKind(trace.SpanKindClient),
     )
     defer span.End()
-    
+
     // 记录请求属性
     span.SetAttributes(
         attribute.String("gen_ai.system", "openai"),
@@ -577,7 +577,7 @@ func (c *InstrumentedClient) CreateChatCompletion(
         attribute.Float64("gen_ai.request.top_p", float64(req.TopP)),
         attribute.Int("gen_ai.request.n", req.N),
     )
-    
+
     // 记录prompt (可选，注意敏感数据)
     if shouldRecordPrompt() {
         for i, msg := range req.Messages {
@@ -589,7 +589,7 @@ func (c *InstrumentedClient) CreateChatCompletion(
             ))
         }
     }
-    
+
     // 调用API
     resp, err := c.client.CreateChatCompletion(ctx, req)
     if err != nil {
@@ -597,7 +597,7 @@ func (c *InstrumentedClient) CreateChatCompletion(
         span.SetStatus(codes.Error, err.Error())
         return resp, err
     }
-    
+
     // 记录响应属性
     span.SetAttributes(
         attribute.String("gen_ai.response.id", resp.ID),
@@ -606,14 +606,14 @@ func (c *InstrumentedClient) CreateChatCompletion(
         attribute.Int("gen_ai.usage.output_tokens", resp.Usage.CompletionTokens),
         attribute.Int("gen_ai.usage.total_tokens", resp.Usage.TotalTokens),
     )
-    
+
     if len(resp.Choices) > 0 {
         span.SetAttributes(
-            attribute.String("gen_ai.response.finish_reason", 
+            attribute.String("gen_ai.response.finish_reason",
                 string(resp.Choices[0].FinishReason)),
         )
     }
-    
+
     // 计算成本
     cost := c.calculator.Calculate(
         req.Model,
@@ -621,17 +621,17 @@ func (c *InstrumentedClient) CreateChatCompletion(
         resp.Usage.CompletionTokens,
     )
     span.SetAttributes(attribute.Float64("gen_ai.cost.usd", cost))
-    
+
     // 记录指标
     recordMetrics(ctx, req.Model, resp.Usage, cost)
-    
+
     span.SetStatus(codes.Ok, "")
     return resp, nil
 }
 
 func recordMetrics(ctx context.Context, model string, usage openai.Usage, cost float64) {
     meter := otel.Meter("genai.openai")
-    
+
     // Token计数
     tokenCounter, _ := meter.Int64Counter("gen_ai.tokens")
     tokenCounter.Add(ctx, int64(usage.TotalTokens),
@@ -639,7 +639,7 @@ func recordMetrics(ctx context.Context, model string, usage openai.Usage, cost f
             attribute.String("model", model),
         ),
     )
-    
+
     // 成本
     costCounter, _ := meter.Float64Counter("gen_ai.cost")
     costCounter.Add(ctx, cost,
@@ -661,26 +661,26 @@ class OpenTelemetryCallbackHandler(BaseCallbackHandler):
     def __init__(self):
         self.tracer = trace.get_tracer(__name__)
         self.span_stack = []
-    
+
     def on_llm_start(self, serialized, prompts, **kwargs):
         """LLM调用开始"""
         span = self.tracer.start_span("llm.call")
         self.span_stack.append(span)
-        
+
         # 记录请求属性
         span.set_attributes({
             "gen_ai.system": "openai",
             "gen_ai.request.model": kwargs.get("invocation_params", {}).get("model_name"),
             "gen_ai.request.temperature": kwargs.get("invocation_params", {}).get("temperature"),
         })
-    
+
     def on_llm_end(self, response, **kwargs):
         """LLM调用结束"""
         if not self.span_stack:
             return
-        
+
         span = self.span_stack.pop()
-        
+
         # 记录Token使用
         if hasattr(response, "llm_output") and response.llm_output:
             token_usage = response.llm_output.get("token_usage", {})
@@ -689,15 +689,15 @@ class OpenTelemetryCallbackHandler(BaseCallbackHandler):
                 "gen_ai.usage.output_tokens": token_usage.get("completion_tokens", 0),
                 "gen_ai.usage.total_tokens": token_usage.get("total_tokens", 0),
             })
-        
+
         span.set_status(Status(StatusCode.OK))
         span.end()
-    
+
     def on_llm_error(self, error, **kwargs):
         """LLM调用错误"""
         if not self.span_stack:
             return
-        
+
         span = self.span_stack.pop()
         span.record_exception(error)
         span.set_status(Status(StatusCode.ERROR, str(error)))
@@ -761,7 +761,7 @@ groups:
           severity: warning
         annotations:
           summary: "High GenAI monthly cost: {{ $value | humanize }}USD"
-      
+
       # 高延迟告警
       - alert: HighGenAILatency
         expr: histogram_quantile(0.99, rate(gen_ai_latency_bucket[5m])) > 10000
@@ -770,7 +770,7 @@ groups:
           severity: warning
         annotations:
           summary: "High GenAI p99 latency: {{ $value | humanize }}ms"
-      
+
       # 高错误率告警
       - alert: HighGenAIErrorRate
         expr: rate(gen_ai_errors_total[5m]) / rate(gen_ai_requests_total[5m]) > 0.05
@@ -779,7 +779,7 @@ groups:
           severity: critical
         annotations:
           summary: "High GenAI error rate: {{ $value | humanizePercentage }}"
-      
+
       # 异常Token使用
       - alert: AnomalousTokenUsage
         expr: rate(gen_ai_tokens_total[5m]) > avg_over_time(rate(gen_ai_tokens_total[5m])[1h:5m]) * 3
@@ -820,24 +820,24 @@ groups:
 func secureTrace(ctx context.Context, prompt, completion string) {
     _, span := tracer.Start(ctx, "llm.call")
     defer span.End()
-    
+
     // 1. 检测Prompt注入
     if detectInjection(prompt) {
         span.SetAttributes(attribute.Bool("security.injection_detected", true))
         injectionCounter.Add(ctx, 1)
         return // 拒绝请求
     }
-    
+
     // 2. 脱敏
     sanitizedPrompt := sanitize(prompt)
-    
+
     // 3. 只记录元数据
     span.SetAttributes(
         attribute.Int("prompt.length", len(prompt)),
         attribute.String("prompt.hash", hash(prompt)),
         // 不记录实际内容
     )
-    
+
     // 4. 审计日志
     auditLog(ctx, "llm.call", userID, sanitizedPrompt)
 }
@@ -908,14 +908,14 @@ span.SetAttributes(
     attribute.Int("gen_ai.usage.input_tokens", 150),
     attribute.Int("gen_ai.usage.output_tokens", 50),
     attribute.Float64("gen_ai.cost.usd", 0.003),
-    
+
     // ✅ 推荐
     attribute.Int64("gen_ai.latency_ms", 1234),
     attribute.String("gen_ai.response.finish_reason", "stop"),
-    
+
     // ⚠️ 可选 (小心敏感数据)
     attribute.Int("gen_ai.prompt.length", len(prompt)),
-    
+
     // ❌ 避免 (生产环境)
     // attribute.String("gen_ai.prompt.content", prompt),
 )
@@ -931,6 +931,6 @@ span.SetAttributes(
 
 ---
 
-**文档状态**: ✅ 完成  
-**规范状态**: 🚧 实验性 (Experimental)  
+**文档状态**: ✅ 完成
+**规范状态**: 🚧 实验性 (Experimental)
 **生产就绪**: 部分功能已成熟

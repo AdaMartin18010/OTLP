@@ -1,14 +1,14 @@
 # OTLP协议形式化验证
 
-> **版本**: v1.30.0  
+> **版本**: v1.30.0
 > **最后更新**: 2025年10月8日
 
 ---
 
-## 目录
+## 📋 目录
 
 - [OTLP协议形式化验证](#otlp协议形式化验证)
-  - [目录](#目录)
+  - [📋 目录](#-目录)
   - [1. 概述](#1-概述)
     - [1.1 为什么需要形式化验证](#11-为什么需要形式化验证)
     - [1.2 验证范围](#12-验证范围)
@@ -158,7 +158,7 @@ Export: TelemetryData → Result<(), Error>
 
 Result<T, E> = Ok(T) | Err(E)
 
-Error = 
+Error =
   | NetworkError
   | InvalidData
   | ServerError
@@ -274,7 +274,7 @@ Metrics通常是累积的:
 但OTLP使用绝对值语义:
   Export({cumulative_value: 100, start_time: T0})
   Export({cumulative_value: 100, start_time: T0})
-  
+
   Backend识别重复 (相同start_time) → 幂等 ✓
 
 证明 (Logs):
@@ -454,7 +454,7 @@ MaxDelay: 5s
 需要证明:
 1. 完整性 (Completeness):
    ⋃ Bᵢ.data = Data
-   
+
 2. 无重复 (No Duplicates):
    ∀i≠j: Bᵢ.data ∩ Bⱼ.data = ∅
 
@@ -467,14 +467,14 @@ MaxDelay: 5s
 Batch算法:
   batches = []
   current_batch = []
-  
+
   for d in Data:
-    if len(current_batch) >= MaxBatchCount or 
+    if len(current_batch) >= MaxBatchCount or
        size(current_batch) + size(d) > MaxBatchSize:
       batches.append(current_batch)
       current_batch = []
     current_batch.append(d)
-  
+
   if current_batch:
     batches.append(current_batch)
 
@@ -503,15 +503,15 @@ Batch算法:
 重试策略:
 1. 指数退避
    delay = base_delay * 2^(attempt - 1)
-   
+
 2. 最大重试次数
    max_attempts = 5
-   
+
 3. 可重试错误
    - NetworkError
    - Timeout
    - ServerError (5xx)
-   
+
 4. 不可重试错误
    - InvalidData (4xx)
    - Authentication
@@ -590,7 +590,7 @@ Retry执行:
 ```text
 gRPC服务定义:
 service TraceService {
-  rpc Export(ExportTraceServiceRequest) 
+  rpc Export(ExportTraceServiceRequest)
     returns (ExportTraceServiceResponse);
 }
 
@@ -664,7 +664,7 @@ Export(data) via gRPC:
   1. Serialize(data) → bytes
   2. HTTP/2传输bytes
   3. Deserialize(bytes) → data'
-  
+
   data' = data ✓
 
 结论:
@@ -851,11 +851,11 @@ func TestProtobufRoundTrip(t *testing.T) {
         SpanId: []byte{5,6,7,8},
         Name: "test",
     }
-    
+
     bytes, _ := proto.Marshal(original)
     decoded := &Span{}
     proto.Unmarshal(bytes, decoded)
-    
+
     assert.Equal(t, original, decoded)  // ✓
 }
 
@@ -947,13 +947,13 @@ T_batch:
 // 验证幂等性
 func TestIdempotence(t *testing.T) {
     exporter := newMockExporter()
-    
+
     span := &Span{TraceId: []byte{1,2,3,4}, SpanId: []byte{5,6,7,8}}
-    
+
     // 导出两次
     exporter.Export([]Span{span})
     exporter.Export([]Span{span})
-    
+
     // 验证后端只收到一个span (根据唯一ID)
     assert.Equal(t, 1, exporter.backend.Count(span.TraceId, span.SpanId))
 }
@@ -961,17 +961,17 @@ func TestIdempotence(t *testing.T) {
 // 验证顺序无关性
 func TestOrderIndependence(t *testing.T) {
     exporter := newMockExporter()
-    
+
     span1 := &Span{SpanId: []byte{1}}
     span2 := &Span{SpanId: []byte{2}}
-    
+
     // 两种顺序导出
     exporter1 := exporter.Clone()
     exporter1.Export([]Span{span1, span2})
-    
+
     exporter2 := exporter.Clone()
     exporter2.Export([]Span{span2, span1})
-    
+
     // 验证结果相同
     assert.Equal(t, exporter1.backend.Spans(), exporter2.backend.Spans())
 }
@@ -979,15 +979,15 @@ func TestOrderIndependence(t *testing.T) {
 // 验证批处理完整性
 func TestBatchCompleteness(t *testing.T) {
     spans := generateSpans(1000)
-    
+
     batcher := NewBatchProcessor(maxBatch: 100)
     for _, span := range spans {
         batcher.OnEnd(span)
     }
     batcher.ForceFlush()
-    
+
     exported := batcher.GetExportedSpans()
-    
+
     // 验证所有span都被导出
     assert.Equal(t, len(spans), len(exported))
     assert.ElementsMatch(t, spans, exported)
@@ -1005,6 +1005,6 @@ func TestBatchCompleteness(t *testing.T) {
 
 ---
 
-**文档状态**: ✅ 完成  
-**审核状态**: 待审核  
+**文档状态**: ✅ 完成
+**审核状态**: 待审核
 **验证工具**: TLA+, Coq, Property-based Testing

@@ -1,8 +1,8 @@
 # Metrics Exemplars 详解
 
-> **标准版本**: v1.3.0 (Stable自v1.3.0)  
-> **发布日期**: 2024年9月  
-> **状态**: Stable  
+> **标准版本**: v1.3.0 (Stable自v1.3.0)
+> **发布日期**: 2024年9月
+> **状态**: Stable
 > **最后更新**: 2025年10月9日
 
 ---
@@ -86,7 +86,7 @@ Exemplars像"具体案例":
 ```text
 📊 Grafana仪表板显示:
    P95延迟突然从100ms飙升到5s
-   
+
 ❓ 传统方式的困境:
    1. 看到了问题 (P95=5s)
    2. 但不知道是哪些请求慢
@@ -205,19 +205,19 @@ Timeline:
 message Exemplar {
   // 可选: 过滤属性 (不影响Metric标签)
   repeated KeyValue filtered_attributes = 7;
-  
+
   // 必需: 时间戳 (纳秒)
   fixed64 time_unix_nano = 2;
-  
+
   // 必需: 值 (根据Metric类型选择)
   oneof value {
     double as_double = 3;
     sfixed64 as_int = 6;
   }
-  
+
   // 可选: 关联的Span ID (8字节十六进制)
   bytes span_id = 4;
-  
+
   // 可选: 关联的Trace ID (16字节十六进制)
   bytes trace_id = 5;
 }
@@ -303,7 +303,7 @@ func recordLatency(ctx context.Context, latency float64) {
     // 获取当前Span
     span := trace.SpanFromContext(ctx)
     spanCtx := span.SpanContext()
-    
+
     // 记录Metric时附加Exemplar
     histogram.Record(ctx, latency,
         metric.WithAttributes(
@@ -429,12 +429,12 @@ type ReservoirSampler struct {
 
 func (s *ReservoirSampler) Offer(ex Exemplar) {
     s.count++
-    
+
     if len(s.samples) < s.capacity {
         s.samples = append(s.samples, ex)
         return
     }
-    
+
     // 以 capacity/count 概率替换
     j := s.rng.Int63n(s.count)
     if j < int64(s.capacity) {
@@ -486,10 +486,10 @@ class TailLatencySampler:
         self.capacity = capacity
         self.samples = []
         self.p95_threshold = 0.0
-        
+
     def offer(self, exemplar):
         value = exemplar.value
-        
+
         # 计算采样概率
         if value > self.p95_threshold:
             probability = 0.9  # 90%保留慢请求
@@ -497,17 +497,17 @@ class TailLatencySampler:
             probability = 0.3  # 30%保留中等请求
         else:
             probability = 0.05  # 5%保留快请求
-        
+
         if random.random() < probability:
             if len(self.samples) < self.capacity:
                 self.samples.append(exemplar)
             else:
                 # 替换最小值
-                min_idx = min(range(len(self.samples)), 
+                min_idx = min(range(len(self.samples)),
                               key=lambda i: self.samples[i].value)
                 if value > self.samples[min_idx].value:
                     self.samples[min_idx] = exemplar
-        
+
         self._update_thresholds()
 ```
 
@@ -546,22 +546,22 @@ message Exemplar {
   // 这些属性不会影响Metric的聚合维度
   // 但会被保留用于Exemplar的详细分析
   repeated opentelemetry.proto.common.v1.KeyValue filtered_attributes = 7;
-  
+
   // 必需: Exemplar的时间戳
   // Unix时间,纳秒精度
   fixed64 time_unix_nano = 2;
-  
+
   // 必需: Exemplar的值
   // 根据Metric类型选择as_double或as_int之一
   oneof value {
     double as_double = 3;   // 浮点型值 (Histogram通常用这个)
     sfixed64 as_int = 6;    // 整数型值 (Sum/Counter可能用这个)
   }
-  
+
   // 强烈推荐: 关联的Span ID
   // 8字节,通常编码为16字符十六进制字符串
   bytes span_id = 4;
-  
+
   // 强烈推荐: 关联的Trace ID
   // 16字节,通常编码为32字符十六进制字符串
   bytes trace_id = 5;
@@ -569,7 +569,7 @@ message Exemplar {
 
 message HistogramDataPoint {
   // ... 其他字段 ...
-  
+
   // Exemplars列表
   // 每个bucket可以有0个或多个Exemplars
   repeated Exemplar exemplars = 11;
@@ -577,7 +577,7 @@ message HistogramDataPoint {
 
 message NumberDataPoint {
   // ... 其他字段 ...
-  
+
   // Sum和Gauge也可以有Exemplars
   repeated Exemplar exemplars = 5;
 }
@@ -949,13 +949,13 @@ def init_opentelemetry():
     resource = Resource.create({
         ResourceAttributes.SERVICE_NAME: "exemplar-demo-python"
     })
-    
+
     # Traces
     tracer_provider = TracerProvider(resource=resource)
     span_processor = BatchSpanProcessor(OTLPSpanExporter(endpoint="localhost:4317", insecure=True))
     tracer_provider.add_span_processor(span_processor)
     trace.set_tracer_provider(tracer_provider)
-    
+
     # Metrics with Exemplar support
     metric_reader = PeriodicExportingMetricReader(
         OTLPMetricExporter(endpoint="localhost:4317", insecure=True),
@@ -966,33 +966,33 @@ def init_opentelemetry():
         metric_readers=[metric_reader]
     )
     metrics.set_meter_provider(meter_provider)
-    
+
     return tracer_provider, meter_provider
 
 # HTTP请求处理
 def handle_request(method: str, path: str, status_code: int):
     tracer = trace.get_tracer(__name__)
     meter = metrics.get_meter(__name__)
-    
+
     # 创建Histogram
     histogram = meter.create_histogram(
         name="http.server.duration",
         description="HTTP server request duration",
         unit="s"
     )
-    
+
     # 开始Span
     with tracer.start_as_current_span(f"{method} {path}") as span:
         span.set_attribute("http.method", method)
         span.set_attribute("http.target", path)
-        
+
         # 模拟处理
         start_time = time.time()
         process_request()
         latency = time.time() - start_time
-        
+
         span.set_attribute("http.status_code", status_code)
-        
+
         # 记录Metric
         # Python SDK会自动从当前Span提取trace_id和span_id
         histogram.record(
@@ -1003,7 +1003,7 @@ def handle_request(method: str, path: str, status_code: int):
                 "http.url": path  # Exemplar属性
             }
         )
-        
+
         span_ctx = span.get_span_context()
         print(f"[{method} {path}] latency={latency:.3f}s, "
               f"trace_id={format(span_ctx.trace_id, '032x')}, "
@@ -1019,22 +1019,22 @@ def process_request():
 
 if __name__ == "__main__":
     tracer_provider, meter_provider = init_opentelemetry()
-    
+
     # 模拟请求
     paths = ["/api/users", "/api/orders", "/api/products"]
     methods = ["GET", "POST"]
-    
+
     for _ in range(50):
         path = random.choice(paths)
         method = random.choice(methods)
         status_code = 500 if random.random() < 0.05 else 200
-        
+
         handle_request(method, path, status_code)
         time.sleep(0.1)
-    
+
     print("Done! Check Prometheus and Jaeger.")
     time.sleep(15)  # 等待导出
-    
+
     tracer_provider.shutdown()
     meter_provider.shutdown()
 ```
@@ -1173,6 +1173,6 @@ function processRequest() {
 
 *（文档未完,将继续创建剩余章节...）*-
 
-**文档状态**: 🚧 进行中 (第1部分,约800行)  
-**作者**: OTLP项目改进小组  
+**文档状态**: 🚧 进行中 (第1部分,约800行)
+**作者**: OTLP项目改进小组
 **版本**: v0.5 (Draft)

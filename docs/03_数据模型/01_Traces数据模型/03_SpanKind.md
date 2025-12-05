@@ -1,6 +1,6 @@
 # SpanKind 完整定义
 
-> **OTLP版本**: v1.0.0 (Stable)  
+> **OTLP版本**: v1.0.0 (Stable)
 > **最后更新**: 2025年10月8日
 
 ---
@@ -89,11 +89,11 @@ SpanKind ∈ {INTERNAL, CLIENT, SERVER, PRODUCER, CONSUMER}
    CLIENT span:
      - 包含网络延迟
      - 包含远程处理时间
-   
+
    SERVER span (配对的):
      - 仅服务器处理时间
      - 不包含网络延迟
-   
+
    网络延迟 = CLIENT.duration - SERVER.duration
 
 4. 错误归因
@@ -144,15 +144,15 @@ func ProcessOrder(ctx context.Context, order Order) error {
     ctx, span := tracer.Start(ctx, "ProcessOrder",
         trace.WithSpanKind(trace.SpanKindInternal))  // INTERNAL
     defer span.End()
-    
+
     // 验证订单
     if err := ValidateOrder(order); err != nil {
         return err
     }
-    
+
     // 计算总价
     total := CalculateTotal(order)
-    
+
     return nil
 }
 
@@ -161,7 +161,7 @@ func ConvertUserToDTO(user User) UserDTO {
     ctx, span := tracer.Start(ctx, "ConvertUserToDTO",
         trace.WithSpanKind(trace.SpanKindInternal))  // INTERNAL
     defer span.End()
-    
+
     return UserDTO{
         ID:   user.ID,
         Name: user.Name,
@@ -203,13 +203,13 @@ func GetUser(ctx context.Context, userID int) (*User, error) {
     ctx, span := tracer.Start(ctx, "GET /users/:id",
         trace.WithSpanKind(trace.SpanKindClient))  // CLIENT
     defer span.End()
-    
+
     url := fmt.Sprintf("https://api.example.com/users/%d", userID)
     req, _ := http.NewRequestWithContext(ctx, "GET", url, nil)
-    
+
     // 注入追踪上下文
     otel.GetTextMapPropagator().Inject(ctx, propagation.HeaderCarrier(req.Header))
-    
+
     resp, err := http.DefaultClient.Do(req)
     // ...
 }
@@ -259,11 +259,11 @@ func HandleGetUser(w http.ResponseWriter, r *http.Request) {
     // 提取上游SpanContext
     ctx := otel.GetTextMapPropagator().Extract(r.Context(),
         propagation.HeaderCarrier(r.Header))
-    
+
     ctx, span := tracer.Start(ctx, "GET /users/:id",
         trace.WithSpanKind(trace.SpanKindServer))  // SERVER
     defer span.End()
-    
+
     userID := getUserIDFromPath(r.URL.Path)
     user, err := GetUserFromDB(ctx, userID)
     // ...
@@ -317,17 +317,17 @@ func PublishOrder(ctx context.Context, order Order) error {
     ctx, span := tracer.Start(ctx, "publish order.created",
         trace.WithSpanKind(trace.SpanKindProducer))  // PRODUCER
     defer span.End()
-    
+
     message := kafka.Message{
         Topic: "orders",
         Key:   []byte(order.ID),
         Value: serializeOrder(order),
     }
-    
+
     // 注入追踪上下文到message headers
     otel.GetTextMapPropagator().Inject(ctx,
         kafkaCarrier{&message})
-    
+
     err := producer.WriteMessages(ctx, message)
     return err
 }
@@ -388,21 +388,21 @@ func ConsumeOrderMessages(ctx context.Context) {
         if err != nil {
             break
         }
-        
+
         // 提取上游SpanContext (来自PRODUCER)
         ctx := otel.GetTextMapPropagator().Extract(context.Background(),
             kafkaCarrier{&message})
-        
+
         ctx, span := tracer.Start(ctx, "process order.created",
             trace.WithSpanKind(trace.SpanKindConsumer))  // CONSUMER
         defer span.End()
-        
+
         var order Order
         deserializeOrder(message.Value, &order)
-        
+
         // 处理订单
         ProcessOrder(ctx, order)
-        
+
         consumer.CommitMessages(ctx, message)
     }
 }
@@ -750,7 +750,7 @@ package main
 import (
     "context"
     "net/http"
-    
+
     "go.opentelemetry.io/otel"
     "go.opentelemetry.io/otel/trace"
     semconv "go.opentelemetry.io/otel/semconv/v1.24.0"
@@ -766,12 +766,12 @@ func MakeHTTPRequest(ctx context.Context, url string) (*http.Response, error) {
         ),
     )
     defer span.End()
-    
+
     req, _ := http.NewRequestWithContext(ctx, "GET", url, nil)
-    
+
     // 注入追踪上下文
     otel.GetTextMapPropagator().Inject(ctx, propagation.HeaderCarrier(req.Header))
-    
+
     return http.DefaultClient.Do(req)
 }
 ```
@@ -783,7 +783,7 @@ func HandleRequest(w http.ResponseWriter, r *http.Request) {
     // 提取追踪上下文
     ctx := otel.GetTextMapPropagator().Extract(r.Context(),
         propagation.HeaderCarrier(r.Header))
-    
+
     // 创建SERVER span
     ctx, span := tracer.Start(ctx, "HTTP GET /api/users",
         trace.WithSpanKind(trace.SpanKindServer),  // SERVER
@@ -793,7 +793,7 @@ func HandleRequest(w http.ResponseWriter, r *http.Request) {
         ),
     )
     defer span.End()
-    
+
     // 处理请求...
 }
 ```
@@ -852,16 +852,16 @@ func PublishMessage(ctx context.Context, topic string, message []byte) error {
         ),
     )
     defer span.End()
-    
+
     // 创建Kafka消息
     msg := kafka.Message{
         Topic: topic,
         Value: message,
     }
-    
+
     // 注入追踪上下文
     otel.GetTextMapPropagator().Inject(ctx, kafkaCarrier{&msg})
-    
+
     return producer.WriteMessages(ctx, msg)
 }
 ```
@@ -875,11 +875,11 @@ func ConsumeMessages(ctx context.Context) {
         if err != nil {
             break
         }
-        
+
         // 提取追踪上下文
         ctx := otel.GetTextMapPropagator().Extract(context.Background(),
             kafkaCarrier{&msg})
-        
+
         // 创建CONSUMER span
         ctx, span := tracer.Start(ctx, fmt.Sprintf("receive %s", msg.Topic),
             trace.WithSpanKind(trace.SpanKindConsumer),  // CONSUMER
@@ -889,10 +889,10 @@ func ConsumeMessages(ctx context.Context) {
                 semconv.MessagingOperationKey.String("receive"),
             ),
         )
-        
+
         // 处理消息
         ProcessMessage(ctx, msg)
-        
+
         span.End()
         consumer.CommitMessages(ctx, msg)
     }
@@ -908,15 +908,15 @@ func ProcessOrder(ctx context.Context, order Order) error {
         trace.WithSpanKind(trace.SpanKindInternal),  // INTERNAL (或省略,默认)
     )
     defer span.End()
-    
+
     // 本地业务逻辑
     if err := ValidateOrder(ctx, order); err != nil {
         return err
     }
-    
+
     total := CalculateTotal(ctx, order)
     order.Total = total
-    
+
     return SaveOrder(ctx, order)
 }
 ```
@@ -1036,6 +1036,6 @@ CONSUMER.duration: 处理消息延迟
 
 ---
 
-**文档状态**: ✅ 完成  
-**审核状态**: 待审核  
+**文档状态**: ✅ 完成
+**审核状态**: 待审核
 **下一步**: [04_SpanStatus.md](./04_SpanStatus.md)

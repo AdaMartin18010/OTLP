@@ -1,6 +1,6 @@
 # Azure云平台属性详解
 
-> **Microsoft Azure**: Resource与Span完整语义约定规范  
+> **Microsoft Azure**: Resource与Span完整语义约定规范
 > **最后更新**: 2025年10月8日
 
 ---
@@ -230,23 +230,23 @@ func DetectAzureVM(ctx context.Context) (resource.Resource, error) {
     if err != nil {
         return nil, err
     }
-    
+
     // 必需Header
     req.Header.Set("Metadata", "true")
-    
+
     // 发送请求
     resp, err := http.DefaultClient.Do(req)
     if err != nil {
         return nil, err
     }
     defer resp.Body.Close()
-    
+
     // 解析响应
     var metadata AzureVMMetadata
     if err := json.NewDecoder(resp.Body).Decode(&metadata); err != nil {
         return nil, err
     }
-    
+
     // 构建Resource
     attrs := []attribute.KeyValue{
         semconv.CloudProviderAzure,
@@ -259,21 +259,21 @@ func DetectAzureVM(ctx context.Context) (resource.Resource, error) {
         attribute.String("azure.vm.id", metadata.Compute.VMID),
         attribute.String("azure.vm.name", metadata.Compute.Name),
         attribute.String("azure.vm.size", metadata.Compute.VMSize),
-        attribute.String("azure.resource_group", 
+        attribute.String("azure.resource_group",
             metadata.Compute.ResourceGroupName),
     }
-    
+
     if metadata.Compute.Zone != "" {
-        attrs = append(attrs, 
+        attrs = append(attrs,
             attribute.String("azure.vm.zone", metadata.Compute.Zone))
     }
-    
+
     if metadata.Compute.VMScaleSetName != "" {
-        attrs = append(attrs, 
-            attribute.String("azure.vm.scale_set.name", 
+        attrs = append(attrs,
+            attribute.String("azure.vm.scale_set.name",
                 metadata.Compute.VMScaleSetName))
     }
-    
+
     return resource.NewWithAttributes(semconv.SchemaURL, attrs...), nil
 }
 ```
@@ -327,19 +327,19 @@ func DetectAzureAKS(ctx context.Context) (resource.Resource, error) {
     if err != nil {
         return nil, err
     }
-    
+
     // 从环境变量获取AKS信息
     attrs := []attribute.KeyValue{
         semconv.CloudProviderAzure,
         semconv.CloudPlatformAzureAKS,
     }
-    
+
     // AKS集群名称 (从标签或环境变量)
     if clusterName := os.Getenv("AKS_CLUSTER_NAME"); clusterName != "" {
         attrs = append(attrs,
             attribute.String("azure.aks.cluster.name", clusterName))
     }
-    
+
     // 从Azure IMDS获取底层VM信息
     vmMetadata, err := getAzureVMMetadata(ctx)
     if err == nil {
@@ -347,15 +347,15 @@ func DetectAzureAKS(ctx context.Context) (resource.Resource, error) {
             semconv.CloudRegionKey.String(vmMetadata.Compute.Location),
             semconv.CloudAccountIDKey.String(
                 vmMetadata.Compute.SubscriptionID),
-            attribute.String("azure.resource_group", 
+            attribute.String("azure.resource_group",
                 vmMetadata.Compute.ResourceGroupName),
         )
     }
-    
+
     // 合并Kubernetes属性
     aksResource := resource.NewWithAttributes(
         semconv.SchemaURL, attrs...)
-    
+
     return resource.Merge(k8sResource, aksResource)
 }
 ```
@@ -489,24 +489,24 @@ func DetectAzureAppService(ctx context.Context) (resource.Resource, error) {
     if websiteName == "" {
         return nil, errors.New("not running in Azure App Service")
     }
-    
+
     attrs := []attribute.KeyValue{
         semconv.CloudProviderAzure,
         semconv.CloudPlatformKey.String("azure_app_service"),
         attribute.String("azure.app_service.name", websiteName),
     }
-    
+
     // Region
     if region := os.Getenv("REGION_NAME"); region != "" {
         attrs = append(attrs, semconv.CloudRegionKey.String(region))
     }
-    
+
     // Resource Group
     if rg := os.Getenv("WEBSITE_RESOURCE_GROUP"); rg != "" {
-        attrs = append(attrs, 
+        attrs = append(attrs,
             attribute.String("azure.resource_group", rg))
     }
-    
+
     // Deployment Slot
     if slot := os.Getenv("WEBSITE_SLOT_NAME"); slot != "" {
         attrs = append(attrs,
@@ -515,13 +515,13 @@ func DetectAzureAppService(ctx context.Context) (resource.Resource, error) {
         attrs = append(attrs,
             attribute.String("azure.app_service.slot.name", "production"))
     }
-    
+
     // Instance ID
     if instanceID := os.Getenv("WEBSITE_INSTANCE_ID"); instanceID != "" {
         attrs = append(attrs,
             semconv.ServiceInstanceIDKey.String(instanceID))
     }
-    
+
     return resource.NewWithAttributes(semconv.SchemaURL, attrs...), nil
 }
 ```
@@ -573,7 +573,7 @@ import (
     "encoding/json"
     "net/http"
     "time"
-    
+
     "go.opentelemetry.io/otel/attribute"
     "go.opentelemetry.io/otel/sdk/resource"
     semconv "go.opentelemetry.io/otel/semconv/v1.24.0"
@@ -603,7 +603,7 @@ func DetectAzure(ctx context.Context) (*resource.Resource, error) {
     client := &http.Client{
         Timeout: 2 * time.Second,
     }
-    
+
     // 创建请求
     req, err := http.NewRequestWithContext(ctx,
         "GET",
@@ -612,27 +612,27 @@ func DetectAzure(ctx context.Context) (*resource.Resource, error) {
     if err != nil {
         return nil, err
     }
-    
+
     // Azure IMDS必需Header
     req.Header.Set("Metadata", "true")
-    
+
     // 发送请求
     resp, err := client.Do(req)
     if err != nil {
         return nil, err
     }
     defer resp.Body.Close()
-    
+
     if resp.StatusCode != http.StatusOK {
         return nil, fmt.Errorf("IMDS returned %d", resp.StatusCode)
     }
-    
+
     // 解析元数据
     var metadata AzureIMDSMetadata
     if err := json.NewDecoder(resp.Body).Decode(&metadata); err != nil {
         return nil, err
     }
-    
+
     // 构建Resource属性
     attrs := []attribute.KeyValue{
         semconv.CloudProviderAzure,
@@ -645,24 +645,24 @@ func DetectAzure(ctx context.Context) (*resource.Resource, error) {
         attribute.String("azure.vm.id", metadata.Compute.VMID),
         attribute.String("azure.vm.name", metadata.Compute.Name),
         attribute.String("azure.vm.size", metadata.Compute.VMSize),
-        attribute.String("azure.resource_group", 
+        attribute.String("azure.resource_group",
             metadata.Compute.ResourceGroupName),
-        attribute.String("azure.environment", 
+        attribute.String("azure.environment",
             metadata.Compute.AzEnvironment),
     }
-    
+
     // 可选属性
     if metadata.Compute.Zone != "" {
         attrs = append(attrs,
             attribute.String("azure.vm.zone", metadata.Compute.Zone))
     }
-    
+
     if metadata.Compute.VMScaleSetName != "" {
         attrs = append(attrs,
-            attribute.String("azure.vm.scale_set.name", 
+            attribute.String("azure.vm.scale_set.name",
                 metadata.Compute.VMScaleSetName))
     }
-    
+
     return resource.NewWithAttributes(semconv.SchemaURL, attrs...), nil
 }
 ```
@@ -683,7 +683,7 @@ func DetectAzureAKS(ctx context.Context) (*resource.Resource, error) {
             return string(semconv.CloudPlatformAzureAKS), nil
         },
     )
-    
+
     k8sResource, err := resource.New(ctx,
         resource.WithDetectors(k8sDetector),
         resource.WithContainer(),
@@ -692,14 +692,14 @@ func DetectAzureAKS(ctx context.Context) (*resource.Resource, error) {
     if err != nil {
         return nil, err
     }
-    
+
     // 获取Azure VM元数据 (AKS节点)
     azureResource, err := DetectAzure(ctx)
     if err != nil {
         // 如果无法获取Azure元数据，返回K8s资源
         return k8sResource, nil
     }
-    
+
     // 合并资源
     return resource.Merge(k8sResource, azureResource)
 }
@@ -712,44 +712,44 @@ func DetectAzureFunctions(ctx context.Context) (*resource.Resource, error) {
     // 检查环境变量
     websiteName := os.Getenv("WEBSITE_SITE_NAME")
     functionsWorkerRuntime := os.Getenv("FUNCTIONS_WORKER_RUNTIME")
-    
+
     if websiteName == "" || functionsWorkerRuntime == "" {
         return nil, errors.New("not running in Azure Functions")
     }
-    
+
     attrs := []attribute.KeyValue{
         semconv.CloudProviderAzure,
         semconv.CloudPlatformAzureFunctions,
         attribute.String("azure.functions.app.name", websiteName),
-        attribute.String("azure.functions.runtime.name", 
+        attribute.String("azure.functions.runtime.name",
             functionsWorkerRuntime),
     }
-    
+
     // Region
     if region := os.Getenv("REGION_NAME"); region != "" {
         attrs = append(attrs, semconv.CloudRegionKey.String(region))
     }
-    
+
     // Runtime版本
-    if runtimeVersion := os.Getenv("FUNCTIONS_EXTENSION_VERSION"); 
+    if runtimeVersion := os.Getenv("FUNCTIONS_EXTENSION_VERSION");
         runtimeVersion != "" {
         attrs = append(attrs,
-            attribute.String("azure.functions.runtime.version", 
+            attribute.String("azure.functions.runtime.version",
                 runtimeVersion))
     }
-    
+
     // Resource Group
     if rg := os.Getenv("WEBSITE_RESOURCE_GROUP"); rg != "" {
-        attrs = append(attrs, 
+        attrs = append(attrs,
             attribute.String("azure.resource_group", rg))
     }
-    
+
     // Instance ID
     if instanceID := os.Getenv("WEBSITE_INSTANCE_ID"); instanceID != "" {
         attrs = append(attrs,
             semconv.ServiceInstanceIDKey.String(instanceID))
     }
-    
+
     return resource.NewWithAttributes(semconv.SchemaURL, attrs...), nil
 }
 ```
@@ -783,10 +783,10 @@ def detect_azure_vm() -> Resource:
             timeout=2
         )
         response.raise_for_status()
-        
+
         metadata = response.json()
         compute = metadata.get("compute", {})
-        
+
         # 构建Resource属性
         attributes = {
             ResourceAttributes.CLOUD_PROVIDER: CloudProviderValues.AZURE.value,
@@ -801,16 +801,16 @@ def detect_azure_vm() -> Resource:
             "azure.vm.size": compute.get("vmSize"),
             "azure.resource_group": compute.get("resourceGroupName"),
         }
-        
+
         # 可选属性
         if zone := compute.get("zone"):
             attributes["azure.vm.zone"] = zone
-        
+
         if vmss_name := compute.get("vmScaleSetName"):
             attributes["azure.vm.scale_set.name"] = vmss_name
-        
+
         return Resource.create(attributes)
-        
+
     except Exception as e:
         # 非Azure环境或检测失败
         return Resource.empty()
@@ -819,30 +819,30 @@ def detect_azure_functions() -> Resource:
     """检测Azure Functions环境"""
     website_name = os.getenv("WEBSITE_SITE_NAME")
     functions_runtime = os.getenv("FUNCTIONS_WORKER_RUNTIME")
-    
+
     if not website_name or not functions_runtime:
         return Resource.empty()
-    
+
     attributes = {
         ResourceAttributes.CLOUD_PROVIDER: CloudProviderValues.AZURE.value,
         ResourceAttributes.CLOUD_PLATFORM: CloudPlatformValues.AZURE_FUNCTIONS.value,
         "azure.functions.app.name": website_name,
         "azure.functions.runtime.name": functions_runtime,
     }
-    
+
     # 可选属性
     if region := os.getenv("REGION_NAME"):
         attributes[ResourceAttributes.CLOUD_REGION] = region
-    
+
     if runtime_version := os.getenv("FUNCTIONS_EXTENSION_VERSION"):
         attributes["azure.functions.runtime.version"] = runtime_version
-    
+
     if resource_group := os.getenv("WEBSITE_RESOURCE_GROUP"):
         attributes["azure.resource_group"] = resource_group
-    
+
     if instance_id := os.getenv("WEBSITE_INSTANCE_ID"):
         attributes[ResourceAttributes.SERVICE_INSTANCE_ID] = instance_id
-    
+
     return Resource.create(attributes)
 ```
 
@@ -852,53 +852,53 @@ def detect_azure_functions() -> Resource:
 def detect_azure_app_service() -> Resource:
     """检测Azure App Service环境"""
     website_name = os.getenv("WEBSITE_SITE_NAME")
-    
+
     # 区分Functions和App Service
     if os.getenv("FUNCTIONS_WORKER_RUNTIME"):
         return Resource.empty()  # 这是Functions，不是App Service
-    
+
     if not website_name:
         return Resource.empty()
-    
+
     attributes = {
         ResourceAttributes.CLOUD_PROVIDER: CloudProviderValues.AZURE.value,
         ResourceAttributes.CLOUD_PLATFORM: "azure_app_service",
         "azure.app_service.name": website_name,
     }
-    
+
     # Region
     if region := os.getenv("REGION_NAME"):
         attributes[ResourceAttributes.CLOUD_REGION] = region
-    
+
     # Resource Group
     if resource_group := os.getenv("WEBSITE_RESOURCE_GROUP"):
         attributes["azure.resource_group"] = resource_group
-    
+
     # Deployment Slot
     slot_name = os.getenv("WEBSITE_SLOT_NAME", "production")
     attributes["azure.app_service.slot.name"] = slot_name
-    
+
     # Instance ID
     if instance_id := os.getenv("WEBSITE_INSTANCE_ID"):
         attributes[ResourceAttributes.SERVICE_INSTANCE_ID] = instance_id
-    
+
     return Resource.create(attributes)
 
 # 统一检测函数
 def detect_azure() -> Resource:
     """自动检测Azure环境类型"""
     # 优先级: Functions > App Service > VM
-    
+
     # 1. Azure Functions
     functions_resource = detect_azure_functions()
     if functions_resource.attributes:
         return functions_resource
-    
+
     # 2. Azure App Service
     app_service_resource = detect_azure_app_service()
     if app_service_resource.attributes:
         return app_service_resource
-    
+
     # 3. Azure VM (including AKS)
     vm_resource = detect_azure_vm()
     return vm_resource
@@ -917,10 +917,10 @@ exporters:
     instrumentation_key: "${APPLICATIONINSIGHTS_CONNECTION_STRING}"
     # 或使用Connection String
     connection_string: "InstrumentationKey=...;IngestionEndpoint=..."
-    
+
     # 采样配置
     sampling_percentage: 100
-    
+
     # 最大批处理
     max_batch_size: 100
     max_batch_interval: 10s
@@ -931,7 +931,7 @@ service:
       receivers: [otlp]
       processors: [batch, resource]
       exporters: [azuremonitor]
-    
+
     metrics:
       receivers: [otlp]
       processors: [batch]
@@ -950,7 +950,7 @@ import (
 func InitAzureMonitor(ctx context.Context) (*trace.TracerProvider, error) {
     // 获取Connection String
     connectionString := os.Getenv("APPLICATIONINSIGHTS_CONNECTION_STRING")
-    
+
     // 创建Azure Monitor Exporter
     exporter, err := azuremonitor.NewExporter(
         azuremonitor.WithConnectionString(connectionString),
@@ -958,23 +958,23 @@ func InitAzureMonitor(ctx context.Context) (*trace.TracerProvider, error) {
     if err != nil {
         return nil, err
     }
-    
+
     // 创建TracerProvider
     tp := trace.NewTracerProvider(
         trace.WithBatcher(exporter),
         trace.WithResource(detectAzureResource(ctx)),
     )
-    
+
     return tp, nil
 }
 
 func detectAzureResource(ctx context.Context) *resource.Resource {
     // 自动检测Azure环境
     azureResource, _ := DetectAzure(ctx)
-    
+
     // 默认资源
     defaultResource := resource.Default()
-    
+
     // 合并
     return resource.Merge(defaultResource, azureResource)
 }
@@ -1028,11 +1028,11 @@ func GetAzureMetadata(ctx context.Context) (*AzureIMDSMetadata, error) {
         // 创建超时Context
         ctx, cancel := context.WithTimeout(ctx, 2*time.Second)
         defer cancel()
-        
+
         // 请求IMDS
         azureMetadataCache, azureMetadataErr = fetchAzureIMDS(ctx)
     })
-    
+
     return azureMetadataCache, azureMetadataErr
 }
 
@@ -1084,8 +1084,8 @@ Application Insights定价:
 
 ---
 
-**文档状态**: ✅ 完成  
-**Azure SDK版本**: Latest  
+**文档状态**: ✅ 完成
+**Azure SDK版本**: Latest
 **适用场景**: Azure云原生应用、混合云架构、企业级系统
 
 **关键特性**:

@@ -1,6 +1,6 @@
 # Span结构完整定义
 
-> **OTLP版本**: v1.0.0 (Stable)  
+> **OTLP版本**: v1.0.0 (Stable)
 > **最后更新**: 2025年10月8日
 
 ---
@@ -49,22 +49,22 @@ Span = (ID, T, M, R, E, L, S)
 其中:
 - ID: Identification = (trace_id, span_id, parent_span_id)
   唯一标识
-  
+
 - T: Temporal = (start_time, end_time, duration)
   时间属性
-  
+
 - M: Metadata = (name, kind, attributes)
   元数据
-  
+
 - R: Relations = (parent_span_id, links)
   关系
-  
+
 - E: Events = ordered list of (timestamp, name, attributes)
   事件序列
-  
+
 - L: Links = list of (trace_id, span_id, trace_state, attributes)
   跨trace链接
-  
+
 - S: Status = (code, message)
   执行状态
 
@@ -104,19 +104,19 @@ Span的职责:
 1. 追踪单个操作
    - 记录开始/结束时间
    - 捕获操作元数据
-   
+
 2. 建立父子关系
    - parent_span_id链接父Span
    - 构建调用树
-   
+
 3. 携带上下文
    - trace_state传播状态
    - Baggage传播元数据
-   
+
 4. 记录事件
    - 时间点事件
    - 异常记录
-   
+
 5. 跨trace链接
    - Links关联其他trace
    - 批处理、异步场景
@@ -459,27 +459,27 @@ message Span {
   bytes span_id = 2;                               // 8字节
   string trace_state = 3;                          // W3C tracestate
   bytes parent_span_id = 4;                        // 8字节 (可选)
-  
+
   // 描述
   string name = 5;                                 // Span名称
   SpanKind kind = 6;                               // Span类型
-  
+
   // 时间
   fixed64 start_time_unix_nano = 7;               // 开始时间 (纳秒)
   fixed64 end_time_unix_nano = 8;                 // 结束时间 (纳秒)
-  
+
   // 属性
   repeated opentelemetry.proto.common.v1.KeyValue attributes = 9;
   uint32 dropped_attributes_count = 10;
-  
+
   // 事件
   repeated Event events = 11;
   uint32 dropped_events_count = 12;
-  
+
   // 链接
   repeated Link links = 13;
   uint32 dropped_links_count = 14;
-  
+
   // 状态
   Status status = 15;
 }
@@ -624,37 +624,37 @@ S = (tid, sid, psid, ts, n, k, t₀, t₁, A, E, L, dc, s)
 其中:
 - tid ∈ TraceID = {0,1}^128 \ {0^128}
   trace标识符,非全零的128位串
-  
+
 - sid ∈ SpanID = {0,1}^64 \ {0^64}
   span标识符,非全零的64位串
-  
+
 - psid ∈ SpanID ∪ {⊥}
   父span标识符,可能为空
-  
+
 - ts ∈ String
   trace状态
-  
+
 - n ∈ String \ {ε}
   span名称,非空字符串
-  
+
 - k ∈ SpanKind = {UNSPECIFIED, INTERNAL, SERVER, CLIENT, PRODUCER, CONSUMER}
   span类型
-  
+
 - t₀, t₁ ∈ ℕ⁺
   开始和结束时间戳(纳秒)
-  
+
 - A ⊆ Attribute
   属性集合
-  
+
 - E ∈ Event*
   事件序列
-  
+
 - L ⊆ Link
   链接集合
-  
+
 - dc ∈ ℕ × ℕ × ℕ
   丢弃计数 (属性, 事件, 链接)
-  
+
 - s ∈ Status
   状态
 ```
@@ -766,7 +766,7 @@ import (
 
 func processRequest(ctx context.Context, req *Request) error {
     tracer := otel.Tracer("my-service")
-    
+
     // 创建Span
     ctx, span := tracer.Start(ctx, "processRequest",
         trace.WithSpanKind(trace.SpanKindServer),
@@ -776,7 +776,7 @@ func processRequest(ctx context.Context, req *Request) error {
         ),
     )
     defer span.End()  // 确保Span结束
-    
+
     // 业务逻辑
     err := doWork(ctx)
     if err != nil {
@@ -784,7 +784,7 @@ func processRequest(ctx context.Context, req *Request) error {
         span.RecordError(err)
         return err
     }
-    
+
     span.SetStatus(codes.Ok, "")
     return nil
 }
@@ -889,6 +889,6 @@ span.End(trace.WithTimestamp(customTime))
 
 ---
 
-**文档状态**: ✅ 完成  
-**审核状态**: 待审核  
+**文档状态**: ✅ 完成
+**审核状态**: 待审核
 **下一步**: [02_SpanContext.md](./02_SpanContext.md)

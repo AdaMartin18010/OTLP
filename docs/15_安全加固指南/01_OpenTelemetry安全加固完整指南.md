@@ -1,14 +1,14 @@
 # OpenTelemetry安全加固完整指南
 
-> **安全等级**: 生产级企业标准  
+> **安全等级**: 生产级企业标准
 > **最后更新**: 2025年10月8日
 
 ---
 
-## 目录
+## 📋 目录
 
 - [OpenTelemetry安全加固完整指南](#opentelemetry安全加固完整指南)
-  - [目录](#目录)
+  - [📋 目录](#-目录)
   - [1. 安全概述](#1-安全概述)
     - [1.1 安全威胁模型](#11-安全威胁模型)
     - [1.2 安全原则](#12-安全原则)
@@ -152,23 +152,23 @@ receivers:
           # 服务器证书和私钥
           cert_file: /etc/otelcol/certs/server.crt
           key_file: /etc/otelcol/certs/server.key
-          
+
           # 客户端CA证书 (mTLS)
           client_ca_file: /etc/otelcol/certs/ca.crt
-          
+
           # 要求客户端证书 (启用mTLS)
           client_ca_file_reload: true
-          
+
           # TLS配置
           min_version: "1.3"  # 仅TLS 1.3
           max_version: "1.3"
-          
+
           # 密码套件 (仅强加密)
           cipher_suites:
             - TLS_AES_256_GCM_SHA384
             - TLS_AES_128_GCM_SHA256
             - TLS_CHACHA20_POLY1305_SHA256
-          
+
       http:
         endpoint: 0.0.0.0:4318
         tls:
@@ -183,14 +183,14 @@ exporters:
     tls:
       # 使用系统CA证书
       insecure: false
-      
+
       # 或指定CA证书
       ca_file: /etc/otelcol/certs/ca.crt
-      
+
       # 客户端证书 (mTLS)
       cert_file: /etc/otelcol/certs/client.crt
       key_file: /etc/otelcol/certs/client.key
-      
+
       # 服务器名称验证
       server_name_override: ""  # 留空使用endpoint的主机名
 ```
@@ -205,7 +205,7 @@ import (
     "crypto/tls"
     "crypto/x509"
     "os"
-    
+
     "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
     "google.golang.org/grpc"
     "google.golang.org/grpc/credentials"
@@ -221,52 +221,52 @@ func NewSecureOTLPExporter(ctx context.Context) (*otlptracegrpc.Exporter, error)
     if err != nil {
         return nil, err
     }
-    
+
     // 2. 加载CA证书
     caCert, err := os.ReadFile("/etc/app/certs/ca.crt")
     if err != nil {
         return nil, err
     }
-    
+
     caCertPool := x509.NewCertPool()
     caCertPool.AppendCertsFromPEM(caCert)
-    
+
     // 3. TLS配置
     tlsConfig := &tls.Config{
         // 客户端证书 (mTLS)
         Certificates: []tls.Certificate{clientCert},
-        
+
         // CA证书池
         RootCAs: caCertPool,
-        
+
         // 仅TLS 1.3
         MinVersion: tls.VersionTLS13,
         MaxVersion: tls.VersionTLS13,
-        
+
         // 强制密码套件
         CipherSuites: []uint16{
             tls.TLS_AES_256_GCM_SHA384,
             tls.TLS_AES_128_GCM_SHA256,
             tls.TLS_CHACHA20_POLY1305_SHA256,
         },
-        
+
         // 服务器名称验证
         ServerName: "collector.example.com",
-        
+
         // 不跳过证书验证
         InsecureSkipVerify: false,
     }
-    
+
     // 4. 创建gRPC凭证
     creds := credentials.NewTLS(tlsConfig)
-    
+
     // 5. 创建Exporter
     exporter, err := otlptracegrpc.New(ctx,
         otlptracegrpc.WithEndpoint("collector.example.com:4317"),
         otlptracegrpc.WithTLSCredentials(creds),
         otlptracegrpc.WithDialOption(grpc.WithBlock()),  // 阻塞直到连接建立
     )
-    
+
     return exporter, err
 }
 
@@ -277,25 +277,25 @@ func HealthCheckTLS(endpoint string, tlsConfig *tls.Config) error {
         return err
     }
     defer conn.Close()
-    
+
     // 验证证书链
     if err := conn.VerifyHostname(tlsConfig.ServerName); err != nil {
         return err
     }
-    
+
     // 检查证书有效期
     certs := conn.ConnectionState().PeerCertificates
     if len(certs) == 0 {
         return fmt.Errorf("no peer certificates")
     }
-    
+
     now := time.Now()
     for _, cert := range certs {
         if now.Before(cert.NotBefore) || now.After(cert.NotAfter) {
             return fmt.Errorf("certificate expired or not yet valid")
         }
     }
-    
+
     return nil
 }
 ```
@@ -308,25 +308,25 @@ func HealthCheckTLS(endpoint string, tlsConfig *tls.Config) error {
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 1. 证书生成 🔐
-   
+
    使用企业CA:
    - 内部PKI基础设施
    - 自动化证书签发
    - 集中管理
-   
+
    或使用Let's Encrypt:
    - 免费自动化
    - 90天有效期
    - 自动续期
 
 2. 证书存储 💾
-   
+
    ✅ 推荐:
    - Vault (HashiCorp)
    - AWS Secrets Manager
    - Azure Key Vault
    - Kubernetes Secrets (加密)
-   
+
    ❌ 避免:
    - 明文文件
    - 代码中硬编码
@@ -334,13 +334,13 @@ func HealthCheckTLS(endpoint string, tlsConfig *tls.Config) error {
    - 共享存储
 
 3. 证书轮换 🔄
-   
+
    轮换策略:
    - 自动轮换: 每90天
    - 手动轮换: 安全事件后
    - 零停机轮换
    - 回滚能力
-   
+
    Go实现:
     ```go
     // 证书自动轮换
@@ -348,7 +348,7 @@ func HealthCheckTLS(endpoint string, tlsConfig *tls.Config) error {
         watcher, _ := fsnotify.NewWatcher()
         watcher.Add(certFile)
         watcher.Add(keyFile)
-        
+
         for {
             select {
             case event := <-watcher.Events:
@@ -427,15 +427,15 @@ func NewOAuth2Exporter(ctx context.Context) (*otlptracegrpc.Exporter, error) {
         TokenURL:     "https://auth.example.com/oauth/token",
         Scopes:       []string{"telemetry.write"},
     }
-    
+
     // 获取Token
     tokenSource := config.TokenSource(ctx)
-    
+
     // 创建PerRPCCredentials
     perRPCAuth := &oauth2PerRPCCredentials{
         tokenSource: tokenSource,
     }
-    
+
     // 创建Exporter
     exporter, err := otlptracegrpc.New(ctx,
         otlptracegrpc.WithEndpoint("collector.example.com:4317"),
@@ -443,7 +443,7 @@ func NewOAuth2Exporter(ctx context.Context) (*otlptracegrpc.Exporter, error) {
             grpc.WithPerRPCCredentials(perRPCAuth),
         ),
     )
-    
+
     return exporter, err
 }
 
@@ -457,7 +457,7 @@ func (c *oauth2PerRPCCredentials) GetRequestMetadata(ctx context.Context, uri ..
     if err != nil {
         return nil, err
     }
-    
+
     return map[string]string{
         "authorization": "Bearer " + token.AccessToken,
     }, nil
@@ -491,7 +491,7 @@ data:
             scope: "alerting:*"
           - action: "alerting:write"
             scope: "alerting:*"
-      
+
       # 开发工程师
       - name: developer
         permissions:
@@ -499,24 +499,24 @@ data:
             scope: "dashboards:uid:dev-*"
           - action: "datasources:query"
             scope: "datasources:uid:traces-*"
-      
+
       # 只读用户
       - name: viewer
         permissions:
           - action: "dashboards:read"
             scope: "dashboards:*"
-    
+
     # 用户角色绑定
     role_bindings:
       - role: sre_engineer
         users:
           - alice@example.com
           - bob@example.com
-      
+
       - role: developer
         groups:
           - developers
-      
+
       - role: viewer
         users:
           - manager@example.com
@@ -544,18 +544,18 @@ processors:
         action: delete
       - key: api_key
         action: delete
-      
+
       # 正则表达式过滤
       - key: http.url
         action: update
         # 移除URL中的敏感参数
         value: REGEX(s/([?&])(password|token|api_key)=[^&]*/\1\2=***/)
-      
+
       # 邮箱脱敏
       - key: user.email
         action: update
         value: REGEX(s/(.{2})[^@]*/@/**@/)
-  
+
   # 资源处理器 - 删除敏感资源属性
   resource/pii:
     attributes:
@@ -582,30 +582,30 @@ func (p *PIIFilterProcessor) OnEnd(s sdktrace.ReadWriteSpan) {
     // 过滤属性
     attrs := s.Attributes()
     filtered := make([]attribute.KeyValue, 0, len(attrs))
-    
+
     for _, attr := range attrs {
         key := string(attr.Key)
-        
+
         // 敏感字段列表
         if isSensitive(key) {
             // 跳过敏感字段
             continue
         }
-        
+
         // 脱敏处理
         if needsMasking(key) {
-            filtered = append(filtered, 
+            filtered = append(filtered,
                 attribute.String(key, maskValue(attr.Value.AsString())),
             )
             continue
         }
-        
+
         filtered = append(filtered, attr)
     }
-    
+
     // 更新Span属性
     s.SetAttributes(filtered...)
-    
+
     p.next.OnEnd(s)
 }
 
@@ -617,7 +617,7 @@ func isSensitive(key string) bool {
         "credit_card", "ssn", "social_security",
         "private_key", "encryption_key",
     }
-    
+
     keyLower := strings.ToLower(key)
     for _, sensitive := range sensitiveKeys {
         if strings.Contains(keyLower, sensitive) {
@@ -644,7 +644,7 @@ func maskValue(value string) string {
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 1. 传输中加密 (Encryption in Transit)
-   
+
    协议加密:
    - TLS 1.3 (最低版本)
    - AES-256-GCM密码套件
@@ -652,7 +652,7 @@ func maskValue(value string) string {
    - mTLS双向认证
 
 2. 静态加密 (Encryption at Rest)
-   
+
    存储加密:
    - 数据库: 透明数据加密 (TDE)
    - 文件系统: LUKS/dm-crypt
@@ -660,12 +660,12 @@ func maskValue(value string) string {
    - 密钥管理: KMS/Vault
 
 3. 应用层加密
-   
+
    字段级加密:
    - 敏感字段单独加密
    - 密钥轮换
    - 密钥版本管理
-   
+
    实现示例 (Go):
    ```go
    // 加密敏感属性
@@ -673,10 +673,10 @@ func maskValue(value string) string {
        if isSensitive(key) {
            cipher, _ := aes.NewCipher(getEncryptionKey())
            gcm, _ := cipher.NewGCM(gcm.NonceSize())
-           
+
            nonce := make([]byte, gcm.NonceSize())
            rand.Read(nonce)
-           
+
            encrypted := gcm.Seal(nonce, nonce, []byte(value), nil)
            return base64.StdEncoding.EncodeToString(encrypted)
        }
@@ -787,7 +787,7 @@ func APIAccessControl() gin.HandlerFunc {
             c.Abort()
             return
         }
-        
+
         // 2. 验证Token
         claims, err := validateToken(token)
         if err != nil {
@@ -795,21 +795,21 @@ func APIAccessControl() gin.HandlerFunc {
             c.Abort()
             return
         }
-        
+
         // 3. 检查权限
         if !hasPermission(claims, c.Request.URL.Path, c.Request.Method) {
             c.JSON(403, gin.H{"error": "forbidden"})
             c.Abort()
             return
         }
-        
+
         // 4. 速率限制
         if !checkRateLimit(claims.UserID) {
             c.JSON(429, gin.H{"error": "rate limit exceeded"})
             c.Abort()
             return
         }
-        
+
         // 5. 审计日志
         auditLog(AuditEvent{
             UserID:    claims.UserID,
@@ -818,7 +818,7 @@ func APIAccessControl() gin.HandlerFunc {
             IP:        c.ClientIP(),
             Timestamp: time.Now(),
         })
-        
+
         c.Next()
     }
 }
@@ -845,10 +845,10 @@ func (a *AuditLogger) Log(event AuditEvent) {
         "source.ip":  event.IP,
         "trace.id":   event.TraceID,
     }
-    
+
     // 写入审计日志 (不可变存储)
     a.writeToImmutableStorage(entry)
-    
+
     // 发送到SIEM
     a.sendToSIEM(entry)
 }
@@ -861,7 +861,7 @@ func (a *AuditLogger) Query(filter AuditFilter) ([]AuditEvent, error) {
     // - 按操作类型查询
     // - 按资源查询
     // - 按结果查询 (成功/失败)
-    
+
     return a.query(filter)
 }
 ```
@@ -887,15 +887,15 @@ GDPR合规要求:
    ✅ 知情权 (Right to be Informed)
       - 隐私政策透明
       - 数据使用说明
-   
+
    ✅ 访问权 (Right of Access)
       - 提供数据导出API
       - 支持数据查询
-   
+
    ✅ 删除权 (Right to Erasure)
       - 实现数据删除API
       - 7天内完成删除
-   
+
    ✅ 可携权 (Right to Data Portability)
       - 标准格式导出
       - 自动化导出流程
@@ -912,7 +912,7 @@ GDPR合规要求:
       - Metrics: 30天
       - Logs: 7天
       - 审计日志: 7年
-   
+
    ✅ 自动清理过期数据
    ✅ 安全销毁 (不可恢复)
 
@@ -1231,6 +1231,6 @@ Step 5: 验证关闭
 
 ---
 
-**文档状态**: ✅ 完成  
-**安全等级**: 生产级  
+**文档状态**: ✅ 完成
+**安全等级**: 生产级
 **适用场景**: 企业级OpenTelemetry部署

@@ -1,6 +1,6 @@
 # OpenTelemetry Resource 模型详解
 
-> **规范版本**: v1.30.0  
+> **规范版本**: v1.30.0
 > **最后更新**: 2025年10月8日
 
 ---
@@ -115,7 +115,7 @@ Resource (资源):
    解决: Resource提供完整上下文
 
 2. 过滤和聚合
-   查询: service.name = "order-service" AND 
+   查询: service.name = "order-service" AND
          deployment.environment = "production"
    聚合: GROUP BY host.name
 
@@ -151,7 +151,7 @@ WHERE service.name = "order-service"
 message Resource {
   // 属性列表
   repeated opentelemetry.proto.common.v1.KeyValue attributes = 1;
-  
+
   // 已删除属性数量
   uint32 dropped_attributes_count = 2;
 }
@@ -413,7 +413,7 @@ cloud.platform: 云平台
 ```text
 cloud.provider: "aws"
 
-cloud.platform: 
+cloud.platform:
   - "aws_ec2": EC2实例
   - "aws_ecs": ECS容器
   - "aws_eks": EKS Kubernetes
@@ -485,22 +485,22 @@ res, err := resource.New(ctx,
     resource.WithDetectors(
         // 环境变量检测器
         resource.WithFromEnv(),
-        
+
         // 主机检测器
         resource.WithHost(),
-        
+
         // 操作系统检测器
         resource.WithOS(),
-        
+
         // 进程检测器
         resource.WithProcess(),
-        
+
         // 容器检测器
         resource.WithContainer(),
-        
+
         // AWS EC2检测器
         ec2.NewResourceDetector(),
-        
+
         // GCP检测器
         gcp.NewDetector(),
     ),
@@ -576,24 +576,24 @@ func initResource() (*resource.Resource, error) {
     return resource.Merge(
         // 默认Resource
         resource.Default(),
-        
+
         // 自定义Resource
         resource.NewWithAttributes(
             semconv.SchemaURL,
-            
+
             // Service属性
             semconv.ServiceName("order-service"),
             semconv.ServiceVersion("1.2.3"),
             semconv.ServiceNamespace("ecommerce"),
             semconv.ServiceInstanceID("instance-001"),
-            
+
             // Deployment属性
             semconv.DeploymentEnvironment("production"),
-            
+
             // Host属性
             semconv.HostName("server-01"),
             semconv.HostArch("amd64"),
-            
+
             // 自定义属性
             attribute.String("team", "platform"),
             attribute.String("region", "us-west-1"),
@@ -603,19 +603,19 @@ func initResource() (*resource.Resource, error) {
 
 func main() {
     ctx := context.Background()
-    
+
     // 创建Resource
     res, err := initResource()
     if err != nil {
         panic(err)
     }
-    
+
     // 创建TracerProvider with Resource
     tp := trace.NewTracerProvider(
         trace.WithResource(res),
     )
     otel.SetTracerProvider(tp)
-    
+
     // 所有Span都会继承这个Resource
     tracer := otel.Tracer("my-tracer")
     _, span := tracer.Start(ctx, "operation")
@@ -787,11 +787,11 @@ spec:
             value: "order-service"
           - name: OTEL_SERVICE_VERSION
             value: "1.2.3"
-          
+
           # Deployment属性
           - name: OTEL_RESOURCE_ATTRIBUTES
             value: "service.namespace=ecommerce,deployment.environment=production"
-          
+
           # Kubernetes属性 (Downward API)
           - name: K8S_POD_NAME
             valueFrom:
@@ -853,6 +853,6 @@ res, _ := resource.New(ctx,
 
 ---
 
-**文档状态**: ✅ 完成  
-**审核状态**: 待审核  
+**文档状态**: ✅ 完成
+**审核状态**: 待审核
 **相关文档**: [Span结构](../01_Traces数据模型/01_Span结构.md), [SDK概述](../../04_核心组件/01_SDK概述.md)

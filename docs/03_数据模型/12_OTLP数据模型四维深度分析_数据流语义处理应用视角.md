@@ -1,8 +1,8 @@
 # OTLP数据模型四维深度分析：数据流、语义、处理与应用视角
 
-> **OTLP版本**: v1.0.0 (Stable)  
-> **最后更新**: 2025年10月11日  
-> **分析维度**: 数据流 | 语义模型 | 处理上下文 | 应用集成  
+> **OTLP版本**: v1.0.0 (Stable)
+> **最后更新**: 2025年10月11日
+> **分析维度**: 数据流 | 语义模型 | 处理上下文 | 应用集成
 > **文档状态**: ✅ 完成
 
 ---
@@ -341,13 +341,13 @@ batchProcessor := batch.NewBatchProcessor(
 func (bp *BatchProcessor) Export(ctx context.Context, data []Span) error {
     // 1. 累积数据到缓冲区
     bp.buffer = append(bp.buffer, data...)
-    
+
     // 2. 触发条件检查
     if len(bp.buffer) >= bp.maxBatchSize || time.Since(bp.lastExport) >= bp.timeout {
         // 3. 批量导出
         return bp.exporter.Export(ctx, bp.buffer)
     }
-    
+
     return nil
 }
 ```
@@ -447,7 +447,7 @@ func (s *HeadSampler) ShouldSample(params SamplingParameters) SamplingResult {
             Decision: params.ParentContext.TraceFlags().IsSampled(),
         }
     }
-    
+
     // 本地决策
     if rand.Float64() < s.probability {
         return SamplingResult{
@@ -455,7 +455,7 @@ func (s *HeadSampler) ShouldSample(params SamplingParameters) SamplingResult {
             Tracestate: params.TraceState,
         }
     }
-    
+
     return SamplingResult{
         Decision: Drop,
     }
@@ -471,13 +471,13 @@ Tail Sampling = 在Collector端基于完整trace决策
 策略:
 1. 基于错误率
    - 如果trace包含ERROR span → 采样
-   
+
 2. 基于延迟
    - 如果trace p95 > threshold → 采样
-   
+
 3. 基于属性
    - 如果包含特定属性 → 采样
-   
+
 4. 基于速率
    - 每个服务每秒采样N个trace
 
@@ -511,7 +511,7 @@ func ConvertOTLPSpanToJaeger(otlpSpan *tracepb.Span) *jaeger.Span {
         Tags: convertAttributes(otlpSpan.Attributes),
         Logs: convertEvents(otlpSpan.Events),
     }
-    
+
     return jaegerSpan
 }
 ```
@@ -522,25 +522,25 @@ func ConvertOTLPSpanToJaeger(otlpSpan *tracepb.Span) *jaeger.Span {
 // OTLP Metrics转Prometheus格式
 func ConvertOTLPMetricsToPrometheus(otlpMetrics *metricspb.ResourceMetrics) []prometheus.Metric {
     var promMetrics []prometheus.Metric
-    
+
     for _, scopeMetrics := range otlpMetrics.ScopeMetrics {
         for _, metric := range scopeMetrics.Metrics {
             switch data := metric.Data.(type) {
             case *metricspb.Metric_Sum:
                 // Counter转Prometheus Counter
                 promMetrics = append(promMetrics, convertSumToCounter(metric, data.Sum))
-                
+
             case *metricspb.Metric_Histogram:
                 // Histogram转Prometheus Histogram
                 promMetrics = append(promMetrics, convertHistogram(metric, data.Histogram))
-                
+
             case *metricspb.Metric_Gauge:
                 // Gauge转Prometheus Gauge
                 promMetrics = append(promMetrics, convertGauge(metric, data.Gauge))
             }
         }
     }
-    
+
     return promMetrics
 }
 ```
@@ -599,7 +599,7 @@ CREATE TABLE traces (
 );
 
 -- 创建超表 (自动分区)
-SELECT create_hypertable('traces', 'time', 
+SELECT create_hypertable('traces', 'time',
     chunk_time_interval => INTERVAL '1 day'
 );
 
@@ -1024,12 +1024,12 @@ TraceID查找:
 rate(http_server_requests_total[5m])
 
 # 查询错误率
-sum(rate(http_server_requests_total{status_code=~"5.."}[5m])) 
-/ 
+sum(rate(http_server_requests_total{status_code=~"5.."}[5m]))
+/
 sum(rate(http_server_requests_total[5m]))
 
 # 查询p95延迟
-histogram_quantile(0.95, 
+histogram_quantile(0.95,
   rate(http_server_duration_seconds_bucket[5m])
 )
 
@@ -1044,7 +1044,7 @@ sum(process_runtime_memory_heap_used) by (service_name)
 
 ```sql
 -- 查询HTTP请求速率
-SELECT 
+SELECT
     service_name,
     time_bucket('1 minute', time) AS minute,
     COUNT(*) AS request_count
@@ -1054,7 +1054,7 @@ GROUP BY service_name, minute
 ORDER BY minute DESC;
 
 -- 查询错误率
-SELECT 
+SELECT
     service_name,
     SUM(CASE WHEN status_code >= 500 THEN 1 ELSE 0 END) * 100.0 / COUNT(*) AS error_rate
 FROM metrics
@@ -1187,24 +1187,24 @@ func CallDownstream(ctx context.Context, url string) error {
     // 1. 创建Client Span
     _, span := tracer.Start(ctx, "HTTP POST")
     defer span.End()
-    
+
     // 2. 提取TraceContext
     traceparent := trace.SpanContextFromContext(ctx)
-    
+
     // 3. 注入到HTTP Header
     req, _ := http.NewRequest("POST", url, nil)
     req.Header.Set("traceparent", formatTraceparent(traceparent))
-    
+
     // 4. 发送请求
     resp, err := http.DefaultClient.Do(req)
-    
+
     // 5. 记录结果
     span.SetAttributes(
         attribute.String("http.method", "POST"),
         attribute.String("http.url", url),
         attribute.Int("http.status_code", resp.StatusCode),
     )
-    
+
     return err
 }
 
@@ -1213,14 +1213,14 @@ func HandleRequest(w http.ResponseWriter, r *http.Request) {
     // 1. 提取TraceContext
     traceparent := r.Header.Get("traceparent")
     ctx := extractTraceContext(traceparent)
-    
+
     // 2. 创建Server Span
     ctx, span := tracer.Start(ctx, "HTTP GET")
     defer span.End()
-    
+
     // 3. 处理请求
     processRequest(ctx)
-    
+
     // 4. 返回响应
     w.WriteHeader(http.StatusOK)
 }
@@ -1244,38 +1244,38 @@ type LocalBuffer struct {
 func (lb *LocalBuffer) AddSpan(span Span) error {
     lb.mu.Lock()
     defer lb.mu.Unlock()
-    
+
     // 检查容量
     if len(lb.spans) >= lb.maxSize {
         // 触发刷新
         go lb.Flush()
         return fmt.Errorf("buffer full")
     }
-    
+
     // 添加Span
     lb.spans = append(lb.spans, span)
-    
+
     return nil
 }
 
 func (lb *LocalBuffer) Flush() error {
     lb.mu.Lock()
     defer lb.mu.Unlock()
-    
+
     if len(lb.spans) == 0 {
         return nil
     }
-    
+
     // 复制数据
     spans := make([]Span, len(lb.spans))
     copy(spans, lb.spans)
-    
+
     // 清空缓冲
     lb.spans = lb.spans[:0]
-    
+
     // 异步导出
     go lb.exportSpans(spans)
-    
+
     return nil
 }
 
@@ -1305,7 +1305,7 @@ func (db *DiskBuffer) WriteSpan(span Span) error {
     if err != nil {
         return err
     }
-    
+
     // 2. 写入文件
     filename := fmt.Sprintf("%s/%d.otlp", db.dir, time.Now().UnixNano())
     file, err := os.OpenFile(filename, os.O_CREATE|os.O_WRONLY, 0644)
@@ -1313,7 +1313,7 @@ func (db *DiskBuffer) WriteSpan(span Span) error {
         return err
     }
     defer file.Close()
-    
+
     // 3. 写入数据
     _, err = file.Write(data)
     return err
@@ -1321,29 +1321,29 @@ func (db *DiskBuffer) WriteSpan(span Span) error {
 
 func (db *DiskBuffer) ReadSpans() ([]Span, error) {
     var spans []Span
-    
+
     // 1. 列出所有文件
     files, err := os.ReadDir(db.dir)
     if err != nil {
         return nil, err
     }
-    
+
     // 2. 读取文件
     for _, file := range files {
         data, err := os.ReadFile(filepath.Join(db.dir, file.Name()))
         if err != nil {
             continue
         }
-        
+
         var span Span
         if err := proto.Unmarshal(data, &span); err == nil {
             spans = append(spans, span)
         }
-        
+
         // 3. 删除已读文件
         os.Remove(filepath.Join(db.dir, file.Name()))
     }
-    
+
     return spans, nil
 }
 ```
@@ -1669,22 +1669,22 @@ type SemanticMapping struct {
 
 func (sm *SemanticMapper) MapBusinessToOTLP(businessData BusinessData) OTLPData {
     otlpData := OTLPData{}
-    
+
     // 映射订单ID
     if mapping, ok := sm.mappings["order_id"]; ok {
-        otlpData.Attributes[mapping.OTLPField] = 
+        otlpData.Attributes[mapping.OTLPField] =
             mapping.Transform(businessData.OrderID)
     }
-    
+
     // 映射用户ID
     if mapping, ok := sm.mappings["user_id"]; ok {
-        otlpData.Attributes[mapping.OTLPField] = 
+        otlpData.Attributes[mapping.OTLPField] =
             mapping.Transform(businessData.UserID)
     }
-    
+
     // 映射时间戳
     otlpData.StartTime = businessData.Metadata.CreatedAt
-    
+
     return otlpData
 }
 
@@ -1951,6 +1951,6 @@ Span = (tid, sid, psid, n, k, t₀, t₂, A, E, L, s)
 
 ---
 
-**文档状态**: ✅ 完成  
-**审核状态**: 待审核  
+**文档状态**: ✅ 完成
+**审核状态**: 待审核
 **下一步**: 结合实际案例深化分析

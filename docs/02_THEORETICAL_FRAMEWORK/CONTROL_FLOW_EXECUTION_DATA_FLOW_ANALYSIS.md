@@ -1,7 +1,7 @@
 # 控制流、执行流、数据流的形式化分析
 
-> **版本**: OTLP Rust 1.0  
-> **日期**: 2025年10月7日  
+> **版本**: OTLP Rust 1.0
+> **日期**: 2025年10月7日
 > **主题**: 控制流分析、执行流追踪、数据流建模、形式化验证
 
 ---
@@ -118,7 +118,7 @@ impl ControlFlowGraph {
         let mut nodes = HashMap::new();
         let mut entry = None;
         let mut exit = None;
-        
+
         // 第一遍：创建所有节点
         for span in &trace.spans {
             let node = ControlFlowNode {
@@ -131,14 +131,14 @@ impl ControlFlowGraph {
                 successors: Vec::new(),
                 predecessors: Vec::new(),
             };
-            
+
             if span.parent_span_id.is_none() {
                 entry = Some(span.span_id);
             }
-            
+
             nodes.insert(span.span_id, node);
         }
-        
+
         // 第二遍：建立边关系
         for span in &trace.spans {
             if let Some(parent_id) = span.parent_span_id {
@@ -151,7 +151,7 @@ impl ControlFlowGraph {
                 }
             }
         }
-        
+
         Ok(Self {
             nodes,
             trace_id: trace.trace_id,
@@ -159,7 +159,7 @@ impl ControlFlowGraph {
             exit: exit.ok_or("No exit node")?,
         })
     }
-    
+
     /// 推断节点类型
     fn infer_node_type(span: &Span) -> NodeType {
         if let Some(kind) = span.attributes.get("code.kind") {
@@ -190,13 +190,13 @@ impl ControlFlowGraph {
             NodeType::Sequential
         }
     }
-    
+
     /// 计算支配树 (Dominator Tree)
     pub fn compute_dominators(&self) -> HashMap<SpanId, SpanId> {
         // Lengauer-Tarjan 算法
         let mut dom = HashMap::new();
         dom.insert(self.entry, self.entry);
-        
+
         let mut changed = true;
         while changed {
             changed = false;
@@ -204,7 +204,7 @@ impl ControlFlowGraph {
                 if *node_id == self.entry {
                     continue;
                 }
-                
+
                 // 计算新的支配节点
                 let mut new_dom = None;
                 for pred in &node.predecessors {
@@ -212,7 +212,7 @@ impl ControlFlowGraph {
                         new_dom = Some(self.intersect(&dom, *pred, new_dom));
                     }
                 }
-                
+
                 if let Some(new_dom) = new_dom {
                     if dom.get(node_id) != Some(&new_dom) {
                         dom.insert(*node_id, new_dom);
@@ -221,10 +221,10 @@ impl ControlFlowGraph {
                 }
             }
         }
-        
+
         dom
     }
-    
+
     fn intersect(
         &self,
         dom: &HashMap<SpanId, SpanId>,
@@ -235,7 +235,7 @@ impl ControlFlowGraph {
             Some(b) => b,
             None => return b1,
         };
-        
+
         while b1 != b2 {
             while self.postorder_num(b1) < self.postorder_num(b2) {
                 b1 = dom[&b1];
@@ -246,7 +246,7 @@ impl ControlFlowGraph {
         }
         b1
     }
-    
+
     fn postorder_num(&self, _node: SpanId) -> usize {
         // 简化实现，实际需要 DFS 后序遍历编号
         0
@@ -298,18 +298,18 @@ impl DataFlowAnalyzer {
     pub fn live_variable_analysis(&self) -> HashMap<SpanId, HashSet<String>> {
         let mut in_sets: HashMap<SpanId, HashSet<String>> = HashMap::new();
         let mut out_sets: HashMap<SpanId, HashSet<String>> = HashMap::new();
-        
+
         // 初始化
         for node_id in self.cfg.nodes.keys() {
             in_sets.insert(*node_id, HashSet::new());
             out_sets.insert(*node_id, HashSet::new());
         }
-        
+
         // 不动点迭代
         let mut changed = true;
         while changed {
             changed = false;
-            
+
             // 反向遍历 CFG (活跃变量是反向数据流)
             for (node_id, node) in &self.cfg.nodes {
                 // OUT[B] = ∪ IN[S] for S ∈ successors(B)
@@ -319,7 +319,7 @@ impl DataFlowAnalyzer {
                         new_out.extend(in_set.iter().cloned());
                     }
                 }
-                
+
                 // IN[B] = USE[B] ∪ (OUT[B] - DEF[B])
                 let mut new_in = new_out.clone();
                 if let Some(kill_set) = self.kill.get(node_id) {
@@ -328,7 +328,7 @@ impl DataFlowAnalyzer {
                 if let Some(gen_set) = self.gen.get(node_id) {
                     new_in.extend(gen_set.iter().cloned());
                 }
-                
+
                 // 检查是否改变
                 if in_sets.get(node_id) != Some(&new_in) ||
                    out_sets.get(node_id) != Some(&new_out) {
@@ -338,26 +338,26 @@ impl DataFlowAnalyzer {
                 }
             }
         }
-        
+
         in_sets
     }
-    
+
     /// 到达定义分析 (Reaching Definitions)
     pub fn reaching_definitions(&self) -> HashMap<SpanId, HashSet<Definition>> {
         let mut in_sets: HashMap<SpanId, HashSet<Definition>> = HashMap::new();
         let mut out_sets: HashMap<SpanId, HashSet<Definition>> = HashMap::new();
-        
+
         // 初始化
         for node_id in self.cfg.nodes.keys() {
             in_sets.insert(*node_id, HashSet::new());
             out_sets.insert(*node_id, HashSet::new());
         }
-        
+
         // 不动点迭代
         let mut changed = true;
         while changed {
             changed = false;
-            
+
             for (node_id, node) in &self.cfg.nodes {
                 // IN[B] = ∪ OUT[P] for P ∈ predecessors(B)
                 let mut new_in = HashSet::new();
@@ -366,7 +366,7 @@ impl DataFlowAnalyzer {
                         new_in.extend(out_set.iter().cloned());
                     }
                 }
-                
+
                 // OUT[B] = GEN[B] ∪ (IN[B] - KILL[B])
                 let mut new_out = new_in.clone();
                 // 移除被杀死的定义
@@ -382,7 +382,7 @@ impl DataFlowAnalyzer {
                         });
                     }
                 }
-                
+
                 if in_sets.get(node_id) != Some(&new_in) ||
                    out_sets.get(node_id) != Some(&new_out) {
                     in_sets.insert(*node_id, new_in);
@@ -391,7 +391,7 @@ impl DataFlowAnalyzer {
                 }
             }
         }
-        
+
         in_sets
     }
 }
@@ -455,11 +455,11 @@ impl ExecutionTrace {
     pub fn reconstruct_from_otlp(trace: &Trace) -> Result<Self> {
         let mut states = Vec::new();
         let mut call_stack = Vec::new();
-        
+
         // 按时间戳排序 Spans
         let mut sorted_spans = trace.spans.clone();
         sorted_spans.sort_by_key(|s| s.start_time);
-        
+
         for span in sorted_spans {
             // 构建变量环境
             let mut variables = HashMap::new();
@@ -471,34 +471,34 @@ impl ExecutionTrace {
                     );
                 }
             }
-            
+
             // 更新调用栈
-            if span.span_kind == SpanKind::Server || 
+            if span.span_kind == SpanKind::Server ||
                span.span_kind == SpanKind::Internal {
                 call_stack.push(span.span_id);
             }
-            
+
             let state = ExecutionState {
                 current_span: span.span_id,
                 variables,
                 timestamp: span.start_time,
                 call_stack: call_stack.clone(),
             };
-            
+
             states.push(state);
-            
+
             // Span 结束时弹出调用栈
             if span.end_time.is_some() {
                 call_stack.pop();
             }
         }
-        
+
         Ok(Self {
             states,
             trace_id: trace.trace_id,
         })
     }
-    
+
     /// 检查执行路径的可达性
     pub fn verify_reachability(
         &self,
@@ -508,7 +508,7 @@ impl ExecutionTrace {
         for i in 0..self.states.len() - 1 {
             let current = self.states[i].current_span;
             let next = self.states[i + 1].current_span;
-            
+
             if let Some(node) = cfg.nodes.get(&current) {
                 if !node.successors.contains(&next) {
                     return Ok(false);
@@ -517,21 +517,21 @@ impl ExecutionTrace {
                 return Err(anyhow!("Span not found in CFG"));
             }
         }
-        
+
         Ok(true)
     }
-    
+
     /// 分析执行热点
     pub fn analyze_hotspots(&self) -> Vec<(SpanId, u64)> {
         let mut span_counts: HashMap<SpanId, u64> = HashMap::new();
-        
+
         for state in &self.states {
             *span_counts.entry(state.current_span).or_insert(0) += 1;
         }
-        
+
         let mut hotspots: Vec<_> = span_counts.into_iter().collect();
         hotspots.sort_by_key(|(_, count)| std::cmp::Reverse(*count));
-        
+
         hotspots
     }
 }
@@ -569,7 +569,7 @@ impl ControlFlowTracer {
         span.set_attribute("branch.taken", branch_taken.to_string());
         span
     }
-    
+
     /// 标记循环
     pub fn trace_loop(&mut self, iteration: u64) -> Span {
         let mut span = self.tracer.start("loop");
@@ -577,7 +577,7 @@ impl ControlFlowTracer {
         span.set_attribute("loop.iteration", iteration.to_string());
         span
     }
-    
+
     /// 标记函数调用
     pub fn trace_call(&mut self, function: &str) -> Span {
         let mut span = self.tracer.start(function);
@@ -590,10 +590,10 @@ impl ControlFlowTracer {
 // 使用示例
 pub async fn example_traced_function(tracer: &mut ControlFlowTracer) {
     let _fn_span = tracer.trace_call("example_traced_function");
-    
+
     let condition = true;
     let _branch_span = tracer.trace_branch("condition", condition);
-    
+
     if condition {
         // 分支 A
         for i in 0..10 {
@@ -637,7 +637,7 @@ impl DataFlowTracer {
                 .to_string(),
         );
     }
-    
+
     /// 追踪变量使用
     pub fn trace_use(
         &self,
@@ -657,14 +657,14 @@ impl DataFlowTracer {
                 .to_string(),
         );
     }
-    
+
     /// 构建 def-use 链
     pub fn build_def_use_chains(
         &self,
         trace: &Trace,
     ) -> HashMap<String, Vec<DefUseChain>> {
         let mut chains: HashMap<String, Vec<DefUseChain>> = HashMap::new();
-        
+
         for span in &trace.spans {
             for (key, value) in &span.attributes {
                 if let Some(var) = key.strip_prefix("var.") {
@@ -686,7 +686,7 @@ impl DataFlowTracer {
                 }
             }
         }
-        
+
         chains
     }
 }
@@ -721,7 +721,7 @@ impl ExecutionFlowMonitor {
     /// 记录执行点
     pub fn record_execution_point(&mut self, point: String) {
         self.actual_path.push(point.clone());
-        
+
         // 检查是否偏离预期路径
         if let Some(expected) = self.expected_path.get(self.actual_path.len() - 1) {
             if expected != &point {
@@ -732,7 +732,7 @@ impl ExecutionFlowMonitor {
             }
         }
     }
-    
+
     /// 验证执行路径
     pub fn verify_execution_path(&self) -> Result<()> {
         if self.actual_path != self.expected_path {
@@ -865,27 +865,27 @@ impl SmallStepInterpreter {
         state: &mut HashMap<String, i64>,
     ) -> Option<Statement> {
         let mut span = self.tracer.start("step");
-        
+
         match stmt {
             Statement::Skip => {
                 span.set_attribute("stmt", "skip");
                 None
             }
-            
+
             Statement::Assign { var, expr } => {
                 span.set_attribute("stmt", "assign");
                 span.set_attribute("var", var);
-                
+
                 let value = self.eval_expr(expr, state);
                 state.insert(var.clone(), value);
-                
+
                 span.set_attribute("value", value.to_string());
                 Some(Statement::Skip)
             }
-            
+
             Statement::Seq(s1, s2) => {
                 span.set_attribute("stmt", "seq");
-                
+
                 if matches!(**s1, Statement::Skip) {
                     Some((**s2).clone())
                 } else {
@@ -899,26 +899,26 @@ impl SmallStepInterpreter {
                     }
                 }
             }
-            
+
             Statement::If { condition, then_branch, else_branch } => {
                 span.set_attribute("stmt", "if");
-                
+
                 let cond_value = self.eval_expr(condition, state);
                 span.set_attribute("condition", cond_value.to_string());
-                
+
                 if cond_value != 0 {
                     Some((**then_branch).clone())
                 } else {
                     Some((**else_branch).clone())
                 }
             }
-            
+
             Statement::While { condition, body } => {
                 span.set_attribute("stmt", "while");
-                
+
                 let cond_value = self.eval_expr(condition, state);
                 span.set_attribute("condition", cond_value.to_string());
-                
+
                 if cond_value != 0 {
                     Some(Statement::Seq(
                         body.clone(),
@@ -930,7 +930,7 @@ impl SmallStepInterpreter {
             }
         }
     }
-    
+
     /// 求值表达式
     fn eval_expr(
         &self,
@@ -955,7 +955,7 @@ impl SmallStepInterpreter {
             }
         }
     }
-    
+
     /// 执行到终止
     pub fn execute(
         &self,
@@ -964,18 +964,18 @@ impl SmallStepInterpreter {
     ) -> Result<()> {
         let mut steps = 0;
         const MAX_STEPS: usize = 10000;
-        
+
         while !matches!(stmt, Statement::Skip) {
             if steps >= MAX_STEPS {
                 return Err(anyhow!("Execution exceeded maximum steps"));
             }
-            
+
             stmt = self.step(&stmt, state)
                 .ok_or_else(|| anyhow!("Unexpected termination"))?;
-            
+
             steps += 1;
         }
-        
+
         Ok(())
     }
 }
@@ -1013,16 +1013,16 @@ f: L → L 是单调的当且仅当:
 pub trait Lattice: Clone + PartialEq {
     /// 偏序关系
     fn less_or_equal(&self, other: &Self) -> bool;
-    
+
     /// Join (最小上界)
     fn join(&self, other: &Self) -> Self;
-    
+
     /// Meet (最大下界)
     fn meet(&self, other: &Self) -> Self;
-    
+
     /// 最小元
     fn bottom() -> Self;
-    
+
     /// 最大元
     fn top() -> Self;
 }
@@ -1037,25 +1037,25 @@ impl Lattice for PowerSetLattice {
     fn less_or_equal(&self, other: &Self) -> bool {
         self.elements.is_subset(&other.elements)
     }
-    
+
     fn join(&self, other: &Self) -> Self {
         Self {
             elements: self.elements.union(&other.elements).cloned().collect(),
         }
     }
-    
+
     fn meet(&self, other: &Self) -> Self {
         Self {
             elements: self.elements.intersection(&other.elements).cloned().collect(),
         }
     }
-    
+
     fn bottom() -> Self {
         Self {
             elements: HashSet::new(),
         }
     }
-    
+
     fn top() -> Self {
         // 实际中需要知道所有可能的变量
         unimplemented!("Top element requires universe of variables")
@@ -1065,7 +1065,7 @@ impl Lattice for PowerSetLattice {
 /// 单调函数
 pub trait MonotoneFunction<L: Lattice> {
     fn apply(&self, input: &L) -> L;
-    
+
     /// 验证单调性
     fn verify_monotonicity(&self, test_cases: &[(L, L)]) -> bool {
         for (x, y) in test_cases {
@@ -1101,7 +1101,7 @@ impl<L: Lattice> FixpointSolver<L> {
             current = next;
         }
     }
-    
+
     /// 带迭代限制的不动点计算
     pub fn least_fixpoint_bounded<F>(
         &self,
@@ -1172,7 +1172,7 @@ impl DistributedCFG {
         let mut local_cfgs = HashMap::new();
         let mut cross_service_edges = Vec::new();
         let mut causal_order = HashMap::new();
-        
+
         // 按服务分组
         let mut spans_by_service: HashMap<String, Vec<&Span>> = HashMap::new();
         for trace in traces {
@@ -1182,25 +1182,25 @@ impl DistributedCFG {
                     .get("service.name")
                     .cloned()
                     .unwrap_or_else(|| "unknown".to_string());
-                
+
                 spans_by_service
                     .entry(service)
                     .or_insert_with(Vec::new)
                     .push(span);
             }
         }
-        
+
         // 为每个服务构建本地 CFG
         for (service, spans) in spans_by_service {
             let service_trace = Trace {
                 trace_id: traces[0].trace_id, // 简化
                 spans: spans.into_iter().cloned().collect(),
             };
-            
+
             let cfg = ControlFlowGraph::build_from_trace(&service_trace)?;
             local_cfgs.insert(service, cfg);
         }
-        
+
         // 识别跨服务调用
         for trace in traces {
             for span in &trace.spans {
@@ -1213,13 +1213,13 @@ impl DistributedCFG {
                             .get("service.name")
                             .cloned()
                             .unwrap_or_default();
-                        
+
                         let target_service = server_span.resource
                             .attributes
                             .get("service.name")
                             .cloned()
                             .unwrap_or_default();
-                        
+
                         cross_service_edges.push(CrossServiceEdge {
                             source: span.span_id,
                             source_service,
@@ -1227,7 +1227,7 @@ impl DistributedCFG {
                             target_service,
                             context: span.attributes.clone(),
                         });
-                        
+
                         // 建立因果关系
                         causal_order
                             .entry(span.span_id)
@@ -1237,14 +1237,14 @@ impl DistributedCFG {
                 }
             }
         }
-        
+
         Ok(Self {
             local_cfgs,
             cross_service_edges,
             causal_order,
         })
     }
-    
+
     fn find_server_span<'a>(
         traces: &'a [Trace],
         client_span: &Span,
@@ -1263,12 +1263,12 @@ impl DistributedCFG {
         }
         None
     }
-    
+
     /// 全局拓扑排序
     pub fn global_topological_sort(&self) -> Result<Vec<SpanId>> {
         let mut in_degree: HashMap<SpanId, usize> = HashMap::new();
         let mut adj_list: HashMap<SpanId, Vec<SpanId>> = HashMap::new();
-        
+
         // 构建全局图
         for cfg in self.local_cfgs.values() {
             for (span_id, node) in &cfg.nodes {
@@ -1279,25 +1279,25 @@ impl DistributedCFG {
                 }
             }
         }
-        
+
         // 添加跨服务边
         for edge in &self.cross_service_edges {
             *in_degree.entry(edge.target).or_insert(0) += 1;
             adj_list.entry(edge.source).or_insert_with(Vec::new).push(edge.target);
         }
-        
+
         // Kahn 算法
         let mut queue: VecDeque<SpanId> = in_degree
             .iter()
             .filter(|(_, &deg)| deg == 0)
             .map(|(&id, _)| id)
             .collect();
-        
+
         let mut result = Vec::new();
-        
+
         while let Some(node) = queue.pop_front() {
             result.push(node);
-            
+
             if let Some(neighbors) = adj_list.get(&node) {
                 for &neighbor in neighbors {
                     if let Some(deg) = in_degree.get_mut(&neighbor) {
@@ -1309,11 +1309,11 @@ impl DistributedCFG {
                 }
             }
         }
-        
+
         if result.len() != in_degree.len() {
             return Err(anyhow!("Cycle detected in distributed CFG"));
         }
-        
+
         Ok(result)
     }
 }
@@ -1337,7 +1337,7 @@ impl DistributedDataFlowAnalyzer {
         variable: &str,
     ) -> Vec<CrossServiceDataFlow> {
         let mut flows = Vec::new();
-        
+
         for edge in &self.dcfg.cross_service_edges {
             // 检查是否在上下文中传播了该变量
             if let Some(value) = edge.context.get(variable) {
@@ -1351,32 +1351,32 @@ impl DistributedDataFlowAnalyzer {
                 });
             }
         }
-        
+
         flows
     }
-    
+
     /// 全局到达定义分析
     pub fn global_reaching_definitions(
         &self,
     ) -> HashMap<SpanId, HashSet<Definition>> {
         // 在每个服务内部进行局部分析
-        let mut local_results: HashMap<String, HashMap<SpanId, HashSet<Definition>>> = 
+        let mut local_results: HashMap<String, HashMap<SpanId, HashSet<Definition>>> =
             HashMap::new();
-        
+
         for (service, cfg) in &self.dcfg.local_cfgs {
             let analyzer = DataFlowAnalyzer {
                 cfg: cfg.clone(),
                 gen: HashMap::new(), // 需要从 Span 属性中提取
                 kill: HashMap::new(),
             };
-            
+
             let result = analyzer.reaching_definitions();
             local_results.insert(service.clone(), result);
         }
-        
+
         // 合并跨服务的结果
         let mut global_result: HashMap<SpanId, HashSet<Definition>> = HashMap::new();
-        
+
         for (_, local_result) in local_results {
             for (span_id, defs) in local_result {
                 global_result.entry(span_id)
@@ -1384,13 +1384,13 @@ impl DistributedDataFlowAnalyzer {
                     .extend(defs);
             }
         }
-        
+
         // 传播跨服务的定义
         for edge in &self.dcfg.cross_service_edges {
             if let Some(source_defs) = global_result.get(&edge.source) {
                 let target_defs = global_result.entry(edge.target)
                     .or_insert_with(HashSet::new);
-                
+
                 // 传播相关的定义
                 for def in source_defs {
                     if edge.context.contains_key(&def.variable) {
@@ -1399,7 +1399,7 @@ impl DistributedDataFlowAnalyzer {
                 }
             }
         }
-        
+
         global_result
     }
 }
@@ -1425,7 +1425,7 @@ pub struct CrossServiceDataFlow {
 #[cfg(test)]
 mod tests {
     use super::*;
-    
+
     #[test]
     fn test_control_flow_analysis() {
         // 创建示例程序
@@ -1450,17 +1450,17 @@ mod tests {
                 }),
             }),
         );
-        
+
         // 执行并追踪
         let tracer = Tracer::new("test");
         let interpreter = SmallStepInterpreter { tracer };
         let mut state = HashMap::new();
-        
+
         interpreter.execute(program, &mut state).unwrap();
-        
+
         assert_eq!(state.get("x"), Some(&0));
     }
-    
+
     #[test]
     fn test_data_flow_analysis() {
         // 构建测试 CFG
@@ -1468,7 +1468,7 @@ mod tests {
         let entry_id = SpanId::from_bytes([1; 8]);
         let node1_id = SpanId::from_bytes([2; 8]);
         let exit_id = SpanId::from_bytes([3; 8]);
-        
+
         nodes.insert(entry_id, ControlFlowNode {
             span_id: entry_id,
             basic_block_id: "entry".to_string(),
@@ -1476,7 +1476,7 @@ mod tests {
             successors: vec![node1_id],
             predecessors: vec![],
         });
-        
+
         nodes.insert(node1_id, ControlFlowNode {
             span_id: node1_id,
             basic_block_id: "node1".to_string(),
@@ -1484,7 +1484,7 @@ mod tests {
             successors: vec![exit_id],
             predecessors: vec![entry_id],
         });
-        
+
         nodes.insert(exit_id, ControlFlowNode {
             span_id: exit_id,
             basic_block_id: "exit".to_string(),
@@ -1492,14 +1492,14 @@ mod tests {
             successors: vec![],
             predecessors: vec![node1_id],
         });
-        
+
         let cfg = ControlFlowGraph {
             nodes,
             trace_id: TraceId::from_bytes([0; 16]),
             entry: entry_id,
             exit: exit_id,
         };
-        
+
         // 设置 GEN/KILL 集合
         let mut gen = HashMap::new();
         gen.insert(node1_id, {
@@ -1507,33 +1507,33 @@ mod tests {
             set.insert("x".to_string());
             set
         });
-        
+
         let analyzer = DataFlowAnalyzer {
             cfg,
             gen,
             kill: HashMap::new(),
         };
-        
+
         let live_vars = analyzer.live_variable_analysis();
         println!("Live variables: {:?}", live_vars);
     }
-    
+
     #[test]
     fn test_lattice_fixpoint() {
         let solver = FixpointSolver::<PowerSetLattice> {
             _phantom: std::marker::PhantomData,
         };
-        
+
         // 定义单调函数: f(X) = X ∪ {a}
         let f = |x: &PowerSetLattice| {
             let mut result = x.clone();
             result.elements.insert("a".to_string());
             result
         };
-        
+
         let initial = PowerSetLattice::bottom();
         let fixpoint = solver.least_fixpoint_bounded(f, initial, 10).unwrap();
-        
+
         assert!(fixpoint.elements.contains("a"));
         assert_eq!(fixpoint.elements.len(), 1);
     }

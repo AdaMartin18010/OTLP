@@ -1,16 +1,16 @@
 # OTLP传输层 - HTTP详解
 
-> **协议版本**: HTTP/1.1  
-> **OTLP版本**: v1.0.0 (Stable)  
-> **默认端口**: 4318  
+> **协议版本**: HTTP/1.1
+> **OTLP版本**: v1.0.0 (Stable)
+> **默认端口**: 4318
 > **最后更新**: 2025年10月8日
 
 ---
 
-## 目录
+## 📋 目录
 
 - [OTLP传输层 - HTTP详解](#otlp传输层---http详解)
-  - [目录](#目录)
+  - [📋 目录](#-目录)
   - [1. 概念定义](#1-概念定义)
     - [1.1 正式定义](#11-正式定义)
     - [1.2 HTTP核心特性](#12-http核心特性)
@@ -73,13 +73,13 @@ HTTP_OTLP = (E, M, P, C)
 其中:
 - E: Endpoints = {/v1/traces, /v1/metrics, /v1/logs}
   端点集合
-  
+
 - M: Method = POST
   HTTP方法（仅POST）
-  
+
 - P: Payload = Protocol Buffers Binary | JSON
   载荷编码格式
-  
+
 - C: Content-Type = {
     "application/x-protobuf",
     "application/json"
@@ -561,7 +561,7 @@ import random
 def export_with_retry(data, max_retries=5):
     base_delay = 1.0  # 1秒
     max_delay = 120.0  # 2分钟
-    
+
     for attempt in range(max_retries):
         try:
             response = requests.post(
@@ -570,12 +570,12 @@ def export_with_retry(data, max_retries=5):
                 headers={"Content-Type": "application/x-protobuf"},
                 timeout=10
             )
-            
+
             if response.status_code == 200:
                 # 成功
                 check_partial_success(response)
                 return True
-            
+
             elif response.status_code == 429:
                 # 限流，检查Retry-After
                 retry_after = response.headers.get('Retry-After')
@@ -583,32 +583,32 @@ def export_with_retry(data, max_retries=5):
                     delay = float(retry_after)
                 else:
                     delay = min(base_delay * (2 ** attempt), max_delay)
-                
+
                 # 添加抖动
                 delay = delay * (0.5 + random.random())
                 time.sleep(delay)
-                
+
             elif response.status_code >= 500:
                 # 服务器错误，重试
                 delay = min(base_delay * (2 ** attempt), max_delay)
                 delay = delay * (0.5 + random.random())
                 time.sleep(delay)
-                
+
             else:
                 # 4xx错误，不重试
                 log.error(f"Client error: {response.status_code}")
                 return False
-                
+
         except requests.exceptions.Timeout:
             # 超时，重试
             delay = min(base_delay * (2 ** attempt), max_delay)
             time.sleep(delay)
-            
+
         except requests.exceptions.ConnectionError:
             # 连接错误，重试
             delay = min(base_delay * (2 ** attempt), max_delay)
             time.sleep(delay)
-    
+
     log.error("Max retries exceeded")
     return False
 ```
@@ -713,19 +713,19 @@ func compressRequest(data []byte) ([]byte, error) {
     if len(data) < 1024 {
         return data, nil  // 太小，不压缩
     }
-    
+
     var buf bytes.Buffer
     gw := gzip.NewWriter(&buf)
-    
+
     _, err := gw.Write(data)
     if err != nil {
         return nil, err
     }
-    
+
     if err := gw.Close(); err != nil {
         return nil, err
     }
-    
+
     return buf.Bytes(), nil
 }
 
@@ -734,22 +734,22 @@ func exportTraces(data []byte) error {
     if err != nil {
         return err
     }
-    
-    req, err := http.NewRequest("POST", 
+
+    req, err := http.NewRequest("POST",
         "https://collector:4318/v1/traces",
         bytes.NewReader(compressed))
     if err != nil {
         return err
     }
-    
+
     req.Header.Set("Content-Type", "application/x-protobuf")
     if len(compressed) < len(data) {
         req.Header.Set("Content-Encoding", "gzip")
     }
-    
+
     resp, err := http.DefaultClient.Do(req)
     // ... 处理响应
-    
+
     return nil
 }
 ```
@@ -843,13 +843,13 @@ func newHTTPClient() *http.Client {
         },
         // 生产环境不要设置 InsecureSkipVerify: true
     }
-    
+
     transport := &http.Transport{
         TLSClientConfig: tlsConfig,
         MaxIdleConns:    10,
         IdleConnTimeout: 90 * time.Second,
     }
-    
+
     return &http.Client{
         Transport: transport,
         Timeout:   30 * time.Second,
@@ -1025,7 +1025,7 @@ import (
     "io"
     "net/http"
     "time"
-    
+
     tracepb "go.opentelemetry.io/proto/otlp/collector/trace/v1"
     "google.golang.org/protobuf/proto"
 )
@@ -1040,14 +1040,14 @@ func NewHTTPExporter(endpoint string) *HTTPExporter {
     tlsConfig := &tls.Config{
         MinVersion: tls.VersionTLS12,
     }
-    
+
     transport := &http.Transport{
         TLSClientConfig:     tlsConfig,
         MaxIdleConns:        10,
         MaxIdleConnsPerHost: 5,
         IdleConnTimeout:     90 * time.Second,
     }
-    
+
     return &HTTPExporter{
         client: &http.Client{
             Transport: transport,
@@ -1061,28 +1061,28 @@ func NewHTTPExporter(endpoint string) *HTTPExporter {
     }
 }
 
-func (e *HTTPExporter) ExportTraces(ctx context.Context, 
+func (e *HTTPExporter) ExportTraces(ctx context.Context,
     req *tracepb.ExportTraceServiceRequest) error {
-    
+
     // 序列化
     data, err := proto.Marshal(req)
     if err != nil {
         return fmt.Errorf("marshal: %w", err)
     }
-    
+
     // 压缩
     compressed, err := e.compress(data)
     if err != nil {
         return fmt.Errorf("compress: %w", err)
     }
-    
+
     // 创建HTTP请求
     httpReq, err := http.NewRequestWithContext(ctx, "POST",
         e.endpoint, bytes.NewReader(compressed))
     if err != nil {
         return err
     }
-    
+
     // 设置头部
     for k, v := range e.headers {
         httpReq.Header.Set(k, v)
@@ -1090,20 +1090,20 @@ func (e *HTTPExporter) ExportTraces(ctx context.Context,
     if len(compressed) < len(data) {
         httpReq.Header.Set("Content-Encoding", "gzip")
     }
-    
+
     // 发送请求
     resp, err := e.client.Do(httpReq)
     if err != nil {
         return fmt.Errorf("http request: %w", err)
     }
     defer resp.Body.Close()
-    
+
     // 检查状态码
     if resp.StatusCode >= 200 && resp.StatusCode < 300 {
         // 成功，检查部分成功
         return e.checkPartialSuccess(resp)
     }
-    
+
     // 错误
     body, _ := io.ReadAll(resp.Body)
     return fmt.Errorf("http %d: %s", resp.StatusCode, body)
@@ -1113,18 +1113,18 @@ func (e *HTTPExporter) compress(data []byte) ([]byte, error) {
     if len(data) < 1024 {
         return data, nil  // 太小，不压缩
     }
-    
+
     var buf bytes.Buffer
     gw := gzip.NewWriter(&buf)
-    
+
     if _, err := gw.Write(data); err != nil {
         return nil, err
     }
-    
+
     if err := gw.Close(); err != nil {
         return nil, err
     }
-    
+
     return buf.Bytes(), nil
 }
 
@@ -1132,24 +1132,24 @@ func (e *HTTPExporter) checkPartialSuccess(resp *http.Response) error {
     if resp.ContentLength == 0 {
         return nil  // 完全成功
     }
-    
+
     body, err := io.ReadAll(resp.Body)
     if err != nil {
         return err
     }
-    
+
     var exportResp tracepb.ExportTraceServiceResponse
     if err := proto.Unmarshal(body, &exportResp); err != nil {
         return err
     }
-    
+
     if ps := exportResp.PartialSuccess; ps != nil {
         if ps.RejectedSpans > 0 {
             fmt.Printf("Partial success: %d spans rejected: %s\n",
                 ps.RejectedSpans, ps.ErrorMessage)
         }
     }
-    
+
     return nil
 }
 ```
@@ -1167,7 +1167,7 @@ import (
     "io"
     "log"
     "net/http"
-    
+
     tracepb "go.opentelemetry.io/proto/otlp/collector/trace/v1"
     "google.golang.org/protobuf/proto"
 )
@@ -1182,24 +1182,24 @@ func NewHTTPServer(port int) *HTTPServer {
 
 func (s *HTTPServer) Start() error {
     mux := http.NewServeMux()
-    
+
     // Traces端点
     mux.HandleFunc("/v1/traces", s.handleTraces)
-    
+
     // Metrics端点
     mux.HandleFunc("/v1/metrics", s.handleMetrics)
-    
+
     // Logs端点
     mux.HandleFunc("/v1/logs", s.handleLogs)
-    
+
     // 健康检查
     mux.HandleFunc("/health", s.handleHealth)
-    
+
     server := &http.Server{
         Addr:    fmt.Sprintf(":%d", s.port),
         Handler: s.withLogging(s.withCORS(mux)),
     }
-    
+
     log.Printf("HTTP server listening on :%d", s.port)
     return server.ListenAndServe()
 }
@@ -1209,15 +1209,15 @@ func (s *HTTPServer) handleTraces(w http.ResponseWriter, r *http.Request) {
         http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
         return
     }
-    
+
     // 检查Content-Type
     contentType := r.Header.Get("Content-Type")
     if contentType != "application/x-protobuf" {
-        http.Error(w, "Unsupported media type", 
+        http.Error(w, "Unsupported media type",
             http.StatusUnsupportedMediaType)
         return
     }
-    
+
     // 读取请求体
     body := r.Body
     if r.Header.Get("Content-Encoding") == "gzip" {
@@ -1229,20 +1229,20 @@ func (s *HTTPServer) handleTraces(w http.ResponseWriter, r *http.Request) {
         defer gr.Close()
         body = gr
     }
-    
+
     data, err := io.ReadAll(body)
     if err != nil {
         http.Error(w, "Read error", http.StatusBadRequest)
         return
     }
-    
+
     // 解析Protobuf
     var req tracepb.ExportTraceServiceRequest
     if err := proto.Unmarshal(data, &req); err != nil {
         http.Error(w, "Invalid protobuf", http.StatusBadRequest)
         return
     }
-    
+
     // 处理数据
     totalSpans := 0
     for _, rs := range req.ResourceSpans {
@@ -1250,9 +1250,9 @@ func (s *HTTPServer) handleTraces(w http.ResponseWriter, r *http.Request) {
             totalSpans += len(ss.Spans)
         }
     }
-    
+
     log.Printf("Received %d spans", totalSpans)
-    
+
     // 返回成功
     w.Header().Set("Content-Type", "application/x-protobuf")
     w.WriteHeader(http.StatusOK)
@@ -1275,14 +1275,14 @@ func (s *HTTPServer) withCORS(next http.Handler) http.Handler {
     return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
         w.Header().Set("Access-Control-Allow-Origin", "*")
         w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
-        w.Header().Set("Access-Control-Allow-Headers", 
+        w.Header().Set("Access-Control-Allow-Headers",
             "Content-Type, Authorization")
-        
+
         if r.Method == http.MethodOptions {
             w.WriteHeader(http.StatusNoContent)
             return
         }
-        
+
         next.ServeHTTP(w, r)
     })
 }
@@ -1317,11 +1317,11 @@ export NO_PROXY=localhost,127.0.0.1
 // Go代码配置
 func newProxyClient() *http.Client {
     proxyURL, _ := url.Parse("http://proxy.example.com:8080")
-    
+
     transport := &http.Transport{
         Proxy: http.ProxyURL(proxyURL),
     }
-    
+
     return &http.Client{
         Transport: transport,
     }
@@ -1428,26 +1428,26 @@ HTTP通过多连接可接近gRPC性能
 ```go
 func exportWithRetry(data []byte, maxRetries int) error {
     for i := 0; i < maxRetries; i++ {
-        ctx, cancel := context.WithTimeout(context.Background(), 
+        ctx, cancel := context.WithTimeout(context.Background(),
             10*time.Second)
         defer cancel()
-        
+
         err := export(ctx, data)
         if err == nil {
             return nil
         }
-        
+
         if errors.Is(err, context.DeadlineExceeded) {
             // 超时，重试
             log.Printf("Timeout, retry %d/%d", i+1, maxRetries)
             time.Sleep(time.Second * time.Duration(1<<i))
             continue
         }
-        
+
         // 其他错误，不重试
         return err
     }
-    
+
     return fmt.Errorf("max retries exceeded")
 }
 ```
@@ -1465,7 +1465,7 @@ func exportWithRetry(data []byte, maxRetries int) error {
 **添加追踪上下文**：
 
 ```go
-req.Header.Set("traceparent", 
+req.Header.Set("traceparent",
     fmt.Sprintf("00-%s-%s-01", traceID, spanID))
 req.Header.Set("tracestate", "vendor=value")
 ```
@@ -1530,6 +1530,6 @@ ERROR: HTTP POST /v1/traces 500 (server error)
 
 ---
 
-**文档状态**: ✅ 完成  
-**审核状态**: 待审核  
+**文档状态**: ✅ 完成
+**审核状态**: 待审核
 **下一步**: [04_Protocol_Buffers编码.md](./04_Protocol_Buffers编码.md)

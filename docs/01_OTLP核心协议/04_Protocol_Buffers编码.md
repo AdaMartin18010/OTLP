@@ -1,15 +1,15 @@
 # Protocol Buffers编码详解
 
-> **Protocol Buffers版本**: v3  
-> **OTLP版本**: v1.0.0 (Stable)  
+> **Protocol Buffers版本**: v3
+> **OTLP版本**: v1.0.0 (Stable)
 > **最后更新**: 2025年10月8日
 
 ---
 
-## 目录
+## 📋 目录
 
 - [Protocol Buffers编码详解](#protocol-buffers编码详解)
-  - [目录](#目录)
+  - [📋 目录](#-目录)
   - [1. 概念定义](#1-概念定义)
     - [1.1 正式定义](#11-正式定义)
     - [1.2 为什么选择Protocol Buffers](#12-为什么选择protocol-buffers)
@@ -69,13 +69,13 @@ Protobuf = (S, M, E, D)
 其中:
 - S: Schema = .proto文件定义
   类型系统与消息结构
-  
+
 - M: Messages = 结构化数据类型集合
   message, enum, service等
-  
+
 - E: Encoding = Binary Wire Format
   二进制编码格式
-  
+
 - D: Decoding = Parser
   解析器
 
@@ -257,14 +257,14 @@ message Span {
   // 标量字段（可选，默认值0/空）
   string name = 1;
   int64 start_time_unix_nano = 2;
-  
+
   // repeated字段（数组，默认空数组）
   repeated KeyValue attributes = 3;
   repeated Event events = 4;
-  
+
   // 嵌套消息（可选，默认null）
   Status status = 5;
-  
+
   // 枚举（默认第一个值，通常是_UNSPECIFIED）
   SpanKind kind = 6;
 }
@@ -413,7 +413,7 @@ message Metric {
   string name = 1;
   string description = 2;
   string unit = 3;
-  
+
   oneof data {
     Gauge gauge = 5;
     Sum sum = 7;
@@ -667,7 +667,7 @@ message Test2 {
    message M { string s = 2; }
    M{s: "test"}
    → [0x12, 0x04, 't', 'e', 's', 't']
-   
+
 3. bytes字段 (Length-delimited):
    message M { bytes b = 3; }
    M{b: [0x01, 0x02, 0x03]}
@@ -839,10 +839,10 @@ message Span {
   string trace_state = 3;    // 永不改变
   bytes parent_span_id = 4;  // 永不改变
   string name = 5;           // 永不改变
-  
+
   // 新增字段使用新编号
   // int64 new_field = 16;  // OK (新版本)
-  
+
   // reserved编号保护
   reserved 100 to 110;       // 保留范围
   reserved "deprecated_field"; // 保留名称
@@ -937,10 +937,10 @@ Tag编码大小:
 - field 1-15: 1字节 Tag
   tag = field_number << 3 | wire_type
   1-15 → 8-127 → 1 byte Varint
-  
+
 - field 16-2047: 2字节 Tag
   16-2047 → 128-16383 → 2 bytes Varint
-  
+
 - field 2048+: 3+ 字节 Tag
 
 优化建议:
@@ -957,7 +957,7 @@ message Span {
   SpanKind kind = 4;
   fixed64 start_time_unix_nano = 5;
   fixed64 end_time_unix_nano = 6;
-  
+
   // 低频字段放后面 (16+)
   string trace_state = 16;
   repeated Link links = 17;
@@ -972,7 +972,7 @@ message Span {
 message Test {
   // proto3默认packed
   repeated int32 values = 1;
-  
+
   // 显式声明 (proto2需要)
   // repeated int32 values = 1 [packed=true];
 }
@@ -1143,13 +1143,13 @@ func serializeSpan() ([]byte, error) {
             },
         },
     }
-    
+
     // 序列化
     data, err := proto.Marshal(span)
     if err != nil {
         return nil, err
     }
-    
+
     return data, nil
 }
 ```
@@ -1161,12 +1161,12 @@ func serializeSpan() ([]byte, error) {
 ```go
 func deserializeSpan(data []byte) (*tracepb.Span, error) {
     span := &tracepb.Span{}
-    
+
     err := proto.Unmarshal(data, span)
     if err != nil {
         return nil, err
     }
-    
+
     return span, nil
 }
 
@@ -1176,16 +1176,16 @@ func processSpan(data []byte) error {
     if err != nil {
         return err
     }
-    
+
     fmt.Printf("Span Name: %s\n", span.Name)
     fmt.Printf("Trace ID: %x\n", span.TraceId)
     fmt.Printf("Kind: %v\n", span.Kind)
-    
+
     for _, attr := range span.Attributes {
-        fmt.Printf("Attribute: %s = %v\n", 
+        fmt.Printf("Attribute: %s = %v\n",
             attr.Key, attr.Value)
     }
-    
+
     return nil
 }
 ```
@@ -1248,11 +1248,11 @@ message Span {
   bytes trace_id = 1 [(validate.rules).bytes = {
     len: 16
   }];
-  
+
   bytes span_id = 2 [(validate.rules).bytes = {
     len: 8
   }];
-  
+
   string name = 5 [(validate.rules).string = {
     min_len: 1
     max_len: 256
@@ -1327,6 +1327,6 @@ fmt.Println(string(text))
 
 ---
 
-**文档状态**: ✅ 完成  
-**审核状态**: 待审核  
+**文档状态**: ✅ 完成
+**审核状态**: 待审核
 **下一步**: [05_端点与版本.md](./05_端点与版本.md)

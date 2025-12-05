@@ -1,6 +1,6 @@
 # OpenTelemetry Azure 集成指南
 
-> **最后更新**: 2025年10月8日  
+> **最后更新**: 2025年10月8日
 > **目标读者**: Azure架构师、DevOps工程师
 
 ---
@@ -47,19 +47,19 @@ import (
 func initTracer() {
     // Application Insights connection string
     connString := "InstrumentationKey=abc123...;IngestionEndpoint=https://..."
-    
+
     config := appinsights.NewTelemetryConfiguration(connString)
     client := appinsights.NewTelemetryClientFromConfig(config)
-    
+
     // 使用OpenTelemetry
     exporter := azuremonitor.NewExporter(azuremonitor.ExporterOptions{
         ConnectionString: connString,
     })
-    
+
     tp := sdktrace.NewTracerProvider(
         sdktrace.WithBatcher(exporter),
     )
-    
+
     otel.SetTracerProvider(tp)
 }
 ```
@@ -134,21 +134,21 @@ using Microsoft.ApplicationInsights.Extensibility;
 public class OrderFunction
 {
     private readonly TelemetryClient _telemetry;
-    
+
     public OrderFunction(TelemetryConfiguration config)
     {
         _telemetry = new TelemetryClient(config);
     }
-    
+
     [FunctionName("ProcessOrder")]
     public async Task Run(
         [HttpTrigger] HttpRequest req)
     {
         using var operation = _telemetry.StartOperation<RequestTelemetry>("ProcessOrder");
-        
+
         // 业务逻辑
         await ProcessOrderAsync();
-        
+
         operation.Telemetry.Success = true;
     }
 }
@@ -164,7 +164,7 @@ public class OrderFunction
 exporters:
   azuremonitor:
     connection_string: "${CONN_STRING}"
-    
+
     # Metrics配置
     metrics:
       namespace: "MyApp"
@@ -198,7 +198,7 @@ func createCosmosClient() (*azcosmos.Client, error) {
             },
         },
     )
-    
+
     return client, err
 }
 ```
@@ -231,6 +231,6 @@ func createCosmosClient() (*azcosmos.Client, error) {
 
 ---
 
-**文档状态**: ✅ 完成  
-**审核状态**: 待审核  
+**文档状态**: ✅ 完成
+**审核状态**: 待审核
 **相关文档**: [AWS集成](01_AWS集成指南.md), [GCP集成](02_GCP集成指南.md)

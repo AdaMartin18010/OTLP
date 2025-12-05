@@ -1,9 +1,9 @@
 # OTLP Arrow完整指南（2025年最新）
 
-> **技术状态**: Beta (接近稳定)  
-> **首次发布**: 2024年Q3  
-> **当前版本**: v0.9.x  
-> **预计稳定**: 2025年Q2  
+> **技术状态**: Beta (接近稳定)
+> **首次发布**: 2024年Q3
+> **当前版本**: v0.9.x
+> **预计稳定**: 2025年Q2
 > **重要性**: ⭐⭐⭐⭐⭐ 极高
 
 ---
@@ -96,16 +96,16 @@ graph LR
     B -->|Protocol Buffers| C{OTLP Exporter}
     C -->|选项1: 传统| D[gRPC/HTTP + Protobuf]
     C -->|选项2: Arrow| E[gRPC/HTTP + Arrow]
-    
+
     D --> F[OTLP Collector]
     E --> F
-    
+
     F -->|Arrow格式| G[存储后端]
     F -->|查询| H[分析引擎]
-    
+
     G -->|零拷贝读取| H
     H --> I[可视化]
-    
+
     style E fill:#90EE90
     style G fill:#90EE90
     style H fill:#90EE90
@@ -119,7 +119,7 @@ graph LR
 message ArrowTracesData {
   // Arrow Schema描述
   bytes schema = 1;
-  
+
   // Arrow Record Batch数据
   repeated ArrowRecordBatch batches = 2;
 }
@@ -169,7 +169,7 @@ package main
 import (
     "context"
     "log"
-    
+
     "go.opentelemetry.io/otel"
     "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
     "go.opentelemetry.io/otel/sdk/resource"
@@ -179,7 +179,7 @@ import (
 
 func main() {
     ctx := context.Background()
-    
+
     // 创建OTLP Arrow导出器
     exporter, err := otlptracegrpc.New(ctx,
         otlptracegrpc.WithEndpoint("localhost:4317"),
@@ -193,7 +193,7 @@ func main() {
         log.Fatalf("Failed to create exporter: %v", err)
     }
     defer exporter.Shutdown(ctx)
-    
+
     // 配置TracerProvider
     tp := sdktrace.NewTracerProvider(
         sdktrace.WithBatcher(exporter,
@@ -207,14 +207,14 @@ func main() {
         )),
     )
     defer tp.Shutdown(ctx)
-    
+
     otel.SetTracerProvider(tp)
-    
+
     // 使用tracer创建spans
     tracer := tp.Tracer("arrow-example")
     _, span := tracer.Start(ctx, "arrow-span")
     defer span.End()
-    
+
     log.Println("Arrow span created successfully")
 }
 ```
@@ -243,7 +243,7 @@ type Span struct {
 // 将Spans转换为Arrow RecordBatch
 func SpansToArrowBatch(spans []Span) arrow.Record {
     pool := memory.NewGoAllocator()
-    
+
     // 定义Arrow Schema
     schema := arrow.NewSchema(
         []arrow.Field{
@@ -256,7 +256,7 @@ func SpansToArrowBatch(spans []Span) arrow.Record {
         },
         nil,
     )
-    
+
     // 创建builders
     traceIDBuilder := array.NewFixedSizeBinaryBuilder(pool, &arrow.FixedSizeBinaryType{ByteWidth: 16})
     spanIDBuilder := array.NewFixedSizeBinaryBuilder(pool, &arrow.FixedSizeBinaryType{ByteWidth: 8})
@@ -264,14 +264,14 @@ func SpansToArrowBatch(spans []Span) arrow.Record {
     nameBuilder := array.NewStringBuilder(pool)
     startTimeBuilder := array.NewInt64Builder(pool)
     endTimeBuilder := array.NewInt64Builder(pool)
-    
+
     defer traceIDBuilder.Release()
     defer spanIDBuilder.Release()
     defer parentSpanIDBuilder.Release()
     defer nameBuilder.Release()
     defer startTimeBuilder.Release()
     defer endTimeBuilder.Release()
-    
+
     // 填充数据
     for _, span := range spans {
         traceIDBuilder.Append(span.TraceID[:])
@@ -281,7 +281,7 @@ func SpansToArrowBatch(spans []Span) arrow.Record {
         startTimeBuilder.Append(span.StartTime)
         endTimeBuilder.Append(span.EndTime)
     }
-    
+
     // 构建列
     columns := []arrow.Array{
         traceIDBuilder.NewArray(),
@@ -291,13 +291,13 @@ func SpansToArrowBatch(spans []Span) arrow.Record {
         startTimeBuilder.NewArray(),
         endTimeBuilder.NewArray(),
     }
-    
+
     defer func() {
         for _, col := range columns {
             col.Release()
         }
     }()
-    
+
     // 创建RecordBatch
     return array.NewRecord(schema, columns, int64(len(spans)))
 }
@@ -334,7 +334,7 @@ def spans_to_arrow_table(spans):
         'end_time': [s.end_time for s in spans],
         'status_code': [s.status.status_code for s in spans],
     }
-    
+
     return pa.table(data, schema=SPAN_SCHEMA)
 
 # 配置OTLP Arrow导出器
@@ -435,7 +435,7 @@ exporters:
     database: otel
     format: arrow  # 使用Arrow格式
     compression: zstd  # 推荐使用zstd压缩
-    
+
   # 传统格式导出
   jaeger:
     endpoint: jaeger:14250
@@ -448,7 +448,7 @@ service:
       receivers: [otlp]
       processors: [batch]
       exporters: [clickhouse/arrow]
-    
+
     traces/legacy:
       receivers: [otlp]
       processors: [batch]
@@ -472,7 +472,7 @@ services:
       - "8888:8888"  # Metrics
     environment:
       - OTEL_ARROW_ENABLED=true
-  
+
   clickhouse:
     image: clickhouse/clickhouse-server:latest
     ports:
@@ -530,7 +530,7 @@ processors:
     check_interval: 1s
     limit_mib: 1024  # 限制为1GB
     spike_limit_mib: 256
-    
+
   batch:
     timeout: 5s
     send_batch_size: 1000  # 减小批次大小
@@ -597,7 +597,7 @@ service:
     metrics:
       level: detailed
       address: ":8888"
-    
+
     # Arrow特定指标
     arrow:
       record_batch_metrics: true
@@ -659,9 +659,9 @@ service:
 
 ---
 
-**文档版本**: v1.0  
-**最后更新**: 2025-10-18  
-**维护者**: OTLP项目团队  
+**文档版本**: v1.0
+**最后更新**: 2025-10-18
+**维护者**: OTLP项目团队
 **反馈**: [GitHub Issues](待添加)
 
 ---

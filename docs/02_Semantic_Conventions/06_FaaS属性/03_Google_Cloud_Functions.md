@@ -1,6 +1,6 @@
 # Google Cloud Functions语义约定详解
 
-> **Serverless计算**: Google Cloud Functions完整Tracing与Metrics规范  
+> **Serverless计算**: Google Cloud Functions完整Tracing与Metrics规范
 > **最后更新**: 2025年10月8日
 
 ---
@@ -130,7 +130,7 @@ import (
     "fmt"
     "net/http"
     "os"
-    
+
     "github.com/GoogleCloudPlatform/functions-framework-go/functions"
     "go.opentelemetry.io/otel"
     "go.opentelemetry.io/otel/attribute"
@@ -150,7 +150,7 @@ func init() {
 
 func helloHTTP(w http.ResponseWriter, r *http.Request) {
     ctx := r.Context()
-    
+
     // 创建Span
     ctx, span := tracer.Start(ctx, "cloudfunction.http",
         trace.WithSpanKind(trace.SpanKindServer),
@@ -163,29 +163,29 @@ func helloHTTP(w http.ResponseWriter, r *http.Request) {
             attribute.String("gcp.project_id", os.Getenv("GCP_PROJECT")),
             attribute.String("faas.trigger", "http"),
             attribute.Bool("faas.coldstart", isColdStart),
-            
+
             // HTTP属性
             semconv.HTTPMethodKey.String(r.Method),
             semconv.HTTPTargetKey.String(r.URL.Path),
         ),
     )
     defer span.End()
-    
+
     isColdStart = false
-    
+
     // 业务逻辑
     name := r.URL.Query().Get("name")
     if name == "" {
         name = "World"
     }
-    
+
     response := fmt.Sprintf("Hello, %s!", name)
-    
+
     span.SetAttributes(
         semconv.HTTPStatusCodeKey.Int(http.StatusOK),
     )
     span.SetStatus(codes.Ok, "request completed")
-    
+
     w.WriteHeader(http.StatusOK)
     fmt.Fprint(w, response)
 }
@@ -210,13 +210,13 @@ func helloPubSub(ctx context.Context, msg PubSubMessage) error {
         ),
     )
     defer span.End()
-    
+
     isColdStart = false
-    
+
     // 处理消息
     data := string(msg.Data)
     fmt.Printf("Received message: %s\n", data)
-    
+
     span.SetStatus(codes.Ok, "message processed")
     return nil
 }
@@ -240,7 +240,7 @@ is_cold_start = True
 def hello_http(request):
     """HTTP触发函数with tracing"""
     global is_cold_start
-    
+
     with tracer.start_as_current_span(
         "cloudfunction.http",
         kind=SpanKind.SERVER,
@@ -256,16 +256,16 @@ def hello_http(request):
         }
     ) as span:
         is_cold_start = False
-        
+
         try:
             name = request.args.get('name', 'World')
             result = f'Hello, {name}!'
-            
+
             span.set_attribute(SpanAttributes.HTTP_STATUS_CODE, 200)
             span.set_status(Status(StatusCode.OK))
-            
+
             return result
-            
+
         except Exception as e:
             span.record_exception(e)
             span.set_status(Status(StatusCode.ERROR))
@@ -275,7 +275,7 @@ def hello_http(request):
 def hello_pubsub(cloud_event):
     """Pub/Sub触发函数with tracing"""
     global is_cold_start
-    
+
     with tracer.start_as_current_span(
         "cloudfunction.pubsub",
         kind=SpanKind.CONSUMER,
@@ -287,14 +287,14 @@ def hello_pubsub(cloud_event):
         }
     ) as span:
         is_cold_start = False
-        
+
         try:
             # 处理消息
             data = cloud_event.data
             print(f"Received message: {data}")
-            
+
             span.set_status(Status(StatusCode.OK))
-            
+
         except Exception as e:
             span.record_exception(e)
             span.set_status(Status(StatusCode.ERROR))
@@ -324,16 +324,16 @@ functions.http('helloHttp', (req, res) => {
       'http.method': req.method,
     }
   });
-  
+
   isColdStart = false;
-  
+
   try {
     const name = req.query.name || 'World';
     const result = `Hello, ${name}!`;
-    
+
     span.setAttribute('http.status_code', 200);
     span.setStatus({ code: trace.SpanStatusCode.OK });
-    
+
     res.send(result);
   } catch (error) {
     span.recordException(error);
@@ -354,9 +354,9 @@ functions.cloudEvent('helloCloudEvent', (cloudEvent) => {
       'faas.coldstart': isColdStart,
     }
   });
-  
+
   isColdStart = false;
-  
+
   try {
     console.log('Event:', cloudEvent);
     span.setStatus({ code: trace.SpanStatusCode.OK });
@@ -442,8 +442,8 @@ Cloud Functions最佳实践:
 
 ---
 
-**文档状态**: ✅ 完成  
-**GCP Cloud Functions**: 1st & 2nd Generation  
+**文档状态**: ✅ 完成
+**GCP Cloud Functions**: 1st & 2nd Generation
 **适用场景**: Serverless应用、事件处理、API后端
 
 **关键特性**:

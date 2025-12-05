@@ -1,7 +1,7 @@
 # Span 通用属性
 
-> **标准版本**: v1.27.0  
-> **状态**: Stable  
+> **标准版本**: v1.27.0
+> **状态**: Stable
 > **最后更新**: 2025年10月8日
 
 ---
@@ -107,7 +107,7 @@
 
 ```text
 ip_tcp:   TCP over IP
-ip_udp:   UDP over IP  
+ip_udp:   UDP over IP
 pipe:     Named or anonymous pipe
 inproc:   进程内通信
 unix:     Unix Domain Socket
@@ -216,18 +216,18 @@ func ProcessWithError(ctx context.Context) error {
     tracer := otel.Tracer("example")
     ctx, span := tracer.Start(ctx, "process-operation")
     defer span.End()
-    
+
     err := doSomething()
     if err != nil {
         // 记录异常
         span.RecordException(err)
-        
+
         // 设置Span状态为Error
         span.SetStatus(codes.Error, err.Error())
-        
+
         return err
     }
-    
+
     span.SetStatus(codes.Ok, "Success")
     return nil
 }
@@ -352,12 +352,12 @@ func recordCodeLocation(span trace.Span) {
     if !ok {
         return
     }
-    
+
     fn := runtime.FuncForPC(pc)
     if fn == nil {
         return
     }
-    
+
     span.SetAttributes(
         attribute.String("code.function", fn.Name()),
         attribute.String("code.filepath", file),
@@ -470,7 +470,7 @@ span.SetAttributes(
 **优先级**:
 
 ```text
-P0 (必须): 
+P0 (必须):
   协议特定的必需属性
 
 P1 (强烈推荐):
@@ -542,7 +542,7 @@ import (
 
 func HTTPClientCall(ctx context.Context, url string) (*http.Response, error) {
     tracer := otel.Tracer("http-client")
-    
+
     // 创建CLIENT Span
     ctx, span := tracer.Start(ctx, "HTTP GET",
         trace.WithSpanKind(trace.SpanKindClient),
@@ -551,24 +551,24 @@ func HTTPClientCall(ctx context.Context, url string) (*http.Response, error) {
             attribute.String("http.method", "GET"),
             attribute.String("http.url", url),
             attribute.String("http.scheme", "https"),
-            
+
             // 网络通用属性
             attribute.String("net.transport", "ip_tcp"),
             attribute.String("net.protocol.name", "http"),
             attribute.String("net.protocol.version", "1.1"),
             attribute.String("net.peer.name", "api.example.com"),
             attribute.Int("net.peer.port", 443),
-            
+
             // 对等服务
             attribute.String("peer.service", "api-service"),
-            
+
             // 用户标识（如果已认证）
             attribute.String("enduser.id", "user-hash-123"),
             attribute.String("enduser.role", "premium"),
         ),
     )
     defer span.End()
-    
+
     // 执行HTTP请求
     req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
     if err != nil {
@@ -576,26 +576,26 @@ func HTTPClientCall(ctx context.Context, url string) (*http.Response, error) {
         span.SetStatus(codes.Error, err.Error())
         return nil, err
     }
-    
+
     resp, err := http.DefaultClient.Do(req)
     if err != nil {
         span.RecordException(err)
         span.SetStatus(codes.Error, err.Error())
         return nil, err
     }
-    
+
     // 记录响应属性
     span.SetAttributes(
         attribute.Int("http.status_code", resp.StatusCode),
         attribute.Int64("http.response_content_length", resp.ContentLength),
     )
-    
+
     if resp.StatusCode >= 400 {
         span.SetStatus(codes.Error, "HTTP error response")
     } else {
         span.SetStatus(codes.Ok, "Success")
     }
-    
+
     return resp, nil
 }
 ```
@@ -609,7 +609,7 @@ import pymysql
 
 def execute_query(query):
     tracer = trace.get_tracer(__name__)
-    
+
     with tracer.start_as_current_span(
         "mysql.query",
         kind=trace.SpanKind.CLIENT,
@@ -620,15 +620,15 @@ def execute_query(query):
             "db.statement": query,
             "db.operation": "SELECT",
             "db.sql.table": "users",
-            
+
             # 网络通用属性
             "net.transport": "ip_tcp",
             "net.peer.name": "mysql-primary.example.com",
             "net.peer.port": 3306,
-            
+
             # 对等服务
             "peer.service": "mysql-cluster",
-            
+
             # 线程信息
             "thread.id": threading.get_ident(),
             "thread.name": threading.current_thread().name,
@@ -641,17 +641,17 @@ def execute_query(query):
                 user='app_user',
                 database='production'
             )
-            
+
             with connection.cursor() as cursor:
                 cursor.execute(query)
                 results = cursor.fetchall()
-                
+
                 # 记录结果数量
                 span.set_attribute("db.rows_affected", len(results))
-                
+
                 span.set_status(Status(StatusCode.OK))
                 return results
-                
+
         except Exception as e:
             span.record_exception(e)
             span.set_status(Status(StatusCode.ERROR, str(e)))
@@ -674,11 +674,11 @@ import io.opentelemetry.context.Scope;
 
 public class MessageProducer {
     private final Tracer tracer;
-    
+
     public MessageProducer(OpenTelemetry openTelemetry) {
         this.tracer = openTelemetry.getTracer("message-producer");
     }
-    
+
     public void sendMessage(String destination, String message) {
         // 创建PRODUCER Span
         Span span = tracer.spanBuilder("send")
@@ -688,42 +688,42 @@ public class MessageProducer {
             .setAttribute(AttributeKey.stringKey("messaging.destination.kind"), "topic")
             .setAttribute(AttributeKey.stringKey("messaging.protocol"), "kafka")
             .setAttribute(AttributeKey.stringKey("messaging.protocol.version"), "2.8.0")
-            
+
             // 网络通用属性
             .setAttribute(AttributeKey.stringKey("net.transport"), "ip_tcp")
             .setAttribute(AttributeKey.stringKey("net.peer.name"), "kafka-broker-01")
             .setAttribute(AttributeKey.intKey("net.peer.port"), 9092)
-            
+
             // 对等服务
             .setAttribute(AttributeKey.stringKey("peer.service"), "kafka-cluster")
-            
+
             // 消息属性
-            .setAttribute(AttributeKey.longKey("messaging.message.payload_size_bytes"), 
+            .setAttribute(AttributeKey.longKey("messaging.message.payload_size_bytes"),
                          message.getBytes().length)
-            
+
             // 线程信息
-            .setAttribute(AttributeKey.longKey("thread.id"), 
+            .setAttribute(AttributeKey.longKey("thread.id"),
                          Thread.currentThread().getId())
-            .setAttribute(AttributeKey.stringKey("thread.name"), 
+            .setAttribute(AttributeKey.stringKey("thread.name"),
                          Thread.currentThread().getName())
             .startSpan();
-        
+
         try (Scope scope = span.makeCurrent()) {
             // 发送消息到Kafka
             sendToKafka(destination, message);
-            
+
             span.setStatus(StatusCode.OK);
-            
+
         } catch (Exception e) {
             span.recordException(e);
             span.setStatus(StatusCode.ERROR, e.getMessage());
             throw e;
-            
+
         } finally {
             span.end();
         }
     }
-    
+
     private void sendToKafka(String destination, String message) {
         // 实际Kafka发送逻辑
     }
@@ -753,7 +753,7 @@ public class MessageProducer {
 
 ---
 
-**文档维护**: OTLP深度梳理项目组  
-**最后更新**: 2025年10月8日  
-**文档版本**: v1.0  
+**文档维护**: OTLP深度梳理项目组
+**最后更新**: 2025年10月8日
+**文档版本**: v1.0
 **质量等级**: ⭐⭐⭐⭐⭐

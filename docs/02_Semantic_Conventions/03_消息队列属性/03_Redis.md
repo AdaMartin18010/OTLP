@@ -1,7 +1,7 @@
 # Redis 语义约定
 
-> **最后更新**: 2025年10月8日  
-> **规范版本**: OpenTelemetry Semantic Conventions v1.24.0  
+> **最后更新**: 2025年10月8日
+> **规范版本**: OpenTelemetry Semantic Conventions v1.24.0
 > **目标读者**: 后端工程师、可观测性工程师
 
 ---
@@ -151,7 +151,7 @@ package main
 import (
     "context"
     "fmt"
-    
+
     "github.com/go-redis/redis/v8"
     "go.opentelemetry.io/contrib/instrumentation/github.com/go-redis/redis/v8/otelredis"
     "go.opentelemetry.io/otel"
@@ -167,10 +167,10 @@ func createInstrumentedRedisClient() *redis.Client {
         Password: "",
         DB:       0,
     })
-    
+
     // 添加OTel钩子
     rdb.AddHook(otelredis.NewTracingHook())
-    
+
     return rdb
 }
 
@@ -178,9 +178,9 @@ func createInstrumentedRedisClient() *redis.Client {
 func manualInstrumentation() {
     tracer := otel.Tracer("redis-client")
     rdb := redis.NewClient(&redis.Options{Addr: "localhost:6379"})
-    
+
     ctx := context.Background()
-    
+
     // GET命令
     ctx, span := tracer.Start(ctx, "GET user:*",
         trace.WithSpanKind(trace.SpanKindClient),
@@ -193,16 +193,16 @@ func manualInstrumentation() {
         ),
     )
     defer span.End()
-    
+
     userID := "user:123"
     result, err := rdb.Get(ctx, userID).Result()
-    
+
     if err != nil {
         span.RecordError(err)
         span.SetStatus(codes.Error, err.Error())
         return
     }
-    
+
     span.SetAttributes(
         attribute.String("db.statement", fmt.Sprintf("GET %s", maskKey(userID))),
         attribute.Int("db.response.size", len(result)),
@@ -223,7 +223,7 @@ func maskKey(key string) string {
 // Pipeline示例
 func tracePipeline(ctx context.Context, rdb *redis.Client) {
     tracer := otel.Tracer("redis-client")
-    
+
     ctx, span := tracer.Start(ctx, "PIPELINE 3 commands",
         trace.WithSpanKind(trace.SpanKindClient),
         trace.WithAttributes(
@@ -233,20 +233,20 @@ func tracePipeline(ctx context.Context, rdb *redis.Client) {
         ),
     )
     defer span.End()
-    
+
     pipe := rdb.Pipeline()
-    
+
     incr := pipe.Incr(ctx, "counter")
     set := pipe.Set(ctx, "key", "value", 0)
     get := pipe.Get(ctx, "key")
-    
+
     _, err := pipe.Exec(ctx)
     if err != nil {
         span.RecordError(err)
         span.SetStatus(codes.Error, err.Error())
         return
     }
-    
+
     span.SetAttributes(
         attribute.Int64("counter.value", incr.Val()),
     )
@@ -258,15 +258,15 @@ func main() {
     // 使用自动Instrumentation
     rdb := createInstrumentedRedisClient()
     defer rdb.Close()
-    
+
     ctx := context.Background()
-    
+
     // 自动追踪
     err := rdb.Set(ctx, "key", "value", 0).Err()
     if err != nil {
         panic(err)
     }
-    
+
     val, err := rdb.Get(ctx, "key").Result()
     if err != nil {
         panic(err)
@@ -310,10 +310,10 @@ def get_user(user_id: str) -> dict:
         try:
             key = f"user:{user_id}"
             data = r.get(key)
-            
+
             span.set_attribute("db.statement", f"GET user:?")
             span.set_status(trace.Status(trace.StatusCode.OK))
-            
+
             return data
         except Exception as e:
             span.record_exception(e)
@@ -336,7 +336,7 @@ def pipeline_example():
         pipe.set('key', 'value')
         pipe.get('key')
         results = pipe.execute()
-        
+
         span.set_attribute("counter.value", results[0])
         span.set_status(trace.Status(trace.StatusCode.OK))
 ```
@@ -354,10 +354,10 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Pipeline;
 
 public class RedisTracing {
-    
-    private static final Tracer tracer = 
+
+    private static final Tracer tracer =
         GlobalOpenTelemetry.getTracer("redis-client");
-    
+
     // 手动Instrumentation
     public String getUser(Jedis jedis, String userId) {
         Span span = tracer.spanBuilder("GET user:*")
@@ -367,14 +367,14 @@ public class RedisTracing {
             .setAttribute(SemanticAttributes.NET_PEER_PORT, 6379)
             .setAttribute(SemanticAttributes.DB_OPERATION, "GET")
             .startSpan();
-        
+
         try (Scope scope = span.makeCurrent()) {
             String key = "user:" + userId;
             String result = jedis.get(key);
-            
+
             span.setAttribute("db.statement", "GET user:?");
             span.setStatus(StatusCode.OK);
-            
+
             return result;
         } catch (Exception e) {
             span.recordException(e);
@@ -384,7 +384,7 @@ public class RedisTracing {
             span.end();
         }
     }
-    
+
     // Pipeline追踪
     public void pipelineExample(Jedis jedis) {
         Span span = tracer.spanBuilder("PIPELINE 3 commands")
@@ -393,14 +393,14 @@ public class RedisTracing {
             .setAttribute("db.operation", "PIPELINE")
             .setAttribute("db.redis.pipeline.commands", 3)
             .startSpan();
-        
+
         try (Scope scope = span.makeCurrent()) {
             Pipeline pipe = jedis.pipelined();
             pipe.incr("counter");
             pipe.set("key", "value");
             pipe.get("key");
             pipe.sync();
-            
+
             span.setStatus(StatusCode.OK);
         } catch (Exception e) {
             span.recordException(e);
@@ -422,12 +422,12 @@ public class RedisTracing {
 ```go
 func tracePipelineAdvanced(ctx context.Context, rdb *redis.Client) {
     tracer := otel.Tracer("redis-client")
-    
+
     ctx, parentSpan := tracer.Start(ctx, "Process batch orders",
         trace.WithSpanKind(trace.SpanKindInternal),
     )
     defer parentSpan.End()
-    
+
     // Pipeline Span
     ctx, pipeSpan := tracer.Start(ctx, "PIPELINE 100 commands",
         trace.WithSpanKind(trace.SpanKindClient),
@@ -436,20 +436,20 @@ func tracePipelineAdvanced(ctx context.Context, rdb *redis.Client) {
             attribute.String("db.operation", "PIPELINE"),
         ),
     )
-    
+
     pipe := rdb.Pipeline()
-    
+
     for i := 0; i < 100; i++ {
         orderKey := fmt.Sprintf("order:%d", i)
         pipe.HSet(ctx, orderKey, "status", "processing")
     }
-    
+
     cmds, err := pipe.Exec(ctx)
     pipeSpan.SetAttributes(
         attribute.Int("db.redis.pipeline.commands", len(cmds)),
         attribute.Int("db.redis.pipeline.executed", len(cmds)),
     )
-    
+
     if err != nil {
         pipeSpan.RecordError(err)
         pipeSpan.SetStatus(codes.Error, err.Error())
@@ -466,7 +466,7 @@ func tracePipelineAdvanced(ctx context.Context, rdb *redis.Client) {
 // Publisher
 func publishEvent(ctx context.Context, rdb *redis.Client, channel, message string) {
     tracer := otel.Tracer("redis-pubsub")
-    
+
     ctx, span := tracer.Start(ctx, fmt.Sprintf("PUBLISH %s", channel),
         trace.WithSpanKind(trace.SpanKindProducer),
         trace.WithAttributes(
@@ -477,19 +477,19 @@ func publishEvent(ctx context.Context, rdb *redis.Client, channel, message strin
         ),
     )
     defer span.End()
-    
+
     // 注入TraceContext到消息
     carrier := propagation.MapCarrier{}
     otel.GetTextMapPropagator().Inject(ctx, carrier)
-    
+
     // 序列化消息+context
     payload := map[string]interface{}{
         "data":       message,
         "tracecontext": carrier,
     }
-    
+
     jsonPayload, _ := json.Marshal(payload)
-    
+
     err := rdb.Publish(ctx, channel, jsonPayload).Err()
     if err != nil {
         span.RecordError(err)
@@ -503,18 +503,18 @@ func publishEvent(ctx context.Context, rdb *redis.Client, channel, message strin
 func subscribeEvents(ctx context.Context, rdb *redis.Client, channel string) {
     pubsub := rdb.Subscribe(ctx, channel)
     defer pubsub.Close()
-    
+
     ch := pubsub.Channel()
-    
+
     for msg := range ch {
         // 解析消息
         var payload map[string]interface{}
         json.Unmarshal([]byte(msg.Payload), &payload)
-        
+
         // 提取TraceContext
         carrier := propagation.MapCarrier(payload["tracecontext"].(map[string]string))
         ctx := otel.GetTextMapPropagator().Extract(context.Background(), carrier)
-        
+
         // 创建Consumer Span
         tracer := otel.Tracer("redis-pubsub")
         ctx, span := tracer.Start(ctx, fmt.Sprintf("CONSUME %s", channel),
@@ -525,10 +525,10 @@ func subscribeEvents(ctx context.Context, rdb *redis.Client, channel string) {
                 attribute.String("messaging.system", "redis"),
             ),
         )
-        
+
         // 处理消息
         processMessage(ctx, payload["data"].(string))
-        
+
         span.End()
     }
 }
@@ -552,7 +552,7 @@ func subscribeEvents(ctx context.Context, rdb *redis.Client, channel string) {
    for key in keys:
        pipe.get(key)
    results = pipe.execute()
-   
+
    # 一个Span vs 多个Span
 
 3. 连接池监控
@@ -622,6 +622,6 @@ Span命名:
 
 ---
 
-**文档状态**: ✅ 完成  
-**审核状态**: 待审核  
+**文档状态**: ✅ 完成
+**审核状态**: 待审核
 **相关文档**: [Kafka语义约定](01_Kafka.md), [数据库语义约定](../02_追踪属性/03_数据库.md)

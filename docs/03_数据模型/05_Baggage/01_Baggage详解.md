@@ -1,6 +1,6 @@
 # OpenTelemetry Baggage 详解
 
-> **规范版本**: v1.30.0  
+> **规范版本**: v1.30.0
 > **最后更新**: 2025年10月8日
 
 ---
@@ -92,7 +92,7 @@ Baggage (行李):
    → 数据本地化
 
 示例流程:
-前端 (设置 user.id=123) 
+前端 (设置 user.id=123)
   → API Gateway (传播)
   → Order Service (读取 user.id=123)
   → Payment Service (读取 user.id=123)
@@ -262,24 +262,24 @@ func setBaggage(ctx context.Context) context.Context {
     userID, _ := baggage.NewMember("user.id", "user-123")
     experiment, _ := baggage.NewMember("experiment.variant", "A")
     priority, _ := baggage.NewMember("request.priority", "high")
-    
+
     // 创建Baggage
     bag, _ := baggage.New(userID, experiment, priority)
-    
+
     // 将Baggage附加到Context
     ctx = baggage.ContextWithBaggage(ctx, bag)
-    
+
     return ctx
 }
 
 // 获取Baggage
 func getBaggage(ctx context.Context) {
     bag := baggage.FromContext(ctx)
-    
+
     // 获取单个值
     userID := bag.Member("user.id").Value()
     fmt.Println("User ID:", userID)  // "user-123"
-    
+
     // 遍历所有成员
     for _, member := range bag.Members() {
         fmt.Printf("%s = %s\n", member.Key(), member.Value())
@@ -289,16 +289,16 @@ func getBaggage(ctx context.Context) {
 // HTTP客户端: 注入Baggage到Header
 func makeHTTPRequest(ctx context.Context) {
     req, _ := http.NewRequest("GET", "http://api.example.com", nil)
-    
+
     // 使用Propagator注入
     propagator := propagation.NewCompositeTextMapPropagator(
         propagation.TraceContext{},
         propagation.Baggage{},
     )
-    
+
     carrier := propagation.HeaderCarrier(req.Header)
     propagator.Inject(ctx, carrier)
-    
+
     // req.Header现在包含baggage header
     resp, _ := http.DefaultClient.Do(req)
 }
@@ -309,14 +309,14 @@ func handleHTTPRequest(w http.ResponseWriter, r *http.Request) {
         propagation.TraceContext{},
         propagation.Baggage{},
     )
-    
+
     carrier := propagation.HeaderCarrier(r.Header)
     ctx := propagator.Extract(context.Background(), carrier)
-    
+
     // 现在ctx包含Baggage
     bag := baggage.FromContext(ctx)
     userID := bag.Member("user.id").Value()
-    
+
     // 使用userID...
 }
 ```
@@ -398,7 +398,7 @@ Baggage extractedBaggage = Baggage.fromContext(extractedCtx);
 func createBaggage() baggage.Baggage {
     member1, _ := baggage.NewMember("key1", "value1")
     member2, _ := baggage.NewMemberRaw("key2", "value2", "metadata")
-    
+
     bag, _ := baggage.New(member1, member2)
     return bag
 }
@@ -408,22 +408,22 @@ func modifyBaggage(bag baggage.Baggage) baggage.Baggage {
     // 添加新成员
     newMember, _ := baggage.NewMember("key3", "value3")
     bag, _ = bag.SetMember(newMember)
-    
+
     // 删除成员
     bag = bag.DeleteMember("key1")
-    
+
     return bag
 }
 
 // Context集成
 func useBaggageWithContext() {
     ctx := context.Background()
-    
+
     // 设置
     member, _ := baggage.NewMember("user.id", "123")
     bag, _ := baggage.New(member)
     ctx = baggage.ContextWithBaggage(ctx, bag)
-    
+
     // 传递ctx到其他函数
     processRequest(ctx)
 }
@@ -432,7 +432,7 @@ func processRequest(ctx context.Context) {
     // 获取
     bag := baggage.FromContext(ctx)
     userID := bag.Member("user.id").Value()
-    
+
     // 使用userID...
 }
 ```
@@ -496,13 +496,13 @@ try (Scope scope = baggage.makeCurrent()) {
 // 前端/API Gateway
 func handleLogin(w http.ResponseWriter, r *http.Request) {
     userID := authenticateUser(r)
-    
+
     // 设置Baggage
     member, _ := baggage.NewMember("user.id", userID)
     member2, _ := baggage.NewMember("user.tier", "premium")
     bag, _ := baggage.New(member, member2)
     ctx := baggage.ContextWithBaggage(r.Context(), bag)
-    
+
     // 调用下游服务
     orderClient.CreateOrder(ctx, orderData)
 }
@@ -512,12 +512,12 @@ func CreateOrder(ctx context.Context, data OrderData) {
     bag := baggage.FromContext(ctx)
     userID := bag.Member("user.id").Value()
     userTier := bag.Member("user.tier").Value()
-    
+
     // 基于用户等级应用折扣
     if userTier == "premium" {
         applyPremiumDiscount()
     }
-    
+
     // 记录日志时包含userID
     logger.Info("Creating order", "user.id", userID)
 }
@@ -529,10 +529,10 @@ func CreateOrder(ctx context.Context, data OrderData) {
 // 前端
 func assignExperiment(ctx context.Context) context.Context {
     variant := selectVariant()  // "A" or "B"
-    
+
     member, _ := baggage.NewMember("experiment.checkout", variant)
     bag, _ := baggage.New(member)
-    
+
     return baggage.ContextWithBaggage(ctx, bag)
 }
 
@@ -540,7 +540,7 @@ func assignExperiment(ctx context.Context) context.Context {
 func handleRequest(ctx context.Context) {
     bag := baggage.FromContext(ctx)
     variant := bag.Member("experiment.checkout").Value()
-    
+
     if variant == "A" {
         useNewCheckoutFlow()
     } else {
@@ -563,7 +563,7 @@ func setPriority(ctx context.Context, priority string) context.Context {
 func processWithPriority(ctx context.Context) {
     bag := baggage.FromContext(ctx)
     priority := bag.Member("request.priority").Value()
-    
+
     if priority == "high" {
         // 使用高优先级队列
         highPriorityQueue.Add(task)
@@ -586,7 +586,7 @@ func processWithPriority(ctx context.Context) {
 2. 传播开销
    HTTP: ~1-2KB overhead per request
    gRPC: ~1-2KB overhead per request
-   
+
    影响:
    - 网络带宽
    - 序列化/反序列化时间
@@ -668,18 +668,18 @@ db.Query(sql, userID)
 1. 使用命名约定
    - user.id (不是 userId)
    - experiment.variant (不是 exp_var)
-   
+
 2. 保持小巧
    - < 8KB总大小
    - < 10个键值对
-   
+
 3. 使用短键名
    - user.id (不是 user.identifier)
-   
+
 4. 文档化键
    - 维护Baggage键列表
    - 说明用途和格式
-   
+
 5. 验证值
    - 检查格式
    - 检查长度
@@ -723,6 +723,6 @@ db.Query(sql, userID)
 
 ---
 
-**文档状态**: ✅ 完成  
-**审核状态**: 待审核  
+**文档状态**: ✅ 完成
+**审核状态**: 待审核
 **相关文档**: [SpanContext](../01_Traces数据模型/02_SpanContext.md), [Resource模型](../04_Resource/01_Resource模型.md)

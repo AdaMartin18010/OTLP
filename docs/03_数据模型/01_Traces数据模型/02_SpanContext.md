@@ -1,6 +1,6 @@
 # SpanContext 完整定义
 
-> **OTLP版本**: v1.0.0 (Stable)  
+> **OTLP版本**: v1.0.0 (Stable)
 > **最后更新**: 2025年10月8日
 
 ---
@@ -53,16 +53,16 @@ SpanContext = (tid, sid, flags, state, remote)
 其中:
 - tid ∈ TraceID = {0,1}^128 \ {0^128}
   trace标识符 (16字节，非全零)
-  
+
 - sid ∈ SpanID = {0,1}^64 \ {0^64}
   span标识符 (8字节，非全零)
-  
+
 - flags ∈ TraceFlags = {0,1}^8
   追踪标志 (1字节)
-  
+
 - state ∈ TraceState = String
   W3C tracestate (最多512字节)
-  
+
 - remote ∈ Boolean
   是否来自远程上下文
 
@@ -199,7 +199,7 @@ SpanContext是不可变的 (Immutable):
 Bit 0 (最低位): sampled
   - 0: 未采样
   - 1: 已采样
-  
+
 Bit 1-7: 保留 (目前未使用)
 
 示例:
@@ -296,7 +296,7 @@ key1=value1,key2=value2,...
 is_remote = false:
   - SpanContext在当前进程创建
   - 本地span的上下文
-  
+
 is_remote = true:
   - SpanContext从另一个进程提取
   - 跨进程调用的上游上下文
@@ -420,11 +420,11 @@ import (
 // 在进程内传播
 func handler(ctx context.Context) {
     // ctx包含SpanContext
-    
+
     // 创建子span (自动继承SpanContext)
     ctx, span := tracer.Start(ctx, "child-operation")
     defer span.End()
-    
+
     // 调用其他函数
     anotherFunction(ctx)  // 传递ctx
 }
@@ -432,7 +432,7 @@ func handler(ctx context.Context) {
 func anotherFunction(ctx context.Context) {
     // 可以访问父span的SpanContext
     spanContext := trace.SpanContextFromContext(ctx)
-    
+
     if spanContext.IsValid() {
         fmt.Printf("Trace ID: %s\n", spanContext.TraceID())
         fmt.Printf("Span ID: %s\n", spanContext.SpanID())
@@ -454,10 +454,10 @@ import (
 // 客户端: 注入SpanContext到HTTP头
 func makeHTTPRequest(ctx context.Context, url string) {
     req, _ := http.NewRequestWithContext(ctx, "GET", url, nil)
-    
+
     // 注入traceparent和tracestate头部
     otel.GetTextMapPropagator().Inject(ctx, propagation.HeaderCarrier(req.Header))
-    
+
     resp, _ := http.DefaultClient.Do(req)
     defer resp.Body.Close()
 }
@@ -465,14 +465,14 @@ func makeHTTPRequest(ctx context.Context, url string) {
 // 服务器: 提取SpanContext从HTTP头
 func handleHTTPRequest(w http.ResponseWriter, r *http.Request) {
     // 提取SpanContext
-    ctx := otel.GetTextMapPropagator().Extract(r.Context(), 
+    ctx := otel.GetTextMapPropagator().Extract(r.Context(),
         propagation.HeaderCarrier(r.Header))
-    
+
     // 创建span (作为远程span的子span)
     ctx, span := tracer.Start(ctx, "handle-request",
         trace.WithSpanKind(trace.SpanKindServer))
     defer span.End()
-    
+
     // 处理请求
     handleRequest(ctx)
 }
@@ -646,7 +646,7 @@ func generateSpanID() trace.SpanID {
 func createSpanContext() trace.SpanContext {
     traceID := generateTraceID()
     spanID := generateSpanID()
-    
+
     config := trace.SpanContextConfig{
         TraceID:    traceID,
         SpanID:     spanID,
@@ -654,14 +654,14 @@ func createSpanContext() trace.SpanContext {
         TraceState: trace.TraceState{},
         Remote:     false,
     }
-    
+
     return trace.NewSpanContext(config)
 }
 
 // 使用示例
 func main() {
     sc := createSpanContext()
-    
+
     fmt.Printf("Trace ID: %s\n", sc.TraceID())
     fmt.Printf("Span ID: %s\n", sc.SpanID())
     fmt.Printf("Sampled: %v\n", sc.IsSampled())
@@ -688,14 +688,14 @@ func (p *Propagator) Inject(ctx context.Context, carrier propagation.TextMapCarr
     if !sc.IsValid() {
         return
     }
-    
+
     // 注入traceparent
     traceparent := fmt.Sprintf("00-%s-%s-%02x",
         sc.TraceID(),
         sc.SpanID(),
         sc.TraceFlags())
     carrier.Set("traceparent", traceparent)
-    
+
     // 注入tracestate
     if ts := sc.TraceState(); ts.Len() > 0 {
         carrier.Set("tracestate", ts.String())
@@ -714,26 +714,26 @@ func (p *Propagator) Extract(ctx context.Context, carrier propagation.TextMapCar
     if traceparent == "" {
         return ctx
     }
-    
+
     // 解析traceparent
     parts := strings.Split(traceparent, "-")
     if len(parts) != 4 || parts[0] != "00" {
         return ctx
     }
-    
+
     // 解析trace_id
     traceID, _ := trace.TraceIDFromHex(parts[1])
-    
+
     // 解析span_id
     spanID, _ := trace.SpanIDFromHex(parts[2])
-    
+
     // 解析trace_flags
     flags, _ := hex.DecodeString(parts[3])
-    
+
     // 提取tracestate
     tracestate := carrier.Get("tracestate")
     ts, _ := trace.ParseTraceState(tracestate)
-    
+
     // 创建SpanContext
     config := trace.SpanContextConfig{
         TraceID:    traceID,
@@ -742,9 +742,9 @@ func (p *Propagator) Extract(ctx context.Context, carrier propagation.TextMapCar
         TraceState: ts,
         Remote:     true, // 远程上下文
     }
-    
+
     sc := trace.NewSpanContext(config)
-    
+
     return trace.ContextWithSpanContext(ctx, sc)
 }
 ```
@@ -804,14 +804,14 @@ func (s *TraceIDRatioBasedSampler) ShouldSample(p SamplingParameters) SamplingRe
     // 使用trace_id的低8字节作为随机数
     traceIDBytes := p.TraceID[8:]
     x := binary.BigEndian.Uint64(traceIDBytes)
-    
+
     if x < s.traceIDUpperBound {
         return SamplingResult{
             Decision:   RecordAndSample,
             TraceState: p.TraceState,
         }
     }
-    
+
     return SamplingResult{
         Decision: Drop,
     }
@@ -887,6 +887,6 @@ func (s *TraceIDRatioBasedSampler) ShouldSample(p SamplingParameters) SamplingRe
 
 ---
 
-**文档状态**: ✅ 完成  
-**审核状态**: 待审核  
+**文档状态**: ✅ 完成
+**审核状态**: 待审核
 **下一步**: [03_SpanKind.md](./03_SpanKind.md)

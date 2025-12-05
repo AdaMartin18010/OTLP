@@ -1,6 +1,6 @@
 # Context Propagation 详解
 
-> **规范版本**: v1.30.0  
+> **规范版本**: v1.30.0
 > **最后更新**: 2025年10月8日
 
 ---
@@ -208,13 +208,13 @@ import (
 func setupPropagation() {
     // 1. TraceContext Propagator (W3C标准)
     tc := propagation.TraceContext{}
-    
+
     // 2. Baggage Propagator
     bg := propagation.Baggage{}
-    
+
     // 3. Composite Propagator (组合多个)
     propagator := propagation.NewCompositeTextMapPropagator(tc, bg)
-    
+
     // 4. 设置全局Propagator
     otel.SetTextMapPropagator(propagator)
 }
@@ -222,13 +222,13 @@ func setupPropagation() {
 // Inject: 注入上下文到Carrier
 func injectContext(ctx context.Context, headers map[string]string) {
     propagator := otel.GetTextMapPropagator()
-    
+
     // 使用MapCarrier
     carrier := propagation.MapCarrier(headers)
-    
+
     // 注入
     propagator.Inject(ctx, carrier)
-    
+
     // headers现在包含:
     // - traceparent: 00-...
     // - tracestate: ...
@@ -238,16 +238,16 @@ func injectContext(ctx context.Context, headers map[string]string) {
 // Extract: 从Carrier提取上下文
 func extractContext(headers map[string]string) context.Context {
     propagator := otel.GetTextMapPropagator()
-    
+
     carrier := propagation.MapCarrier(headers)
-    
+
     // 提取
     ctx := propagator.Extract(context.Background(), carrier)
-    
+
     // ctx现在包含:
     // - Span Context (trace_id, span_id)
     // - Baggage
-    
+
     return ctx
 }
 ```
@@ -305,13 +305,13 @@ func makeHTTPRequest(ctx context.Context, url string) (*http.Response, error) {
     if err != nil {
         return nil, err
     }
-    
+
     // 2. 注入上下文到Headers
     propagator := otel.GetTextMapPropagator()
     propagator.Inject(ctx, propagation.HeaderCarrier(req.Header))
-    
+
     // req.Header现在包含traceparent, tracestate, baggage
-    
+
     // 3. 发送请求
     client := &http.Client{}
     return client.Do(req)
@@ -322,7 +322,7 @@ func clientExample(ctx context.Context) {
     tracer := otel.Tracer("client")
     ctx, span := tracer.Start(ctx, "http.request")
     defer span.End()
-    
+
     // 发送请求 (自动传播Context)
     resp, err := makeHTTPRequest(ctx, "http://api.example.com/data")
     if err != nil {
@@ -330,7 +330,7 @@ func clientExample(ctx context.Context) {
         return
     }
     defer resp.Body.Close()
-    
+
     // 处理响应
 }
 ```
@@ -342,19 +342,19 @@ func handleHTTPRequest(w http.ResponseWriter, r *http.Request) {
     // 1. 提取上下文从Headers
     propagator := otel.GetTextMapPropagator()
     ctx := propagator.Extract(context.Background(), propagation.HeaderCarrier(r.Header))
-    
+
     // ctx现在包含上游的Span Context和Baggage
-    
+
     // 2. 创建Span (自动关联到父Span)
     tracer := otel.Tracer("server")
     ctx, span := tracer.Start(ctx, "http.handler",
         trace.WithSpanKind(trace.SpanKindServer),
     )
     defer span.End()
-    
+
     // 3. 业务逻辑
     handleBusiness(ctx)
-    
+
     w.WriteHeader(http.StatusOK)
 }
 
@@ -364,23 +364,23 @@ func tracingMiddleware(next http.Handler) http.Handler {
         // 提取Context
         propagator := otel.GetTextMapPropagator()
         ctx := propagator.Extract(r.Context(), propagation.HeaderCarrier(r.Header))
-        
+
         // 创建Span
         tracer := otel.Tracer("http.server")
         ctx, span := tracer.Start(ctx, r.URL.Path,
             trace.WithSpanKind(trace.SpanKindServer),
         )
         defer span.End()
-        
+
         // 记录HTTP属性
         span.SetAttributes(
             semconv.HTTPMethodKey.String(r.Method),
             semconv.HTTPRouteKey.String(r.URL.Path),
         )
-        
+
         // 传递Context到下一个Handler
         next.ServeHTTP(w, r.WithContext(ctx))
-        
+
         // 记录响应状态
         // (需要ResponseWriter wrapper)
     })
@@ -397,9 +397,9 @@ func clientWithOtelhttp(ctx context.Context) {
     client := &http.Client{
         Transport: otelhttp.NewTransport(http.DefaultTransport),
     }
-    
+
     req, _ := http.NewRequestWithContext(ctx, "GET", "http://api.example.com", nil)
-    
+
     // 自动注入Context + 创建Client Span
     resp, _ := client.Do(req)
     defer resp.Body.Close()
@@ -411,10 +411,10 @@ func serverWithOtelhttp() {
         // 业务逻辑
         w.Write([]byte("Hello"))
     })
-    
+
     // 包装Handler (自动提取Context + 创建Server Span)
     wrappedHandler := otelhttp.NewHandler(handler, "my-handler")
-    
+
     http.ListenAndServe(":8080", wrappedHandler)
 }
 ```
@@ -441,9 +441,9 @@ func grpcClient(ctx context.Context) {
         log.Fatal(err)
     }
     defer conn.Close()
-    
+
     client := pb.NewGreeterClient(conn)
-    
+
     // 调用 (自动注入Context到gRPC Metadata)
     resp, err := client.SayHello(ctx, &pb.HelloRequest{Name: "World"})
 }
@@ -454,14 +454,14 @@ func grpcClient(ctx context.Context) {
 ```go
 func grpcServer() {
     lis, _ := net.Listen("tcp", ":50051")
-    
+
     s := grpc.NewServer(
         grpc.UnaryInterceptor(otelgrpc.UnaryServerInterceptor()),
         grpc.StreamInterceptor(otelgrpc.StreamServerInterceptor()),
     )
-    
+
     pb.RegisterGreeterServer(s, &server{})
-    
+
     s.Serve(lis)
 }
 
@@ -471,11 +471,11 @@ type server struct {
 
 func (s *server) SayHello(ctx context.Context, req *pb.HelloRequest) (*pb.HelloReply, error) {
     // ctx自动包含上游Context
-    
+
     tracer := otel.Tracer("greeter")
     ctx, span := tracer.Start(ctx, "SayHello")
     defer span.End()
-    
+
     // 业务逻辑
     return &pb.HelloReply{Message: "Hello " + req.Name}, nil
 }
@@ -494,18 +494,18 @@ func kafkaProducer(ctx context.Context) {
         Topic:   "my-topic",
     })
     defer producer.Close()
-    
+
     // 准备消息
     msg := kafka.Message{
         Key:   []byte("key"),
         Value: []byte("value"),
     }
-    
+
     // 注入Context到Kafka Headers
     propagator := otel.GetTextMapPropagator()
     carrier := NewKafkaHeaderCarrier(&msg.Headers)
     propagator.Inject(ctx, carrier)
-    
+
     // 发送
     producer.WriteMessages(ctx, msg)
 }
@@ -536,13 +536,13 @@ func (c *KafkaHeaderCarrier) Set(key, value string) {
             headers = append(headers, h)
         }
     }
-    
+
     // 添加新Header
     headers = append(headers, kafka.Header{
         Key:   []byte(key),
         Value: []byte(value),
     })
-    
+
     *c.headers = headers
 }
 
@@ -565,18 +565,18 @@ func kafkaConsumer() {
         GroupID: "my-group",
     })
     defer reader.Close()
-    
+
     for {
         msg, err := reader.ReadMessage(context.Background())
         if err != nil {
             break
         }
-        
+
         // 提取Context从Kafka Headers
         propagator := otel.GetTextMapPropagator()
         carrier := NewKafkaHeaderCarrier(&msg.Headers)
         ctx := propagator.Extract(context.Background(), carrier)
-        
+
         // 处理消息 (ctx包含上游追踪信息)
         processMessage(ctx, msg)
     }
@@ -588,13 +588,13 @@ func processMessage(ctx context.Context, msg kafka.Message) {
         trace.WithSpanKind(trace.SpanKindConsumer),
     )
     defer span.End()
-    
+
     span.SetAttributes(
         attribute.String("messaging.system", "kafka"),
         attribute.String("messaging.destination", "my-topic"),
         attribute.String("messaging.operation", "receive"),
     )
-    
+
     // 业务逻辑
 }
 ```
@@ -612,11 +612,11 @@ func (p *CustomPropagator) Inject(ctx context.Context, carrier propagation.TextM
     if !sc.IsValid() {
         return
     }
-    
+
     // 自定义格式
     carrier.Set("X-Custom-Trace-ID", sc.TraceID().String())
     carrier.Set("X-Custom-Span-ID", sc.SpanID().String())
-    
+
     if sc.IsSampled() {
         carrier.Set("X-Custom-Sampled", "1")
     }
@@ -626,27 +626,27 @@ func (p *CustomPropagator) Extract(ctx context.Context, carrier propagation.Text
     traceID := carrier.Get("X-Custom-Trace-ID")
     spanID := carrier.Get("X-Custom-Span-ID")
     sampled := carrier.Get("X-Custom-Sampled") == "1"
-    
+
     if traceID == "" || spanID == "" {
         return ctx
     }
-    
+
     // 解析
     tid, _ := trace.TraceIDFromHex(traceID)
     sid, _ := trace.SpanIDFromHex(spanID)
-    
+
     var flags trace.TraceFlags
     if sampled {
         flags = trace.FlagsSampled
     }
-    
+
     sc := trace.NewSpanContext(trace.SpanContextConfig{
         TraceID:    tid,
         SpanID:     sid,
         TraceFlags: flags,
         Remote:     true,
     })
-    
+
     return trace.ContextWithRemoteSpanContext(ctx, sc)
 }
 
@@ -679,13 +679,13 @@ func useCustomPropagator() {
 // Go Service (发送)
 func goService(ctx context.Context) {
     req, _ := http.NewRequestWithContext(ctx, "GET", "http://python-service:8000", nil)
-    
+
     propagator := otel.GetTextMapPropagator()
     propagator.Inject(ctx, propagation.HeaderCarrier(req.Header))
-    
+
     // req.Header:
     // traceparent: 00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01
-    
+
     http.DefaultClient.Do(req)
 }
 ```
@@ -701,9 +701,9 @@ app = Flask(__name__)
 def index():
     # 提取Context
     ctx = extract(request.headers)
-    
+
     # ctx包含trace_id, span_id from Go Service
-    
+
     tracer = trace.get_tracer(__name__)
     with tracer.start_as_current_span("python.handler", context=ctx):
         # 业务逻辑
@@ -727,7 +727,7 @@ def index():
    - traceparent: ~55字节
    - tracestate: 可变 (< 512字节)
    - baggage: 可变 (< 8KB)
-   
+
    总计: 通常< 1KB
 
 2. 序列化/反序列化
@@ -762,7 +762,7 @@ func fastInject(ctx context.Context) map[string]string {
         }
         headerPool.Put(headers)
     }()
-    
+
     propagator.Inject(ctx, propagation.MapCarrier(headers))
     return headers
 }
@@ -784,10 +784,10 @@ BenchmarkExtract-8   1000000    1156 ns/op    384 B/op    7 allocs/op
 诊断:
   1. 检查Propagator是否设置
      otel.GetTextMapPropagator()
-  
+
   2. 检查Header是否注入
      打印req.Header
-  
+
   3. 检查Header是否提取
      打印span.SpanContext()
 
@@ -905,6 +905,6 @@ conn, _ := grpc.Dial("localhost:50051",
 
 ---
 
-**文档状态**: ✅ 完成  
-**审核状态**: 待审核  
+**文档状态**: ✅ 完成
+**审核状态**: 待审核
 **相关文档**: [SDK最佳实践](03_SDK最佳实践.md), [Baggage详解](../03_数据模型/05_Baggage/01_Baggage详解.md)

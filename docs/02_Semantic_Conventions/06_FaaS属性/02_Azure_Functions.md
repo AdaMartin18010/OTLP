@@ -1,6 +1,6 @@
 # Azure Functions语义约定详解
 
-> **Serverless计算**: Azure Functions完整Tracing与Metrics规范  
+> **Serverless计算**: Azure Functions完整Tracing与Metrics规范
 > **最后更新**: 2025年10月8日
 
 ---
@@ -130,36 +130,36 @@ using OpenTelemetry.Trace;
 public class HttpTriggerFunction
 {
     private readonly Tracer _tracer;
-    
+
     public HttpTriggerFunction(TracerProvider tracerProvider)
     {
         _tracer = tracerProvider.GetTracer("azure-functions");
     }
-    
+
     [Function("HttpTrigger")]
     public async Task<HttpResponseData> Run(
-        [HttpTrigger(AuthorizationLevel.Function, "get", "post")] 
+        [HttpTrigger(AuthorizationLevel.Function, "get", "post")]
         HttpRequestData req,
         FunctionContext executionContext)
     {
         using var span = _tracer.StartActiveSpan(
             "azure.function.http",
             SpanKind.Server);
-        
+
         span.SetAttribute("faas.name", executionContext.FunctionDefinition.Name);
         span.SetAttribute("faas.invocation_id", executionContext.InvocationId);
         span.SetAttribute("faas.trigger", "http");
         span.SetAttribute("http.method", req.Method);
-        
+
         try
         {
             // 业务逻辑
             var response = req.CreateResponse(HttpStatusCode.OK);
             await response.WriteStringAsync("Hello World");
-            
+
             span.SetAttribute("http.status_code", 200);
             span.SetStatus(Status.Ok);
-            
+
             return response;
         }
         catch (Exception ex)
@@ -184,7 +184,7 @@ tracer = trace.get_tracer(__name__)
 
 def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
     """HTTP触发函数with tracing"""
-    
+
     with tracer.start_as_current_span(
         "azure.function.http",
         kind=trace.SpanKind.SERVER,
@@ -199,10 +199,10 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
             # 业务逻辑
             name = req.params.get('name', 'World')
             result = f'Hello, {name}!'
-            
+
             span.set_status(trace.Status(trace.StatusCode.OK))
             return func.HttpResponse(result, status_code=200)
-            
+
         except Exception as e:
             span.record_exception(e)
             span.set_status(trace.Status(trace.StatusCode.ERROR))
@@ -239,5 +239,5 @@ Azure Functions最佳实践:
 
 ---
 
-**文档状态**: ✅ 完成  
+**文档状态**: ✅ 完成
 **适用场景**: Serverless应用、事件处理、微服务

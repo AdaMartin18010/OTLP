@@ -1,8 +1,8 @@
 # OTLP业务集成实战：OTLP与业务系统融合案例
 
-> **OTLP版本**: v1.0.0 (Stable)  
-> **最后更新**: 2025年10月11日  
-> **集成目标**: 电商、金融、物流、制造四大行业完整集成方案  
+> **OTLP版本**: v1.0.0 (Stable)
+> **最后更新**: 2025年10月11日
+> **集成目标**: 电商、金融、物流、制造四大行业完整集成方案
 > **文档状态**: ✅ 完成
 
 ---
@@ -153,7 +153,7 @@ package main
 import (
     "context"
     "time"
-    
+
     "go.opentelemetry.io/otel"
     "go.opentelemetry.io/otel/attribute"
     "go.opentelemetry.io/otel/trace"
@@ -181,7 +181,7 @@ func (s *OrderService) CreateOrder(ctx context.Context, req *CreateOrderRequest)
         ),
     )
     defer span.End()
-    
+
     // 1. 验证订单
     if err := s.validateOrder(ctx, req); err != nil {
         span.RecordError(err)
@@ -190,7 +190,7 @@ func (s *OrderService) CreateOrder(ctx context.Context, req *CreateOrderRequest)
         )
         return nil, err
     }
-    
+
     // 2. 检查库存
     inventoryService := NewInventoryService()
     if err := inventoryService.CheckStock(ctx, req.Items); err != nil {
@@ -200,7 +200,7 @@ func (s *OrderService) CreateOrder(ctx context.Context, req *CreateOrderRequest)
         )
         return nil, err
     }
-    
+
     // 3. 创建订单
     order := &Order{
         ID:          generateOrderID(),
@@ -210,12 +210,12 @@ func (s *OrderService) CreateOrder(ctx context.Context, req *CreateOrderRequest)
         Status:      OrderStatusPending,
         CreatedAt:   time.Now(),
     }
-    
+
     span.SetAttributes(
         attribute.String("business.order.id", order.ID),
         attribute.String("business.order.status", string(order.Status)),
     )
-    
+
     // 4. 处理支付
     paymentService := NewPaymentService()
     if err := paymentService.ProcessPayment(ctx, order); err != nil {
@@ -225,13 +225,13 @@ func (s *OrderService) CreateOrder(ctx context.Context, req *CreateOrderRequest)
         )
         return nil, err
     }
-    
+
     // 5. 确认订单
     order.Status = OrderStatusConfirmed
     span.SetAttributes(
         attribute.String("business.order.status", string(order.Status)),
     )
-    
+
     return order, nil
 }
 
@@ -250,7 +250,7 @@ func NewInventoryService() *InventoryService {
 func (s *InventoryService) CheckStock(ctx context.Context, items []OrderItem) error {
     ctx, span := s.tracer.Start(ctx, "inventory.check_stock")
     defer span.End()
-    
+
     for _, item := range items {
         itemSpan := s.tracer.Start(ctx, "inventory.check_item",
             trace.WithAttributes(
@@ -258,7 +258,7 @@ func (s *InventoryService) CheckStock(ctx context.Context, items []OrderItem) er
                 attribute.Int("business.product.quantity", item.Quantity),
             ),
         )
-        
+
         // 检查库存
         stock, err := s.getStock(ctx, item.ProductID)
         if err != nil {
@@ -266,7 +266,7 @@ func (s *InventoryService) CheckStock(ctx context.Context, items []OrderItem) er
             itemSpan.End()
             return err
         }
-        
+
         if stock < item.Quantity {
             itemSpan.SetAttributes(
                 attribute.String("business.product.stock_status", "insufficient"),
@@ -274,14 +274,14 @@ func (s *InventoryService) CheckStock(ctx context.Context, items []OrderItem) er
             itemSpan.End()
             return fmt.Errorf("insufficient stock for product %s", item.ProductID)
         }
-        
+
         itemSpan.SetAttributes(
             attribute.Int("business.product.stock", stock),
             attribute.String("business.product.stock_status", "sufficient"),
         )
         itemSpan.End()
     }
-    
+
     return nil
 }
 
@@ -306,39 +306,39 @@ func (s *PaymentService) ProcessPayment(ctx context.Context, order *Order) error
         ),
     )
     defer span.End()
-    
+
     // 1. 创建支付订单
     paymentOrder := &PaymentOrder{
         OrderID: order.ID,
         Amount:  order.TotalAmount,
         Method:  "credit_card",
     }
-    
+
     // 2. 调用支付网关
     gatewaySpan := s.tracer.Start(ctx, "payment.gateway.call")
-    
+
     transactionID, err := s.callPaymentGateway(ctx, paymentOrder)
     if err != nil {
         gatewaySpan.RecordError(err)
         gatewaySpan.End()
-        
+
         span.SetAttributes(
             attribute.String("business.payment.status", "failed"),
         )
         return err
     }
-    
+
     gatewaySpan.SetAttributes(
         attribute.String("business.payment.transaction_id", transactionID),
     )
     gatewaySpan.End()
-    
+
     // 3. 确认支付
     span.SetAttributes(
         attribute.String("business.payment.transaction_id", transactionID),
         attribute.String("business.payment.status", "success"),
     )
-    
+
     return nil
 }
 ```
@@ -353,7 +353,7 @@ package main
 import (
     "context"
     "time"
-    
+
     "go.opentelemetry.io/otel/metric"
 )
 
@@ -376,7 +376,7 @@ func NewECommerceMetrics(meter metric.Meter) (*ECommerceMetrics, error) {
     if err != nil {
         return nil, err
     }
-    
+
     orderAmount, err := meter.Float64Histogram(
         "business.order.amount",
         metric.WithDescription("Order amount distribution"),
@@ -385,7 +385,7 @@ func NewECommerceMetrics(meter metric.Meter) (*ECommerceMetrics, error) {
     if err != nil {
         return nil, err
     }
-    
+
     orderDuration, err := meter.Float64Histogram(
         "business.order.duration",
         metric.WithDescription("Order processing duration"),
@@ -394,7 +394,7 @@ func NewECommerceMetrics(meter metric.Meter) (*ECommerceMetrics, error) {
     if err != nil {
         return nil, err
     }
-    
+
     paymentCounter, err := meter.Int64Counter(
         "business.payment.count",
         metric.WithDescription("Total number of payments"),
@@ -403,7 +403,7 @@ func NewECommerceMetrics(meter metric.Meter) (*ECommerceMetrics, error) {
     if err != nil {
         return nil, err
     }
-    
+
     paymentAmount, err := meter.Float64Histogram(
         "business.payment.amount",
         metric.WithDescription("Payment amount distribution"),
@@ -412,7 +412,7 @@ func NewECommerceMetrics(meter metric.Meter) (*ECommerceMetrics, error) {
     if err != nil {
         return nil, err
     }
-    
+
     inventoryStock, err := meter.Int64Gauge(
         "business.inventory.stock",
         metric.WithDescription("Product stock level"),
@@ -421,7 +421,7 @@ func NewECommerceMetrics(meter metric.Meter) (*ECommerceMetrics, error) {
     if err != nil {
         return nil, err
     }
-    
+
     return &ECommerceMetrics{
         orderCounter:   orderCounter,
         orderAmount:    orderAmount,
@@ -438,7 +438,7 @@ func (m *ECommerceMetrics) RecordOrder(ctx context.Context, order *Order, durati
         attribute.String("business.order.status", string(order.Status)),
         attribute.String("business.order.currency", order.Currency),
     }
-    
+
     m.orderCounter.Add(ctx, 1, metric.WithAttributes(attrs...))
     m.orderAmount.Record(ctx, order.TotalAmount, metric.WithAttributes(attrs...))
     m.orderDuration.Record(ctx, float64(duration.Milliseconds()), metric.WithAttributes(attrs...))
@@ -450,7 +450,7 @@ func (m *ECommerceMetrics) RecordPayment(ctx context.Context, payment *Payment) 
         attribute.String("business.payment.method", payment.Method),
         attribute.String("business.payment.status", string(payment.Status)),
     }
-    
+
     m.paymentCounter.Add(ctx, 1, metric.WithAttributes(attrs...))
     m.paymentAmount.Record(ctx, payment.Amount, metric.WithAttributes(attrs...))
 }
@@ -460,7 +460,7 @@ func (m *ECommerceMetrics) UpdateStock(ctx context.Context, productID string, st
     attrs := []attribute.KeyValue{
         attribute.String("business.product.id", productID),
     }
-    
+
     m.inventoryStock.Record(ctx, stock, metric.WithAttributes(attrs...))
 }
 ```
@@ -515,7 +515,7 @@ package main
 import (
     "context"
     "time"
-    
+
     "go.opentelemetry.io/otel"
     "go.opentelemetry.io/otel/attribute"
     "go.opentelemetry.io/otel/trace"
@@ -544,7 +544,7 @@ func (s *TransactionService) ProcessTransaction(ctx context.Context, req *Transa
         ),
     )
     defer span.End()
-    
+
     // 1. 风控检查
     riskService := NewRiskService()
     riskScore, err := riskService.CheckRisk(ctx, req)
@@ -555,11 +555,11 @@ func (s *TransactionService) ProcessTransaction(ctx context.Context, req *Transa
         )
         return nil, err
     }
-    
+
     span.SetAttributes(
         attribute.Int("finance.risk.score", riskScore),
     )
-    
+
     if riskScore > 80 {
         span.SetAttributes(
             attribute.String("finance.risk.level", "high"),
@@ -567,7 +567,7 @@ func (s *TransactionService) ProcessTransaction(ctx context.Context, req *Transa
         )
         return nil, fmt.Errorf("high risk transaction")
     }
-    
+
     // 2. 合规检查
     complianceService := NewComplianceService()
     complianceStatus, err := complianceService.CheckCompliance(ctx, req)
@@ -578,11 +578,11 @@ func (s *TransactionService) ProcessTransaction(ctx context.Context, req *Transa
         )
         return nil, err
     }
-    
+
     span.SetAttributes(
         attribute.String("finance.compliance.status", complianceStatus),
     )
-    
+
     // 3. 执行交易
     transaction := &Transaction{
         ID:          generateTransactionID(),
@@ -594,11 +594,11 @@ func (s *TransactionService) ProcessTransaction(ctx context.Context, req *Transa
         Status:      TransactionStatusPending,
         CreatedAt:   time.Now(),
     }
-    
+
     span.SetAttributes(
         attribute.String("finance.transaction.id", transaction.ID),
     )
-    
+
     // 4. 更新账户
     accountService := NewAccountService()
     if err := accountService.UpdateAccounts(ctx, transaction); err != nil {
@@ -608,13 +608,13 @@ func (s *TransactionService) ProcessTransaction(ctx context.Context, req *Transa
         )
         return nil, err
     }
-    
+
     // 5. 确认交易
     transaction.Status = TransactionStatusCompleted
     span.SetAttributes(
         attribute.String("finance.transaction.status", string(transaction.Status)),
     )
-    
+
     return transaction, nil
 }
 
@@ -638,14 +638,14 @@ func (s *RiskService) CheckRisk(ctx context.Context, req *TransactionRequest) (i
         ),
     )
     defer span.End()
-    
+
     // 计算风险分数
     riskScore := s.calculateRiskScore(ctx, req)
-    
+
     span.SetAttributes(
         attribute.Int("finance.risk.score", riskScore),
     )
-    
+
     if riskScore > 80 {
         span.SetAttributes(
             attribute.String("finance.risk.level", "high"),
@@ -659,7 +659,7 @@ func (s *RiskService) CheckRisk(ctx context.Context, req *TransactionRequest) (i
             attribute.String("finance.risk.level", "low"),
         )
     }
-    
+
     return riskScore, nil
 }
 
@@ -683,44 +683,44 @@ func (s *ComplianceService) CheckCompliance(ctx context.Context, req *Transactio
         ),
     )
     defer span.End()
-    
+
     // 1. 反洗钱检查
     amlSpan := s.tracer.Start(ctx, "compliance.aml_check")
     if err := s.checkAML(ctx, req); err != nil {
         amlSpan.RecordError(err)
         amlSpan.End()
-        
+
         span.SetAttributes(
             attribute.String("finance.compliance.status", "aml_failed"),
         )
         return "failed", err
     }
     amlSpan.End()
-    
+
     // 2. 制裁名单检查
     sanctionsSpan := s.tracer.Start(ctx, "compliance.sanctions_check")
     if err := s.checkSanctions(ctx, req); err != nil {
         sanctionsSpan.RecordError(err)
         sanctionsSpan.End()
-        
+
         span.SetAttributes(
             attribute.String("finance.compliance.status", "sanctions_failed"),
         )
         return "failed", err
     }
     sanctionsSpan.End()
-    
+
     // 3. 大额交易报告
     if req.Amount > 50000 {
         reportSpan := s.tracer.Start(ctx, "compliance.large_transaction_report")
         s.reportLargeTransaction(ctx, req)
         reportSpan.End()
     }
-    
+
     span.SetAttributes(
         attribute.String("finance.compliance.status", "passed"),
     )
-    
+
     return "passed", nil
 }
 ```
@@ -780,7 +780,7 @@ package main
 import (
     "context"
     "time"
-    
+
     "go.opentelemetry.io/otel"
     "go.opentelemetry.io/otel/attribute"
     "go.opentelemetry.io/otel/trace"
@@ -807,7 +807,7 @@ func (s *DeliveryService) ProcessDelivery(ctx context.Context, order *Order) err
         ),
     )
     defer span.End()
-    
+
     // 1. 分配仓库
     warehouseService := NewWarehouseService()
     warehouse, err := warehouseService.AssignWarehouse(ctx, order)
@@ -818,12 +818,12 @@ func (s *DeliveryService) ProcessDelivery(ctx context.Context, order *Order) err
         )
         return err
     }
-    
+
     span.SetAttributes(
         attribute.String("logistics.warehouse.id", warehouse.ID),
         attribute.String("logistics.warehouse.location", warehouse.Location),
     )
-    
+
     // 2. 拣货
     pickingTask, err := warehouseService.CreatePickingTask(ctx, order, warehouse)
     if err != nil {
@@ -833,11 +833,11 @@ func (s *DeliveryService) ProcessDelivery(ctx context.Context, order *Order) err
         )
         return err
     }
-    
+
     span.SetAttributes(
         attribute.String("logistics.picking.task_id", pickingTask.ID),
     )
-    
+
     // 3. 打包
     packagingService := NewPackagingService()
     packageInfo, err := packagingService.PackageOrder(ctx, order, pickingTask)
@@ -848,13 +848,13 @@ func (s *DeliveryService) ProcessDelivery(ctx context.Context, order *Order) err
         )
         return err
     }
-    
+
     span.SetAttributes(
         attribute.String("logistics.package.id", packageInfo.ID),
         attribute.Float64("logistics.package.weight", packageInfo.Weight),
         attribute.Float64("logistics.package.volume", packageInfo.Volume),
     )
-    
+
     // 4. 发货
     shippingService := NewShippingService()
     waybill, err := shippingService.CreateWaybill(ctx, order, packageInfo)
@@ -865,12 +865,12 @@ func (s *DeliveryService) ProcessDelivery(ctx context.Context, order *Order) err
         )
         return err
     }
-    
+
     span.SetAttributes(
         attribute.String("logistics.waybill.id", waybill.ID),
         attribute.String("logistics.carrier.name", waybill.CarrierName),
     )
-    
+
     // 5. 配送
     deliveryTask, err := shippingService.AssignDelivery(ctx, waybill)
     if err != nil {
@@ -880,41 +880,41 @@ func (s *DeliveryService) ProcessDelivery(ctx context.Context, order *Order) err
         )
         return err
     }
-    
+
     span.SetAttributes(
         attribute.String("logistics.delivery.task_id", deliveryTask.ID),
         attribute.String("logistics.delivery.driver_id", deliveryTask.DriverID),
     )
-    
+
     // 6. 追踪配送
     go s.trackDelivery(ctx, deliveryTask)
-    
+
     span.SetAttributes(
         attribute.String("logistics.delivery.status", "in_transit"),
     )
-    
+
     return nil
 }
 
 // 追踪配送
 func (s *DeliveryService) trackDelivery(ctx context.Context, task *DeliveryTask) {
     tracer := otel.Tracer("delivery-tracker")
-    
+
     ticker := time.NewTicker(30 * time.Second)
     defer ticker.Stop()
-    
+
     for {
         select {
         case <-ctx.Done():
             return
-            
+
         case <-ticker.C:
             ctx, span := tracer.Start(ctx, "delivery.track",
                 trace.WithAttributes(
                     attribute.String("logistics.delivery.task_id", task.ID),
                 ),
             )
-            
+
             // 获取当前位置
             location, err := s.getCurrentLocation(ctx, task)
             if err != nil {
@@ -922,12 +922,12 @@ func (s *DeliveryService) trackDelivery(ctx context.Context, task *DeliveryTask)
                 span.End()
                 continue
             }
-            
+
             span.SetAttributes(
                 attribute.Float64("logistics.location.latitude", location.Latitude),
                 attribute.Float64("logistics.location.longitude", location.Longitude),
             )
-            
+
             // 检查是否到达
             if s.isArrived(ctx, task, location) {
                 span.SetAttributes(
@@ -936,7 +936,7 @@ func (s *DeliveryService) trackDelivery(ctx context.Context, task *DeliveryTask)
                 span.End()
                 return
             }
-            
+
             span.End()
         }
     }
@@ -1003,6 +1003,6 @@ func (s *DeliveryService) trackDelivery(ctx context.Context, task *DeliveryTask)
 
 ---
 
-**最后更新**: 2025年10月11日  
-**维护者**: OTLP深度梳理团队  
+**最后更新**: 2025年10月11日
+**维护者**: OTLP深度梳理团队
 **版本**: 1.0.0

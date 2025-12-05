@@ -1,7 +1,7 @@
 # ❓ OTLP常见问题FAQ
 
-> **最后更新**: 2025-10-26  
-> **问题数量**: 50+个  
+> **最后更新**: 2025-10-26
+> **问题数量**: 50+个
 > **分类**: 10个主题
 
 ---
@@ -32,12 +32,12 @@ Trace (追踪):
   - 一次完整的请求流程
   - 包含多个Span
   - 有唯一的TraceID
-  
+
 Span (片段):
   - 单个操作的记录
   - 是Trace的组成部分
   - 有唯一的SpanID
-  
+
 关系: 1个Trace包含N个Span (N >= 1)
 
 示例:
@@ -60,7 +60,7 @@ OpenTelemetry:
 OTLP (OpenTelemetry Protocol):
   - OpenTelemetry的数据传输协议
   - 是OpenTelemetry的一部分
-  
+
 关系:
   OpenTelemetry = API + SDK + OTLP + Collector + ...
   OTLP = 数据传输格式和协议
@@ -75,7 +75,7 @@ OTLP (OpenTelemetry Protocol):
 ```
 微服务架构:
   用户请求 → 30+个服务
-  
+
 传统日志的困境:
   ❌ 日志分散在30个服务中
   ❌ 无法关联同一个请求
@@ -111,7 +111,7 @@ OTLP (OpenTelemetry Protocol):
 ```
 场景: API响应慢
 
-Metric告诉你: 
+Metric告诉你:
   - P99延迟从100ms上升到500ms
   - 何时开始变慢
 
@@ -246,13 +246,13 @@ async function processOrder(order) {
   span.setAttribute('order.id', order.id);        // 业务属性
   span.setAttribute('order.amount', order.amount);
   span.setAttribute('user.id', order.userId);
-  
+
   try {
     // 业务逻辑
     await validateOrder(order);
     await chargePayment(order);
     await createShipment(order);
-    
+
     span.setStatus({ code: 1 });  // OK
   } catch (error) {
     span.recordException(error);
@@ -418,7 +418,7 @@ span.setAttribute('request.body', JSON.stringify(body));  // ✗ 可能很大
 
 // 改进: 限制大小
 const bodyStr = JSON.stringify(body);
-span.setAttribute('request.body', 
+span.setAttribute('request.body',
   bodyStr.length > 1000 ? bodyStr.substring(0, 1000) + '...' : bodyStr
 );
 
@@ -524,12 +524,12 @@ const tracer = trace.getTracer('my-service');
 async function fetchUserData(userId) {
   const span = tracer.startSpan('fetchUserData');
   span.setAttribute('user.id', userId);
-  
+
   try {
     // Promise自动传播Context
     const user = await db.query('SELECT * FROM users WHERE id = ?', [userId]);
     const orders = await db.query('SELECT * FROM orders WHERE user_id = ?', [userId]);
-    
+
     span.setStatus({ code: 1 });
     return { user, orders };
   } catch (error) {
@@ -549,10 +549,10 @@ const { context } = require('@opentelemetry/api');
 
 function legacyAsyncOperation(callback) {
   const span = tracer.startSpan('legacyOp');
-  
+
   // 保存当前Context
   const ctx = context.active();
-  
+
   doAsyncWork((err, result) => {
     // 在回调中恢复Context
     context.with(ctx, () => {
@@ -579,13 +579,13 @@ class OrderProcessor extends EventEmitter {
   processOrder(order) {
     const span = tracer.startSpan('processOrder');
     const ctx = trace.setSpan(context.active(), span);
-    
+
     // 在Context中emit事件
     context.with(ctx, () => {
       this.emit('order:created', order);
       // 监听器会在同一个Context中执行
     });
-    
+
     span.end();
   }
 }
@@ -615,7 +615,7 @@ Context传播是在分布式系统中跨服务边界传递追踪信息的机制�
 没有Context传播:
   Service A → Service B → Service C
   生成3个独立的Trace ✗
-  
+
   Trace 1: Service A (TraceID: ABC)
   Trace 2: Service B (TraceID: DEF)  ← 无法关联
   Trace 3: Service C (TraceID: GHI)  ← 无法关联
@@ -623,7 +623,7 @@ Context传播是在分布式系统中跨服务边界传递追踪信息的机制�
 有Context传播:
   Service A → Service B → Service C
   1个完整的Trace ✓
-  
+
   Trace (TraceID: ABC):
     Span 1: Service A
     Span 2: Service B  ← 共享TraceID
@@ -696,12 +696,12 @@ const { propagation, context } = require('@opentelemetry/api');
 // 生产者: 注入Context到消息头
 async function publishMessage(topic, message) {
   const span = tracer.startSpan('kafka.publish');
-  
+
   const headers = {};
-  
+
   // 注入追踪信息到headers
   propagation.inject(context.active(), headers);
-  
+
   await producer.send({
     topic,
     messages: [{
@@ -709,7 +709,7 @@ async function publishMessage(topic, message) {
       headers  // Kafka支持消息头
     }]
   });
-  
+
   span.end();
 }
 
@@ -720,14 +720,14 @@ async function consumeMessage(message) {
     context.active(),
     message.headers
   );
-  
+
   // 在提取的Context中创建Span
   const span = tracer.startSpan(
     'kafka.consume',
     { kind: SpanKind.CONSUMER },
     extractedContext
   );
-  
+
   context.with(
     trace.setSpan(extractedContext, span),
     () => {
@@ -735,7 +735,7 @@ async function consumeMessage(message) {
       processMessage(message.value);
     }
   );
-  
+
   span.end();
 }
 ```
@@ -757,7 +757,7 @@ channel.consume('queue', (msg) => {
     context.active(),
     msg.properties.headers
   );
-  
+
   const span = tracer.startSpan('process', {}, extractedContext);
   // 处理...
   span.end();
@@ -803,19 +803,19 @@ processors:
       - name: errors
         type: status_code
         status_code: {status_codes: [ERROR]}
-        
+
       # 规则2: 慢请求 (>2秒)
       - name: slow
         type: latency
         latency: {threshold_ms: 2000}
-        
+
       # 规则3: 关键路径50%
       - name: critical
         type: string_attribute
         string_attribute:
           key: http.route
           values: [/api/payment, /api/order]
-        
+
       # 规则4: 其他1%
       - name: default
         type: probabilistic
@@ -837,7 +837,7 @@ processors:
 缺点:
   ✗ 可能错过重要Trace
   ✗ 无法基于完整信息决策
-适用: 
+适用:
   - 流量稳定
   - 不关心罕见错误
 ```
@@ -866,7 +866,7 @@ processors:
 SDK: ParentBased采样 (遵循上游决策)
   ↓
 Collector: Tail Sampling (智能决策)
-  
+
 这样可以:
   1. 保证Trace完整性 (Parent Based)
   2. 智能过滤 (Tail Sampling)
@@ -889,7 +889,7 @@ Collector: Tail Sampling (智能决策)
   - 属性设置: ~0.01ms per attribute
   - Context传播: ~0.05ms
   - 异步导出: 几乎无延迟 (后台进行)
-  
+
 总计: ~0.5-2ms (取决于Span数量)
 
 示例:
@@ -1058,10 +1058,10 @@ async function callService() {
 // ✓ 正确: 传播Context
 async function callService() {
   const span = tracer.startSpan('call-service');
-  
+
   const headers = {};
   propagation.inject(context.active(), headers);  // 注入Context
-  
+
   await fetch('http://api.example.com', { headers });
   span.end();
 }
@@ -1203,7 +1203,7 @@ curl http://localhost:8888/metrics | grep dropped
 ✓ 需要自适应采样
 ✓ 有运维资源
 
-示例: 
+示例:
   - 大型微服务架构 (100+服务)
   - 高流量应用 (>10K QPS)
 ```
@@ -1295,7 +1295,7 @@ Jaeger UI → Search
 
 ```
 Jaeger UI → System Architecture → DAG
-  
+
 会显示:
   ├─ 所有服务节点
   ├─ 服务间调用关系 (箭头)
@@ -1309,7 +1309,7 @@ Jaeger UI → System Architecture → DAG
 1. 选择一个复杂的Trace
 2. 查看 "Span Graph" 视图
    → 显示这个请求的完整调用链
-   
+
 3. 分析:
    - 哪些服务被调用了
    - 串行 vs 并行调用
@@ -1358,7 +1358,7 @@ curl http://localhost:16686/api/dependencies?endTs=$(date +%s)000&lookback=86400
 缺点:
   ✗ 资源消耗大
   ✗ 配置管理复杂
-适用: 
+适用:
   - Kubernetes环境
   - 需要严格隔离
 ```
@@ -1406,7 +1406,7 @@ Gateway Collector:
   - 多Backend路由
   - 数据聚合
 
-优点: 
+优点:
   ✓ 应用到Agent低延迟
   ✓ Gateway统一管理
   ✓ 故障容忍
@@ -1581,6 +1581,6 @@ Collector:
 
 ---
 
-**维护**: OTLP项目组  
-**更新频率**: 每月  
+**维护**: OTLP项目组
+**更新频率**: 每月
 **贡献**: 欢迎提交新问题

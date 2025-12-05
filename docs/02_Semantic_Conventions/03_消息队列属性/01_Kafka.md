@@ -1,6 +1,6 @@
 # Kafka 语义约定详解
 
-> **规范版本**: v1.30.0  
+> **规范版本**: v1.30.0
 > **最后更新**: 2025年10月8日
 
 ---
@@ -132,7 +132,7 @@ messaging.destination.name: Topic名称
 messaging.operation: 操作类型
   类型: string
   值: "publish" | "receive" | "process"
-  示例: 
+  示例:
     - "publish": Producer发送
     - "receive": Consumer接收
     - "process": Consumer处理
@@ -269,34 +269,34 @@ func (p *KafkaProducer) Publish(ctx context.Context, key, value []byte) error {
         ),
     )
     defer span.End()
-    
+
     // 创建消息
     msg := kafka.Message{
         Key:   key,
         Value: value,
         Headers: []kafka.Header{},
     }
-    
+
     // 注入TraceContext到消息Header
     propagator := otel.GetTextMapPropagator()
     carrier := NewKafkaHeaderCarrier(&msg.Headers)
     propagator.Inject(ctx, carrier)
-    
+
     // 发送消息
     err := p.writer.WriteMessages(ctx, msg)
-    
+
     if err != nil {
         span.RecordError(err)
         span.SetStatus(codes.Error, "Failed to publish message")
         return err
     }
-    
+
     // 记录额外属性
     span.SetAttributes(
         attribute.String("messaging.kafka.message.key", string(key)),
         attribute.Int("messaging.message.payload_size_bytes", len(value)),
     )
-    
+
     span.SetStatus(codes.Ok, "Message published successfully")
     return nil
 }
@@ -348,13 +348,13 @@ func main() {
         []string{"localhost:9092"},
         "orders",
     )
-    
+
     ctx := context.Background()
     err := producer.Publish(ctx,
         []byte("order-12345"),
         []byte(`{"order_id": "12345", "amount": 99.99}`),
     )
-    
+
     if err != nil {
         panic(err)
     }
@@ -377,15 +377,15 @@ public class TracedKafkaProducer {
     private final KafkaProducer<String, String> producer;
     private final Tracer tracer;
     private final String topic;
-    
-    public TracedKafkaProducer(KafkaProducer<String, String> producer, 
-                               Tracer tracer, 
+
+    public TracedKafkaProducer(KafkaProducer<String, String> producer,
+                               Tracer tracer,
                                String topic) {
         this.producer = producer;
         this.tracer = tracer;
         this.topic = topic;
     }
-    
+
     public void publish(String key, String value) {
         // 创建Producer Span
         Span span = tracer.spanBuilder(topic + " publish")
@@ -394,26 +394,26 @@ public class TracedKafkaProducer {
             .setAttribute("messaging.destination.name", topic)
             .setAttribute("messaging.operation", "publish")
             .startSpan();
-        
+
         try (var scope = span.makeCurrent()) {
             // 创建消息
-            ProducerRecord<String, String> record = 
+            ProducerRecord<String, String> record =
                 new ProducerRecord<>(topic, key, value);
-            
+
             // 注入TraceContext到Header
-            TextMapSetter<Headers> setter = (carrier, k, v) -> 
+            TextMapSetter<Headers> setter = (carrier, k, v) ->
                 carrier.add(k, v.getBytes());
             propagator.inject(Context.current(), record.headers(), setter);
-            
+
             // 发送消息
             producer.send(record, (metadata, exception) -> {
                 if (exception != null) {
                     span.recordException(exception);
                     span.setStatus(StatusCode.ERROR);
                 } else {
-                    span.setAttribute("messaging.kafka.destination.partition", 
+                    span.setAttribute("messaging.kafka.destination.partition",
                                     metadata.partition());
-                    span.setAttribute("messaging.kafka.message.offset", 
+                    span.setAttribute("messaging.kafka.message.offset",
                                     metadata.offset());
                     span.setStatus(StatusCode.OK);
                 }
@@ -453,7 +453,7 @@ Span属性:
 1. receive: 接收消息
    span.name: "orders receive"
    span.kind: CONSUMER
-   
+
 2. process: 处理消息
    span.name: "orders process"
    span.kind: CONSUMER
@@ -501,14 +501,14 @@ func (c *KafkaConsumer) Consume(ctx context.Context) error {
         if err != nil {
             return err
         }
-        
+
         // 从消息Header提取TraceContext
         propagator := otel.GetTextMapPropagator()
         carrier := NewKafkaHeaderCarrier(&msg.Headers)
         ctx = propagator.Extract(ctx, carrier)
-        
+
         // 创建Consumer receive Span
-        ctx, receiveSpan := c.tracer.Start(ctx, 
+        ctx, receiveSpan := c.tracer.Start(ctx,
             c.reader.Config().Topic+" receive",
             trace.WithSpanKind(trace.SpanKindConsumer),
             trace.WithAttributes(
@@ -522,17 +522,17 @@ func (c *KafkaConsumer) Consume(ctx context.Context) error {
                 attribute.Int("messaging.message.payload_size_bytes", len(msg.Value)),
             ),
         )
-        
+
         // 处理消息
         err = c.processMessage(ctx, msg)
-        
+
         if err != nil {
             receiveSpan.RecordError(err)
             receiveSpan.SetStatus(codes.Error, "Failed to process message")
         } else {
             receiveSpan.SetStatus(codes.Ok, "Message processed successfully")
         }
-        
+
         receiveSpan.End()
     }
 }
@@ -544,10 +544,10 @@ func (c *KafkaConsumer) processMessage(ctx context.Context, msg kafka.Message) e
         trace.WithSpanKind(trace.SpanKindInternal),
     )
     defer processSpan.End()
-    
+
     // 业务逻辑处理
     // ...
-    
+
     return nil
 }
 
@@ -558,7 +558,7 @@ func main() {
         "orders",
         "order-processor-group",
     )
-    
+
     ctx := context.Background()
     if err := consumer.Consume(ctx); err != nil {
         panic(err)
@@ -582,12 +582,12 @@ def consume_messages():
         group_id='order-processor',
         bootstrap_servers=['localhost:9092']
     )
-    
+
     for message in consumer:
         # 从Header提取TraceContext
         headers = {k: v.decode() for k, v in message.headers}
         ctx = extract(headers)
-        
+
         # 创建Consumer Span
         with tracer.start_as_current_span(
             f"{message.topic} receive",
@@ -715,7 +715,7 @@ func (p *KafkaProducer) PublishBatch(ctx context.Context, messages []Message) er
         ),
     )
     defer span.End()
-    
+
     kafkaMessages := make([]kafka.Message, len(messages))
     for i, msg := range messages {
         kafkaMessages[i] = kafka.Message{
@@ -727,14 +727,14 @@ func (p *KafkaProducer) PublishBatch(ctx context.Context, messages []Message) er
         carrier := NewKafkaHeaderCarrier(&kafkaMessages[i].Headers)
         propagator.Inject(ctx, carrier)
     }
-    
+
     err := p.writer.WriteMessages(ctx, kafkaMessages...)
     if err != nil {
         span.RecordError(err)
         span.SetStatus(codes.Error, "Failed to publish batch")
         return err
     }
-    
+
     span.SetStatus(codes.Ok, "Batch published successfully")
     return nil
 }
@@ -817,11 +817,11 @@ func CreateOrder(w http.ResponseWriter, r *http.Request) {
         trace.WithSpanKind(trace.SpanKindServer),
     )
     defer span.End()
-    
+
     // 创建订单
     order := Order{ID: "order-123", Amount: 99.99}
     orderJSON, _ := json.Marshal(order)
-    
+
     // 发送到Kafka
     err := kafkaProducer.Publish(ctx, []byte(order.ID), orderJSON)
     if err != nil {
@@ -829,7 +829,7 @@ func CreateOrder(w http.ResponseWriter, r *http.Request) {
         http.Error(w, "Failed to create order", 500)
         return
     }
-    
+
     w.WriteHeader(201)
     json.NewEncoder(w).Encode(order)
 }
@@ -838,26 +838,26 @@ func CreateOrder(w http.ResponseWriter, r *http.Request) {
 func ConsumeOrders() {
     for {
         msg, _ := reader.ReadMessage(context.Background())
-        
+
         // 提取TraceContext
         ctx := extractTraceContext(msg)
         ctx, span := tracer.Start(ctx, "orders receive",
             trace.WithSpanKind(trace.SpanKindConsumer),
         )
-        
+
         // 处理订单
         var order Order
         json.Unmarshal(msg.Value, &order)
-        
+
         // 更新库存
         ctx, processSpan := tracer.Start(ctx, "Update inventory")
         updateInventory(order)
         processSpan.End()
-        
+
         // 发送到下游Topic
         shipmentMsg, _ := json.Marshal(Shipment{OrderID: order.ID})
         kafkaProducer.Publish(ctx, []byte(order.ID), shipmentMsg)
-        
+
         span.End()
     }
 }
@@ -909,6 +909,6 @@ func ConsumeOrders() {
 
 ---
 
-**文档状态**: ✅ 完成  
-**审核状态**: 待审核  
+**文档状态**: ✅ 完成
+**审核状态**: 待审核
 **相关文档**: [HTTP语义约定](../02_追踪属性/01_HTTP.md), [gRPC语义约定](../02_追踪属性/02_gRPC.md)

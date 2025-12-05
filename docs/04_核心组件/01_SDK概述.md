@@ -1,14 +1,14 @@
 # OpenTelemetry SDK 概述
 
-> **SDK版本**: v1.20+ (各语言实现)  
+> **SDK版本**: v1.20+ (各语言实现)
 > **最后更新**: 2025年10月8日
 
 ---
 
-## 目录
+## 📋 目录
 
 - [OpenTelemetry SDK 概述](#opentelemetry-sdk-概述)
-  - [目录](#目录)
+  - [📋 目录](#-目录)
   - [1. 什么是SDK](#1-什么是sdk)
     - [1.1 SDK vs API](#11-sdk-vs-api)
     - [1.2 SDK职责](#12-sdk职责)
@@ -188,7 +188,7 @@ SDK (软件开发工具包):
    span = tracer.spanBuilder("operation")
                 .setSpanKind(CLIENT)
                 .startSpan()
-   
+
    内部流程:
    ┌──────────────────────────────────────────────┐
    │ 1. Sampler决策: 是否采样?                     │
@@ -205,7 +205,7 @@ SDK (软件开发工具包):
 
 5. Span结束:
    span.end()
-   
+
    内部流程:
    ┌──────────────────────────────────────────────┐
    │ 1. 设置结束时间                               │
@@ -294,7 +294,7 @@ package main
 import (
     "context"
     "time"
-    
+
     "go.opentelemetry.io/otel"
     "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
     "go.opentelemetry.io/otel/sdk/resource"
@@ -311,7 +311,7 @@ func initTracer() (*trace.TracerProvider, error) {
     if err != nil {
         return nil, err
     }
-    
+
     // 2. 定义Resource
     res, err := resource.New(context.Background(),
         resource.WithAttributes(
@@ -323,21 +323,21 @@ func initTracer() (*trace.TracerProvider, error) {
     if err != nil {
         return nil, err
     }
-    
+
     // 3. 配置TracerProvider
     tp := trace.NewTracerProvider(
         // Resource
         trace.WithResource(res),
-        
+
         // Sampler
         trace.WithSampler(trace.AlwaysSample()),
-        
+
         // SpanProcessor (批处理)
         trace.WithBatcher(exporter,
             trace.WithBatchTimeout(5*time.Second),
             trace.WithMaxExportBatchSize(512),
         ),
-        
+
         // SpanLimits
         trace.WithSpanLimits(trace.SpanLimits{
             AttributeCountLimit:    128,
@@ -346,10 +346,10 @@ func initTracer() (*trace.TracerProvider, error) {
             AttributeValueLengthLimit: 4096,
         }),
     )
-    
+
     // 4. 设置全局TracerProvider
     otel.SetTracerProvider(tp)
-    
+
     return tp, nil
 }
 
@@ -359,12 +359,12 @@ func main() {
         panic(err)
     }
     defer tp.Shutdown(context.Background())
-    
+
     // 使用tracer
     tracer := otel.Tracer("my-component")
     ctx, span := tracer.Start(context.Background(), "operation")
     defer span.End()
-    
+
     // ... 业务逻辑
 }
 ```
@@ -405,16 +405,16 @@ tracer := otel.Tracer("my-service", trace.WithInstrumentationVersion("1.0.0"))
 ctx, span := tracer.Start(ctx, "operation-name",
     // SpanKind
     trace.WithSpanKind(trace.SpanKindClient),
-    
+
     // 属性
     trace.WithAttributes(
         attribute.String("http.method", "GET"),
         attribute.String("http.url", "https://example.com"),
     ),
-    
+
     // 时间戳 (通常自动设置)
     trace.WithTimestamp(time.Now()),
-    
+
     // Links (关联其他trace)
     trace.WithLinks(
         trace.Link{
@@ -526,13 +526,13 @@ tp := trace.NewTracerProvider(
     trace.WithBatcher(exporter,
         // 批处理超时
         trace.WithBatchTimeout(5*time.Second),
-        
+
         // 最大批次大小
         trace.WithMaxExportBatchSize(512),
-        
+
         // 队列大小
         trace.WithMaxQueueSize(2048),
-        
+
         // 导出超时
         trace.WithExportTimeout(30*time.Second),
     ),
@@ -557,7 +557,7 @@ func (p *CustomSpanProcessor) OnStart(parent context.Context, s trace.ReadWriteS
 func (p *CustomSpanProcessor) OnEnd(s trace.ReadOnlySpan) {
     // Span结束时调用
     // 处理完成的span
-    fmt.Printf("Span ended: %s, duration: %v\n", 
+    fmt.Printf("Span ended: %s, duration: %v\n",
         s.Name(), s.EndTime().Sub(s.StartTime()))
 }
 
@@ -715,7 +715,7 @@ func (s *ErrorSampler) ShouldSample(p trace.SamplingParameters) trace.SamplingRe
             }
         }
     }
-    
+
     // 其他情况使用基础采样器
     return s.baseSampler.ShouldSample(p)
 }
@@ -745,11 +745,11 @@ type CustomIDGenerator struct {}
 func (g *CustomIDGenerator) NewIDs(ctx context.Context) (trace.TraceID, trace.SpanID) {
     var traceID [16]byte
     var spanID [8]byte
-    
+
     // 自定义生成逻辑
     rand.Read(traceID[:])
     rand.Read(spanID[:])
-    
+
     return traceID, spanID
 }
 
@@ -803,7 +803,7 @@ res, err := resource.New(ctx,
         semconv.ServiceNameKey.String("my-service"),
         semconv.ServiceVersionKey.String("1.0.0"),
     ),
-    
+
     // 自动检测
     resource.WithFromEnv(),      // 从环境变量
     resource.WithHost(),          // 主机信息
@@ -887,17 +887,17 @@ func main() {
     if err != nil {
         log.Fatal(err)
     }
-    
+
     // 确保关闭
     defer func() {
         ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
         defer cancel()
-        
+
         if err := tp.Shutdown(ctx); err != nil {
             log.Printf("Error shutting down tracer provider: %v", err)
         }
     }()
-    
+
     // 应用逻辑...
 }
 ```
@@ -998,6 +998,6 @@ https://github.com/open-telemetry/opentelemetry-cpp
 
 ---
 
-**文档状态**: ✅ 完成  
-**审核状态**: 待审核  
+**文档状态**: ✅ 完成
+**审核状态**: 待审核
 **下一步**: [02_Collector架构.md](./02_Collector架构.md)

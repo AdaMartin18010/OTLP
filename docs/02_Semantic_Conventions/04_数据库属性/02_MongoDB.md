@@ -1,6 +1,6 @@
 # MongoDB语义约定详解
 
-> **文档数据库**: MongoDB Tracing与Metrics完整规范  
+> **文档数据库**: MongoDB Tracing与Metrics完整规范
 > **最后更新**: 2025年10月8日
 
 ---
@@ -109,7 +109,7 @@ MongoDB架构:
    │ Shard 1 │   │ Shard 2 │   │ Shard 3 │
    │(副本集) │   │(副本集) │   │(副本集) │
    └─────────┘   └─────────┘   └─────────┘
-   
+
    配置服务器 (Config Servers):
    存储集群元数据
 
@@ -288,7 +288,7 @@ package main
 
 import (
     "context"
-    
+
     "go.mongodb.org/mongo-driver/bson"
     "go.mongodb.org/mongo-driver/mongo"
     "go.mongodb.org/mongo-driver/mongo/options"
@@ -311,7 +311,7 @@ func InsertUserWithTracing(
     user *User,
 ) error {
     tracer := otel.Tracer("mongodb-client")
-    
+
     // 创建Span
     ctx, span := tracer.Start(ctx, "mongodb.insert",
         trace.WithSpanKind(trace.SpanKindClient),
@@ -319,14 +319,14 @@ func InsertUserWithTracing(
             semconv.DBSystemMongoDB,
             semconv.DBOperationKey.String("insert"),
             semconv.DBNameKey.String(collection.Database().Name()),
-            attribute.String("db.mongodb.collection", 
+            attribute.String("db.mongodb.collection",
                 collection.Name()),
             attribute.String("net.peer.name", "localhost"),
             attribute.Int("net.peer.port", 27017),
         ),
     )
     defer span.End()
-    
+
     // 执行插入
     result, err := collection.InsertOne(ctx, user)
     if err != nil {
@@ -334,13 +334,13 @@ func InsertUserWithTracing(
         span.SetStatus(codes.Error, "insert failed")
         return err
     }
-    
+
     // 记录插入的ID
     span.SetAttributes(
-        attribute.String("db.mongodb.inserted_id", 
+        attribute.String("db.mongodb.inserted_id",
             result.InsertedID.(string)),
     )
-    
+
     span.SetStatus(codes.Ok, "inserted")
     return nil
 }
@@ -351,7 +351,7 @@ func FindUserWithTracing(
     filter bson.M,
 ) (*User, error) {
     tracer := otel.Tracer("mongodb-client")
-    
+
     // 创建Span
     ctx, span := tracer.Start(ctx, "mongodb.find",
         trace.WithSpanKind(trace.SpanKindClient),
@@ -359,15 +359,15 @@ func FindUserWithTracing(
             semconv.DBSystemMongoDB,
             semconv.DBOperationKey.String("find"),
             semconv.DBNameKey.String(collection.Database().Name()),
-            attribute.String("db.mongodb.collection", 
+            attribute.String("db.mongodb.collection",
                 collection.Name()),
             // 可选: 记录查询过滤条件 (注意隐私)
-            // attribute.String("db.statement", 
+            // attribute.String("db.statement",
             //     fmt.Sprintf("%v", filter)),
         ),
     )
     defer span.End()
-    
+
     // 执行查询
     var user User
     err := collection.FindOne(ctx, filter).Decode(&user)
@@ -380,12 +380,12 @@ func FindUserWithTracing(
         span.SetStatus(codes.Error, "find failed")
         return nil, err
     }
-    
+
     span.SetAttributes(
         attribute.Int("db.response.returned_count", 1),
     )
     span.SetStatus(codes.Ok, "found")
-    
+
     return &user, nil
 }
 
@@ -396,19 +396,19 @@ func UpdateUserWithTracing(
     update bson.M,
 ) error {
     tracer := otel.Tracer("mongodb-client")
-    
+
     ctx, span := tracer.Start(ctx, "mongodb.update",
         trace.WithSpanKind(trace.SpanKindClient),
         trace.WithAttributes(
             semconv.DBSystemMongoDB,
             semconv.DBOperationKey.String("update"),
             semconv.DBNameKey.String(collection.Database().Name()),
-            attribute.String("db.mongodb.collection", 
+            attribute.String("db.mongodb.collection",
                 collection.Name()),
         ),
     )
     defer span.End()
-    
+
     // 执行更新
     result, err := collection.UpdateMany(ctx, filter, update)
     if err != nil {
@@ -416,15 +416,15 @@ func UpdateUserWithTracing(
         span.SetStatus(codes.Error, "update failed")
         return err
     }
-    
+
     span.SetAttributes(
-        attribute.Int64("db.response.matched_count", 
+        attribute.Int64("db.response.matched_count",
             result.MatchedCount),
-        attribute.Int64("db.response.modified_count", 
+        attribute.Int64("db.response.modified_count",
             result.ModifiedCount),
     )
     span.SetStatus(codes.Ok, "updated")
-    
+
     return nil
 }
 
@@ -434,19 +434,19 @@ func DeleteUserWithTracing(
     filter bson.M,
 ) error {
     tracer := otel.Tracer("mongodb-client")
-    
+
     ctx, span := tracer.Start(ctx, "mongodb.delete",
         trace.WithSpanKind(trace.SpanKindClient),
         trace.WithAttributes(
             semconv.DBSystemMongoDB,
             semconv.DBOperationKey.String("delete"),
             semconv.DBNameKey.String(collection.Database().Name()),
-            attribute.String("db.mongodb.collection", 
+            attribute.String("db.mongodb.collection",
                 collection.Name()),
         ),
     )
     defer span.End()
-    
+
     // 执行删除
     result, err := collection.DeleteMany(ctx, filter)
     if err != nil {
@@ -454,13 +454,13 @@ func DeleteUserWithTracing(
         span.SetStatus(codes.Error, "delete failed")
         return err
     }
-    
+
     span.SetAttributes(
-        attribute.Int64("db.response.deleted_count", 
+        attribute.Int64("db.response.deleted_count",
             result.DeletedCount),
     )
     span.SetStatus(codes.Ok, "deleted")
-    
+
     return nil
 }
 ```
@@ -474,21 +474,21 @@ func AggregateWithTracing(
     pipeline mongo.Pipeline,
 ) ([]bson.M, error) {
     tracer := otel.Tracer("mongodb-client")
-    
+
     ctx, span := tracer.Start(ctx, "mongodb.aggregate",
         trace.WithSpanKind(trace.SpanKindClient),
         trace.WithAttributes(
             semconv.DBSystemMongoDB,
             semconv.DBOperationKey.String("aggregate"),
             semconv.DBNameKey.String(collection.Database().Name()),
-            attribute.String("db.mongodb.collection", 
+            attribute.String("db.mongodb.collection",
                 collection.Name()),
-            attribute.Int("db.mongodb.aggregate.stages", 
+            attribute.Int("db.mongodb.aggregate.stages",
                 len(pipeline)),
         ),
     )
     defer span.End()
-    
+
     // 执行聚合
     cursor, err := collection.Aggregate(ctx, pipeline)
     if err != nil {
@@ -497,7 +497,7 @@ func AggregateWithTracing(
         return nil, err
     }
     defer cursor.Close(ctx)
-    
+
     // 读取结果
     var results []bson.M
     if err := cursor.All(ctx, &results); err != nil {
@@ -505,12 +505,12 @@ func AggregateWithTracing(
         span.SetStatus(codes.Error, "decode failed")
         return nil, err
     }
-    
+
     span.SetAttributes(
         attribute.Int("db.response.returned_count", len(results)),
     )
     span.SetStatus(codes.Ok, "aggregated")
-    
+
     return results, nil
 }
 ```
@@ -524,7 +524,7 @@ func TransactionWithTracing(
     fn func(sessCtx mongo.SessionContext) error,
 ) error {
     tracer := otel.Tracer("mongodb-client")
-    
+
     ctx, span := tracer.Start(ctx, "mongodb.transaction",
         trace.WithSpanKind(trace.SpanKindClient),
         trace.WithAttributes(
@@ -533,7 +533,7 @@ func TransactionWithTracing(
         ),
     )
     defer span.End()
-    
+
     // 开始会话
     session, err := client.StartSession()
     if err != nil {
@@ -542,18 +542,18 @@ func TransactionWithTracing(
         return err
     }
     defer session.EndSession(ctx)
-    
+
     // 执行事务
     err = session.WithTransaction(ctx, func(sessCtx mongo.SessionContext) (interface{}, error) {
         return nil, fn(sessCtx)
     })
-    
+
     if err != nil {
         span.RecordError(err)
         span.SetStatus(codes.Error, "transaction failed")
         return err
     }
-    
+
     span.SetStatus(codes.Ok, "committed")
     return nil
 }
@@ -589,11 +589,11 @@ def insert_user_with_tracing(collection, user: dict):
     ) as span:
         try:
             result = collection.insert_one(user)
-            
-            span.set_attribute("db.mongodb.inserted_id", 
+
+            span.set_attribute("db.mongodb.inserted_id",
                              str(result.inserted_id))
             span.set_status(Status(StatusCode.OK))
-            
+
         except Exception as e:
             span.record_exception(e)
             span.set_status(Status(StatusCode.ERROR))
@@ -613,15 +613,15 @@ def find_user_with_tracing(collection, filter_dict: dict):
     ) as span:
         try:
             result = collection.find_one(filter_dict)
-            
+
             if result:
                 span.set_attribute("db.response.returned_count", 1)
             else:
                 span.set_attribute("db.response.returned_count", 0)
-            
+
             span.set_status(Status(StatusCode.OK))
             return result
-            
+
         except Exception as e:
             span.record_exception(e)
             span.set_status(Status(StatusCode.ERROR))
@@ -643,13 +643,13 @@ def aggregate_with_tracing(collection, pipeline: list):
         try:
             cursor = collection.aggregate(pipeline)
             results = list(cursor)
-            
-            span.set_attribute("db.response.returned_count", 
+
+            span.set_attribute("db.response.returned_count",
                              len(results))
             span.set_status(Status(StatusCode.OK))
-            
+
             return results
-            
+
         except Exception as e:
             span.record_exception(e)
             span.set_status(Status(StatusCode.ERROR))
@@ -672,7 +672,7 @@ async def insert_user_async_with_tracing(collection, user: dict):
     ) as span:
         try:
             result = await collection.insert_one(user)
-            span.set_attribute("db.mongodb.inserted_id", 
+            span.set_attribute("db.mongodb.inserted_id",
                              str(result.inserted_id))
             span.set_status(Status(StatusCode.OK))
             return result
@@ -695,10 +695,10 @@ import io.opentelemetry.api.trace.*;
 import io.opentelemetry.context.Context;
 
 public class MongoDBTracing {
-    
-    private static final Tracer tracer = 
+
+    private static final Tracer tracer =
         openTelemetry.getTracer("mongodb-client");
-    
+
     public void insertUserWithTracing(
         MongoCollection<Document> collection,
         Document user
@@ -710,16 +710,16 @@ public class MongoDBTracing {
             .setAttribute("db.name", collection.getNamespace().getDatabaseName())
             .setAttribute("db.mongodb.collection", collection.getNamespace().getCollectionName())
             .startSpan();
-        
+
         try (Scope scope = span.makeCurrent()) {
             // 执行插入
             collection.insertOne(user);
-            
+
             // 记录ID
-            span.setAttribute("db.mongodb.inserted_id", 
+            span.setAttribute("db.mongodb.inserted_id",
                 user.getObjectId("_id").toString());
             span.setStatus(StatusCode.OK);
-            
+
         } catch (Exception e) {
             span.recordException(e);
             span.setStatus(StatusCode.ERROR);
@@ -728,7 +728,7 @@ public class MongoDBTracing {
             span.end();
         }
     }
-    
+
     public Document findUserWithTracing(
         MongoCollection<Document> collection,
         Document filter
@@ -740,19 +740,19 @@ public class MongoDBTracing {
             .setAttribute("db.name", collection.getNamespace().getDatabaseName())
             .setAttribute("db.mongodb.collection", collection.getNamespace().getCollectionName())
             .startSpan();
-        
+
         try (Scope scope = span.makeCurrent()) {
             Document result = collection.find(filter).first();
-            
+
             if (result != null) {
                 span.setAttribute("db.response.returned_count", 1);
             } else {
                 span.setAttribute("db.response.returned_count", 0);
             }
-            
+
             span.setStatus(StatusCode.OK);
             return result;
-            
+
         } catch (Exception e) {
             span.recordException(e);
             span.setStatus(StatusCode.ERROR);
@@ -904,8 +904,8 @@ public class MongoDBTracing {
 
 ---
 
-**文档状态**: ✅ 完成  
-**MongoDB版本**: 4.0+  
+**文档状态**: ✅ 完成
+**MongoDB版本**: 4.0+
 **适用场景**: 文档存储、内容管理、实时分析、IoT
 
 **关键特性**:

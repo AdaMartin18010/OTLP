@@ -1,6 +1,6 @@
 # Apache Pulsar语义约定详解
 
-> **下一代消息队列**: Apache Pulsar Tracing与Metrics完整规范  
+> **下一代消息队列**: Apache Pulsar Tracing与Metrics完整规范
 > **最后更新**: 2025年10月8日
 
 ---
@@ -355,7 +355,7 @@ package main
 
 import (
     "context"
-    
+
     "github.com/apache/pulsar-client-go/pulsar"
     "go.opentelemetry.io/otel"
     "go.opentelemetry.io/otel/attribute"
@@ -370,7 +370,7 @@ func ProduceWithTracing(
     payload []byte,
 ) error {
     tracer := otel.Tracer("pulsar-producer")
-    
+
     // 创建Producer Span
     ctx, span := tracer.Start(ctx, "pulsar.publish",
         trace.WithSpanKind(trace.SpanKindProducer),
@@ -382,25 +382,25 @@ func ProduceWithTracing(
         ),
     )
     defer span.End()
-    
+
     // 解析Topic名称
     topicName := producer.Topic()
     span.SetAttributes(
         attribute.String("messaging.pulsar.topic", parseTopic(topicName)),
     )
-    
+
     // 创建消息Properties
     properties := make(map[string]string)
-    
+
     // 注入Trace Context
     injectTraceContext(ctx, properties)
-    
+
     // 构建消息
     msg := &pulsar.ProducerMessage{
         Payload:    payload,
         Properties: properties,
     }
-    
+
     // 发送消息
     msgID, err := producer.Send(ctx, msg)
     if err != nil {
@@ -408,12 +408,12 @@ func ProduceWithTracing(
         span.SetStatus(codes.Error, "send failed")
         return err
     }
-    
+
     // 记录消息ID
     span.SetAttributes(
         attribute.String("messaging.message.id", msgID.String()),
     )
-    
+
     span.SetStatus(codes.Ok, "sent")
     return nil
 }
@@ -425,19 +425,19 @@ func ProduceAsyncWithTracing(
     payload []byte,
 ) {
     tracer := otel.Tracer("pulsar-producer")
-    
+
     ctx, span := tracer.Start(ctx, "pulsar.publish.async",
         trace.WithSpanKind(trace.SpanKindProducer),
     )
-    
+
     properties := make(map[string]string)
     injectTraceContext(ctx, properties)
-    
+
     msg := &pulsar.ProducerMessage{
         Payload:    payload,
         Properties: properties,
     }
-    
+
     // 异步发送
     producer.SendAsync(ctx, msg, func(
         id pulsar.MessageID,
@@ -467,17 +467,17 @@ func ConsumeWithTracing(
     handler func(context.Context, pulsar.Message) error,
 ) error {
     tracer := otel.Tracer("pulsar-consumer")
-    
+
     for {
         // 接收消息
         msg, err := consumer.Receive(ctx)
         if err != nil {
             return err
         }
-        
+
         // 提取Trace Context
         msgCtx := extractTraceContext(msg.Properties())
-        
+
         // 创建Consumer Span
         msgCtx, span := tracer.Start(msgCtx, "pulsar.receive",
             trace.WithSpanKind(trace.SpanKindConsumer),
@@ -486,33 +486,33 @@ func ConsumeWithTracing(
                 semconv.MessagingDestinationNameKey.String(msg.Topic()),
                 semconv.MessagingOperationKey.String("receive"),
                 attribute.String("messaging.message.id", msg.ID().String()),
-                attribute.String("messaging.pulsar.subscription.name", 
+                attribute.String("messaging.pulsar.subscription.name",
                     consumer.Subscription()),
-                attribute.Int("messaging.message.body.size", 
+                attribute.Int("messaging.message.body.size",
                     len(msg.Payload())),
-                attribute.Int("messaging.pulsar.message.redelivery_count", 
+                attribute.Int("messaging.pulsar.message.redelivery_count",
                     int(msg.RedeliveryCount())),
-                attribute.Int64("messaging.pulsar.message.publish_time", 
+                attribute.Int64("messaging.pulsar.message.publish_time",
                     msg.PublishTime().UnixMilli()),
             ),
         )
-        
+
         // 处理消息
         err = handler(msgCtx, msg)
-        
+
         if err != nil {
             span.RecordError(err)
             span.SetStatus(codes.Error, "handler failed")
-            
+
             // Nack消息
             consumer.Nack(msg)
         } else {
             span.SetStatus(codes.Ok, "processed")
-            
+
             // Ack消息
             consumer.Ack(msg)
         }
-        
+
         span.End()
     }
 }
@@ -524,44 +524,44 @@ func ConsumeBatchWithTracing(
     handler func(context.Context, []pulsar.Message) error,
 ) error {
     tracer := otel.Tracer("pulsar-consumer")
-    
+
     for {
         // 批量接收
         messages, err := consumer.ReceiveWithTimeout(ctx, 5*time.Second)
         if err != nil {
             continue
         }
-        
+
         // 创建batch span
         ctx, span := tracer.Start(ctx, "pulsar.receive.batch",
             trace.WithSpanKind(trace.SpanKindConsumer),
             trace.WithAttributes(
                 semconv.MessagingSystemKey.String("pulsar"),
-                attribute.Int("messaging.batch.message_count", 
+                attribute.Int("messaging.batch.message_count",
                     len(messages)),
             ),
         )
-        
+
         // 处理消息
         err = handler(ctx, messages)
-        
+
         if err != nil {
             span.RecordError(err)
             span.SetStatus(codes.Error, "handler failed")
-            
+
             // Nack所有消息
             for _, msg := range messages {
                 consumer.Nack(msg)
             }
         } else {
             span.SetStatus(codes.Ok, "processed")
-            
+
             // Ack所有消息
             for _, msg := range messages {
                 consumer.Ack(msg)
             }
         }
-        
+
         span.End()
     }
 }
@@ -577,17 +577,17 @@ func ReadWithTracing(
     handler func(context.Context, pulsar.Message) error,
 ) error {
     tracer := otel.Tracer("pulsar-reader")
-    
+
     for reader.HasNext() {
         // 读取消息
         msg, err := reader.Next(ctx)
         if err != nil {
             return err
         }
-        
+
         // 提取trace context
         msgCtx := extractTraceContext(msg.Properties())
-        
+
         // 创建span
         msgCtx, span := tracer.Start(msgCtx, "pulsar.read",
             trace.WithSpanKind(trace.SpanKindConsumer),
@@ -598,20 +598,20 @@ func ReadWithTracing(
                 attribute.String("messaging.message.id", msg.ID().String()),
             ),
         )
-        
+
         // 处理消息
         err = handler(msgCtx, msg)
-        
+
         if err != nil {
             span.RecordError(err)
             span.SetStatus(codes.Error, "handler failed")
         } else {
             span.SetStatus(codes.Ok, "processed")
         }
-        
+
         span.End()
     }
-    
+
     return nil
 }
 ```
@@ -629,15 +629,15 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapSetter;
 
 public class PulsarProducerTracing {
-    
-    private static final Tracer tracer = 
+
+    private static final Tracer tracer =
         openTelemetry.getTracer("pulsar-producer");
-    
+
     public void produceWithTracing(
         Producer<byte[]> producer,
         byte[] payload
     ) throws PulsarClientException {
-        
+
         // 创建span
         Span span = tracer.spanBuilder("pulsar.publish")
             .setSpanKind(SpanKind.PRODUCER)
@@ -646,12 +646,12 @@ public class PulsarProducerTracing {
             .setAttribute("messaging.operation", "publish")
             .setAttribute("messaging.message.body.size", payload.length)
             .startSpan();
-        
+
         try (Scope scope = span.makeCurrent()) {
             // 创建消息
             TypedMessageBuilder<byte[]> msgBuilder = producer.newMessage()
                 .value(payload);
-            
+
             // 注入trace context
             Context.current().propagate(new TextMapSetter<TypedMessageBuilder<?>>() {
                 @Override
@@ -659,14 +659,14 @@ public class PulsarProducerTracing {
                     carrier.property(key, value);
                 }
             });
-            
+
             // 发送消息
             MessageId msgId = msgBuilder.send();
-            
+
             // 记录消息ID
             span.setAttribute("messaging.message.id", msgId.toString());
             span.setStatus(StatusCode.OK);
-            
+
         } catch (Exception e) {
             span.recordException(e);
             span.setStatus(StatusCode.ERROR, "send failed");
@@ -675,7 +675,7 @@ public class PulsarProducerTracing {
             span.end();
         }
     }
-    
+
     // 异步发送
     public void produceAsyncWithTracing(
         Producer<byte[]> producer,
@@ -684,14 +684,14 @@ public class PulsarProducerTracing {
         Span span = tracer.spanBuilder("pulsar.publish.async")
             .setSpanKind(SpanKind.PRODUCER)
             .startSpan();
-        
+
         try (Scope scope = span.makeCurrent()) {
             TypedMessageBuilder<byte[]> msgBuilder = producer.newMessage()
                 .value(payload);
-            
+
             // 注入trace context到properties
             injectContext(Context.current(), msgBuilder);
-            
+
             // 异步发送
             msgBuilder.sendAsync()
                 .thenAccept(msgId -> {
@@ -714,22 +714,22 @@ public class PulsarProducerTracing {
 
 ```java
 public class PulsarConsumerTracing {
-    
-    private static final Tracer tracer = 
+
+    private static final Tracer tracer =
         openTelemetry.getTracer("pulsar-consumer");
-    
+
     public void consumeWithTracing(
         Consumer<byte[]> consumer,
         MessageHandler handler
     ) throws PulsarClientException {
-        
+
         while (true) {
             // 接收消息
             Message<byte[]> msg = consumer.receive();
-            
+
             // 提取trace context
             Context extractedContext = extractContext(msg.getProperties());
-            
+
             // 创建span
             Span span = tracer.spanBuilder("pulsar.receive")
                 .setParent(extractedContext)
@@ -738,28 +738,28 @@ public class PulsarConsumerTracing {
                 .setAttribute("messaging.destination.name", msg.getTopicName())
                 .setAttribute("messaging.operation", "receive")
                 .setAttribute("messaging.message.id", msg.getMessageId().toString())
-                .setAttribute("messaging.pulsar.subscription.name", 
+                .setAttribute("messaging.pulsar.subscription.name",
                     consumer.getSubscription())
                 .setAttribute("messaging.message.body.size", msg.getData().length)
-                .setAttribute("messaging.pulsar.message.redelivery_count", 
+                .setAttribute("messaging.pulsar.message.redelivery_count",
                     msg.getRedeliveryCount())
                 .startSpan();
-            
+
             try (Scope scope = span.makeCurrent()) {
                 // 处理消息
                 handler.handle(msg);
-                
+
                 // ACK
                 consumer.acknowledge(msg);
                 span.setStatus(StatusCode.OK);
-                
+
             } catch (Exception e) {
                 span.recordException(e);
                 span.setStatus(StatusCode.ERROR, "handler failed");
-                
+
                 // Negative ACK
                 consumer.negativeAcknowledge(msg);
-                
+
             } finally {
                 span.end();
             }
@@ -800,18 +800,18 @@ def produce_with_tracing(
         # 注入trace context
         properties = {}
         propagate.inject(properties)
-        
+
         try:
             # 发送消息
             msg_id = producer.send(
                 payload,
                 properties=properties
             )
-            
+
             # 记录消息ID
             span.set_attribute("messaging.message.id", str(msg_id))
             span.set_status(Status(StatusCode.OK))
-            
+
         except Exception as e:
             span.record_exception(e)
             span.set_status(Status(StatusCode.ERROR))
@@ -826,10 +826,10 @@ def produce_async_with_tracing(
         "pulsar.publish.async",
         kind=SpanKind.PRODUCER
     )
-    
+
     properties = {}
     propagate.inject(properties)
-    
+
     def callback(res, msg_id):
         if res == pulsar.Result.Ok:
             span.set_attribute("messaging.message.id", str(msg_id))
@@ -837,7 +837,7 @@ def produce_async_with_tracing(
         else:
             span.set_status(Status(StatusCode.ERROR))
         span.end()
-    
+
     producer.send_async(
         payload,
         callback=callback,
@@ -856,11 +856,11 @@ def consume_with_tracing(
     while True:
         # 接收消息
         msg = consumer.receive()
-        
+
         # 提取trace context
         properties = msg.properties() or {}
         ctx = propagate.extract(properties)
-        
+
         # 创建span
         with tracer.start_as_current_span(
             "pulsar.receive",
@@ -879,15 +879,15 @@ def consume_with_tracing(
             try:
                 # 处理消息
                 handler(msg.data())
-                
+
                 # ACK
                 consumer.acknowledge(msg)
                 span.set_status(Status(StatusCode.OK))
-                
+
             except Exception as e:
                 span.record_exception(e)
                 span.set_status(Status(StatusCode.ERROR))
-                
+
                 # Negative ACK
                 consumer.negative_acknowledge(msg)
 ```
@@ -996,7 +996,7 @@ pulsar-admin namespaces set-clusters \
 追踪属性:
 span.SetAttributes(
     attribute.String("messaging.pulsar.cluster", "us-east"),
-    attribute.StringSlice("messaging.pulsar.replication.clusters", 
+    attribute.StringSlice("messaging.pulsar.replication.clusters",
         []string{"us-east", "eu-west", "asia-pac"}),
 )
 
@@ -1149,8 +1149,8 @@ consumer := client.Subscribe(pulsar.ConsumerOptions{
 
 ---
 
-**文档状态**: ✅ 完成  
-**Pulsar版本**: v3.0+  
+**文档状态**: ✅ 完成
+**Pulsar版本**: v3.0+
 **适用场景**: 大规模消息系统、多租户平台、云原生架构
 
 **关键特性**:

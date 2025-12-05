@@ -1,9 +1,9 @@
 # AgentSight：AI驱动的智能可观测性平台（2025）
 
-> **概念来源**: 2025年AIOps领域新兴趋势  
-> **技术基础**: LLM + 知识图谱 + 因果推理  
-> **成熟度**: 研究/早期商业化阶段  
-> **重要性**: ⭐⭐⭐⭐⭐ 颠覆性技术  
+> **概念来源**: 2025年AIOps领域新兴趋势
+> **技术基础**: LLM + 知识图谱 + 因果推理
+> **成熟度**: 研究/早期商业化阶段
+> **重要性**: ⭐⭐⭐⭐⭐ 颠覆性技术
 > **适用场景**: 大规模分布式系统、SRE自动化
 
 ---
@@ -182,7 +182,7 @@ class TimeSeriesAnomalyDetector:
     """
     时序异常检测器
     """
-    
+
     def __init__(self, metric_name: str):
         self.metric_name = metric_name
         self.model = Prophet(
@@ -191,11 +191,11 @@ class TimeSeriesAnomalyDetector:
             interval_width=0.95
         )
         self.baseline_std = None
-    
+
     def fit(self, df: pd.DataFrame):
         """
         训练模型
-        
+
         Args:
             df: DataFrame with columns ['ds', 'y']
                 ds: timestamp
@@ -203,42 +203,42 @@ class TimeSeriesAnomalyDetector:
         """
         # 拟合Prophet模型
         self.model.fit(df)
-        
+
         # 计算历史残差标准差
         forecast = self.model.predict(df)
         residuals = df['y'] - forecast['yhat']
         self.baseline_std = residuals.std()
-    
+
     def detect(self, df: pd.DataFrame, sensitivity: float = 3.0) -> pd.DataFrame:
         """
         检测异常点
-        
+
         Args:
             df: 待检测数据
             sensitivity: 敏感度（标准差倍数）
-        
+
         Returns:
             DataFrame with anomaly flags
         """
         forecast = self.model.predict(df)
-        
+
         # 计算偏差
         df['forecast'] = forecast['yhat']
         df['lower_bound'] = forecast['yhat_lower']
         df['upper_bound'] = forecast['yhat_upper']
-        
+
         # 判断异常（超出预测区间 + 标准差阈值）
         df['anomaly'] = (
-            (df['y'] > df['upper_bound']) & 
+            (df['y'] > df['upper_bound']) &
             (abs(df['y'] - df['forecast']) > sensitivity * self.baseline_std)
         ) | (
-            (df['y'] < df['lower_bound']) & 
+            (df['y'] < df['lower_bound']) &
             (abs(df['y'] - df['forecast']) > sensitivity * self.baseline_std)
         )
-        
+
         # 计算异常分数
         df['anomaly_score'] = abs(df['y'] - df['forecast']) / self.baseline_std
-        
+
         return df[df['anomaly']]
 
 # 使用示例
@@ -275,12 +275,12 @@ class LogAnomalyDetector:
     """
     基于LLM Embedding的日志异常检测
     """
-    
+
     def __init__(self, openai_api_key: str):
         self.client = OpenAI(api_key=openai_api_key)
         self.model = IsolationForest(contamination=0.05, random_state=42)
         self.baseline_embeddings = []
-    
+
     def get_embedding(self, text: str) -> np.ndarray:
         """获取文本embedding"""
         response = self.client.embeddings.create(
@@ -288,47 +288,47 @@ class LogAnomalyDetector:
             input=text
         )
         return np.array(response.data[0].embedding)
-    
+
     def fit(self, normal_logs: list[str]):
         """
         训练模型
-        
+
         Args:
             normal_logs: 正常日志样本
         """
         print(f"训练中：处理{len(normal_logs)}条正常日志...")
-        
+
         # 获取正常日志的embeddings
         self.baseline_embeddings = [
             self.get_embedding(log) for log in normal_logs
         ]
-        
+
         # 训练Isolation Forest
         X = np.array(self.baseline_embeddings)
         self.model.fit(X)
-        
+
         print("训练完成！")
-    
+
     def detect(self, logs: list[str]) -> list[dict]:
         """
         检测异常日志
-        
+
         Args:
             logs: 待检测日志
-        
+
         Returns:
             异常日志列表
         """
         anomalies = []
-        
+
         for i, log in enumerate(logs):
             # 获取embedding
             embedding = self.get_embedding(log)
-            
+
             # 预测（-1表示异常）
             prediction = self.model.predict([embedding])[0]
             anomaly_score = -self.model.score_samples([embedding])[0]
-            
+
             if prediction == -1:
                 anomalies.append({
                     'index': i,
@@ -336,35 +336,35 @@ class LogAnomalyDetector:
                     'score': anomaly_score,
                     'reason': self._explain_anomaly(log, embedding)
                 })
-        
+
         return anomalies
-    
+
     def _explain_anomaly(self, log: str, embedding: np.ndarray) -> str:
         """使用LLM解释异常"""
         # 找到最相似的正常日志
         similarities = [
-            np.dot(embedding, baseline_emb) / 
+            np.dot(embedding, baseline_emb) /
             (np.linalg.norm(embedding) * np.linalg.norm(baseline_emb))
             for baseline_emb in self.baseline_embeddings
         ]
         max_similarity = max(similarities)
-        
+
         # 使用LLM分析
         prompt = f"""
         这条日志被检测为异常（与正常日志最高相似度: {max_similarity:.2f}）:
-        
+
         {log}
-        
+
         请分析为什么这是一条异常日志，可能的原因是什么？
         要求：简洁（1-2句话），突出关键异常特征。
         """
-        
+
         response = self.client.chat.completions.create(
             model="gpt-4",
             messages=[{"role": "user", "content": prompt}],
             max_tokens=100
         )
-        
+
         return response.choices[0].message.content
 
 # 使用示例
@@ -410,15 +410,15 @@ class CausalRootCauseAnalyzer:
     """
     基于因果推理的根因分析器
     """
-    
+
     def __init__(self):
         self.causal_graph = None
         self.model = None
-    
+
     def build_causal_graph(self, services: list[str], dependencies: list[tuple]):
         """
         构建因果图
-        
+
         Args:
             services: 服务列表
             dependencies: 依赖关系 [(service_a, service_b), ...]
@@ -428,44 +428,44 @@ class CausalRootCauseAnalyzer:
         self.causal_graph = nx.DiGraph()
         self.causal_graph.add_nodes_from(services)
         self.causal_graph.add_edges_from(dependencies)
-        
+
         print(f"因果图构建完成：{len(services)}个服务，{len(dependencies)}条依赖")
-    
+
     def analyze(
-        self, 
+        self,
         metrics_df: pd.DataFrame,
         target_service: str,
         metric_name: str = 'latency'
     ) -> dict:
         """
         执行根因分析
-        
+
         Args:
             metrics_df: 指标数据，列名为服务名，值为指标值
             target_service: 目标服务（出现问题的服务）
             metric_name: 分析的指标名称
-        
+
         Returns:
             根因分析结果
         """
         # 识别潜在根因服务（上游依赖）
         upstream_services = list(self.causal_graph.predecessors(target_service))
-        
+
         if not upstream_services:
             return {
                 'root_cause': target_service,
                 'confidence': 1.0,
                 'reason': '该服务无上游依赖，自身即为根因'
             }
-        
+
         # 构建DoWhy因果模型
         graph_str = "digraph{" + "; ".join([
-            f"{u} -> {v}" 
+            f"{u} -> {v}"
             for u, v in self.causal_graph.edges()
         ]) + "}"
-        
+
         results = []
-        
+
         for upstream in upstream_services:
             # 定义因果模型
             model = CausalModel(
@@ -474,23 +474,23 @@ class CausalRootCauseAnalyzer:
                 outcome=target_service,  # 结果变量（效果）
                 graph=graph_str
             )
-            
+
             # 识别因果效应
             identified_estimand = model.identify_effect()
-            
+
             # 估计因果效应
             causal_estimate = model.estimate_effect(
                 identified_estimand,
                 method_name="backdoor.linear_regression"
             )
-            
+
             # 反事实分析（如果upstream服务正常，target会怎样？）
             refutation = model.refute_estimate(
                 identified_estimand,
                 causal_estimate,
                 method_name="placebo_treatment_refuter"
             )
-            
+
             results.append({
                 'upstream_service': upstream,
                 'causal_effect': causal_estimate.value,
@@ -499,10 +499,10 @@ class CausalRootCauseAnalyzer:
                     upstream, target_service, causal_estimate.value
                 )
             })
-        
+
         # 按因果效应强度排序
         results.sort(key=lambda x: abs(x['causal_effect']), reverse=True)
-        
+
         return {
             'root_cause': results[0]['upstream_service'],
             'confidence': results[0]['confidence'],
@@ -510,11 +510,11 @@ class CausalRootCauseAnalyzer:
             'interpretation': results[0]['interpretation'],
             'all_candidates': results
         }
-    
+
     def _interpret_effect(
-        self, 
-        cause: str, 
-        effect: str, 
+        self,
+        cause: str,
+        effect: str,
         effect_value: float
     ) -> str:
         """解释因果效应"""
@@ -576,7 +576,7 @@ class LLMRootCauseAgent:
     """
     基于LLM的智能根因分析Agent
     """
-    
+
     def __init__(self, openai_api_key: str):
         self.client = OpenAI(api_key=openai_api_key)
         self.system_prompt = """
@@ -597,7 +597,7 @@ class LLMRootCauseAgent:
             "remediation": ["修复步骤1", "修复步骤2", ...]
         }
         """
-    
+
     def analyze(
         self,
         traces: list[dict],
@@ -607,19 +607,19 @@ class LLMRootCauseAgent:
     ) -> dict:
         """
         执行根因分析
-        
+
         Args:
             traces: OTLP traces数据
             metrics: 相关指标
             logs: 相关日志
             alert: 告警信息
-        
+
         Returns:
             根因分析结果
         """
         # 构建上下文
         context = self._build_context(traces, metrics, logs, alert)
-        
+
         # 调用LLM进行分析
         response = self.client.chat.completions.create(
             model="gpt-4-turbo",
@@ -630,10 +630,10 @@ class LLMRootCauseAgent:
             response_format={"type": "json_object"},
             temperature=0.3
         )
-        
+
         result = json.loads(response.choices[0].message.content)
         return result
-    
+
     def _build_context(
         self,
         traces: list[dict],
@@ -644,15 +644,15 @@ class LLMRootCauseAgent:
         """构建分析上下文"""
         # 提取关键trace信息
         trace_summary = self._summarize_traces(traces)
-        
+
         # 格式化metrics
         metrics_str = "\n".join([
             f"- {key}: {value}" for key, value in metrics.items()
         ])
-        
+
         # 选择最相关的日志（最后10条）
         log_str = "\n".join(logs[-10:])
-        
+
         context = f"""
         ## 告警信息
         {alert}
@@ -670,23 +670,23 @@ class LLMRootCauseAgent:
 
         请分析根本原因并提供修复建议。
         """
-        
+
         return context
-    
+
     def _summarize_traces(self, traces: list[dict]) -> str:
         """总结trace数据"""
         if not traces:
             return "无trace数据"
-        
+
         # 计算统计信息
         total_traces = len(traces)
         error_traces = sum(1 for t in traces if t.get('status') == 'ERROR')
-        
+
         # 分析延迟分布
         latencies = [t['duration_ms'] for t in traces]
         avg_latency = np.mean(latencies)
         p95_latency = np.percentile(latencies, 95)
-        
+
         # 识别慢span
         slow_spans = []
         for trace in traces:
@@ -697,7 +697,7 @@ class LLMRootCauseAgent:
                         'operation': span['operation'],
                         'duration': span['duration_ms']
                     })
-        
+
         summary = f"""
         - 总追踪数: {total_traces}
         - 错误追踪: {error_traces} ({error_traces/total_traces*100:.1f}%)
@@ -705,12 +705,12 @@ class LLMRootCauseAgent:
         - P95延迟: {p95_latency:.1f}ms
         - 慢span (>1s): {len(slow_spans)}个
         """
-        
+
         if slow_spans:
             summary += "\n\n慢span详情:\n"
             for span in slow_spans[:5]:  # 只展示前5个
                 summary += f"- {span['service']}.{span['operation']}: {span['duration']:.0f}ms\n"
-        
+
         return summary
 
 # 使用示例
@@ -775,11 +775,11 @@ class RemediationKnowledgeBase:
     """
     修复知识库
     """
-    
+
     def __init__(self):
         self.rules = []
         self._load_rules()
-    
+
     def _load_rules(self):
         """加载修复规则"""
         self.rules = [
@@ -847,29 +847,29 @@ class RemediationKnowledgeBase:
                 ]
             }
         ]
-    
+
     def query(self, root_cause: str, context: dict) -> List[Dict]:
         """
         查询修复策略
-        
+
         Args:
             root_cause: 根本原因描述
             context: 上下文信息（服务名、指标等）
-        
+
         Returns:
             修复策略列表
         """
         matched_rules = []
-        
+
         for rule in self.rules:
             if re.search(rule['pattern'], root_cause, re.IGNORECASE):
                 matched_rules.append(rule)
-        
+
         if not matched_rules:
             return [self._generate_generic_remediation(root_cause, context)]
-        
+
         return matched_rules
-    
+
     def _generate_generic_remediation(self, root_cause: str, context: dict) -> Dict:
         """生成通用修复策略（LLM生成）"""
         # 这里可以调用LLM生成修复建议
@@ -891,11 +891,11 @@ class AutoRemediationEngine:
     """
     自动修复引擎
     """
-    
+
     def __init__(self, knowledge_base: RemediationKnowledgeBase):
         self.kb = knowledge_base
         self.executor = RemediationExecutor()
-    
+
     def remediate(
         self,
         root_cause: str,
@@ -904,32 +904,32 @@ class AutoRemediationEngine:
     ) -> dict:
         """
         执行修复
-        
+
         Args:
             root_cause: 根本原因
             context: 上下文
             auto_execute: 是否自动执行（低风险操作）
-        
+
         Returns:
             修复结果
         """
         # 查询修复策略
         strategies = self.kb.query(root_cause, context)
-        
+
         if not strategies:
             return {
                 'status': 'no_strategy_found',
                 'message': '未找到匹配的修复策略'
             }
-        
+
         # 选择最佳策略（第一个匹配的）
         strategy = strategies[0]
-        
+
         results = []
-        
+
         for action_spec in strategy['remediation']:
             risk = action_spec['risk']
-            
+
             # 根据风险等级决定执行方式
             if risk == 'low' and auto_execute:
                 # 自动执行低风险操作
@@ -950,7 +950,7 @@ class AutoRemediationEngine:
                     'reason': f'需要人工确认（风险等级：{risk}）',
                     'approval_url': f'/approval/{action_spec["action"]}'
                 })
-        
+
         return {
             'status': 'remediation_planned',
             'strategy': strategy,
@@ -961,7 +961,7 @@ class RemediationExecutor:
     """
     修复执行器（集成Kubernetes API等）
     """
-    
+
     def execute(self, action: str, params: dict) -> dict:
         """执行修复动作"""
         if action == 'scale_connection_pool':
@@ -974,24 +974,24 @@ class RemediationExecutor:
             return self._trigger_gc(params)
         else:
             return {'success': False, 'error': f'Unknown action: {action}'}
-    
+
     def _scale_connection_pool(self, params: dict) -> dict:
         """扩容连接池"""
         # 实际实现会调用数据库API或修改配置
         print(f"[执行] 扩容连接池: {params}")
         return {'success': True, 'new_size': params['max_size']}
-    
+
     def _scale_replicas(self, params: dict) -> dict:
         """扩容副本"""
         # 实际实现会调用Kubernetes API
         print(f"[执行] 扩容副本: {params}")
         return {'success': True, 'replicas': params['replicas']}
-    
+
     def _restart_service(self, params: dict) -> dict:
         """重启服务"""
         print(f"[执行] 重启服务: {params}")
         return {'success': True, 'service': params['service']}
-    
+
     def _trigger_gc(self, params: dict) -> dict:
         """触发垃圾回收"""
         print(f"[执行] 触发GC")
@@ -1210,9 +1210,9 @@ AgentSight成本:
 
 ---
 
-**文档版本**: v1.0  
-**最后更新**: 2025-10-18  
-**状态**: 研究阶段，部分功能商业化  
+**文档版本**: v1.0
+**最后更新**: 2025-10-18
+**状态**: 研究阶段，部分功能商业化
 **反馈**: [待添加]
 
 ---

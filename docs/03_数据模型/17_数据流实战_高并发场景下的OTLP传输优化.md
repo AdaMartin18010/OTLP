@@ -1,8 +1,8 @@
 # OTLP数据流实战：高并发场景下的传输优化
 
-> **OTLP版本**: v1.0.0 (Stable)  
-> **最后更新**: 2025年10月11日  
-> **实战目标**: 百万级QPS下的OTLP传输优化  
+> **OTLP版本**: v1.0.0 (Stable)
+> **最后更新**: 2025年10月11日
+> **实战目标**: 百万级QPS下的OTLP传输优化
 > **文档状态**: ✅ 完成
 
 ---
@@ -198,22 +198,22 @@ import (
     "context"
     "sync"
     "time"
-    
+
     "go.opentelemetry.io/otel/trace"
 )
 
 // Tail-based采样器
 type TailBasedSampler struct {
     sampleRate float64
-    
+
     // 采样决策缓存
     decisions map[trace.TraceID]bool
     mu       sync.RWMutex
-    
+
     // 采样窗口
     windowSize time.Duration
     window     map[trace.TraceID]*TraceInfo
-    
+
     // 清理协程
     stopCh chan struct{}
     wg     sync.WaitGroup
@@ -235,18 +235,18 @@ func NewTailBasedSampler(sampleRate float64) *TailBasedSampler {
         window:     make(map[trace.TraceID]*TraceInfo),
         stopCh:     make(chan struct{}),
     }
-    
+
     // 启动清理协程
     sampler.wg.Add(1)
     go sampler.cleanup()
-    
+
     return sampler
 }
 
 // 采样决策
 func (s *TailBasedSampler) ShouldSample(params trace.SamplingParameters) trace.SamplingResult {
     traceID := params.TraceID
-    
+
     // 检查缓存
     s.mu.RLock()
     if decision, exists := s.decisions[traceID]; exists {
@@ -254,7 +254,7 @@ func (s *TailBasedSampler) ShouldSample(params trace.SamplingParameters) trace.S
         return trace.SamplingResult{Decision: trace.RecordAndSample}
     }
     s.mu.RUnlock()
-    
+
     // 添加到采样窗口
     s.mu.Lock()
     s.window[traceID] = &TraceInfo{
@@ -263,7 +263,7 @@ func (s *TailBasedSampler) ShouldSample(params trace.SamplingParameters) trace.S
         Spans:     []trace.ReadOnlySpan{},
     }
     s.mu.Unlock()
-    
+
     // 默认采样
     return trace.SamplingResult{Decision: trace.RecordAndSample}
 }
@@ -272,38 +272,38 @@ func (s *TailBasedSampler) ShouldSample(params trace.SamplingParameters) trace.S
 func (s *TailBasedSampler) OnTraceComplete(traceID trace.TraceID, spans []trace.ReadOnlySpan) {
     s.mu.Lock()
     defer s.mu.Unlock()
-    
+
     info, exists := s.window[traceID]
     if !exists {
         return
     }
-    
+
     info.Spans = spans
-    
+
     // 计算错误率和持续时间
     errorCount := 0
     var maxDuration time.Duration
-    
+
     for _, span := range spans {
         if span.Status().Code == trace.StatusCodeError {
             errorCount++
         }
-        
+
         duration := span.EndTime().Sub(span.StartTime())
         if duration > maxDuration {
             maxDuration = duration
         }
     }
-    
+
     info.ErrorCount = errorCount
     info.Duration = maxDuration
-    
+
     // 采样决策
     shouldSample := s.decideSampling(info)
-    
+
     // 缓存决策
     s.decisions[traceID] = shouldSample
-    
+
     // 从窗口移除
     delete(s.window, traceID)
 }
@@ -314,12 +314,12 @@ func (s *TailBasedSampler) decideSampling(info *TraceInfo) bool {
     if info.ErrorCount > 0 {
         return true
     }
-    
+
     // 慢Trace 100%采样
     if info.Duration > 1*time.Second {
         return true
     }
-    
+
     // 其他Trace按采样率采样
     return s.sampleRate > 0.01
 }
@@ -327,18 +327,18 @@ func (s *TailBasedSampler) decideSampling(info *TraceInfo) bool {
 // 清理过期决策
 func (s *TailBasedSampler) cleanup() {
     defer s.wg.Done()
-    
+
     ticker := time.NewTicker(1 * time.Minute)
     defer ticker.Stop()
-    
+
     for {
         select {
         case <-s.stopCh:
             return
-            
+
         case <-ticker.C:
             s.mu.Lock()
-            
+
             // 清理过期决策
             now := time.Now()
             for traceID, info := range s.window {
@@ -346,7 +346,7 @@ func (s *TailBasedSampler) cleanup() {
                     delete(s.window, traceID)
                 }
             }
-            
+
             s.mu.Unlock()
         }
     }
@@ -370,24 +370,24 @@ import (
     "context"
     "sync"
     "time"
-    
+
     "go.opentelemetry.io/otel/sdk/trace"
 )
 
 // 自适应批量处理器
 type AdaptiveBatchProcessor struct {
     exporter trace.SpanExporter
-    
+
     // 动态参数
     batchSize    int
     batchTimeout time.Duration
-    
+
     // 性能指标
     metrics *BatchMetrics
-    
+
     batch      []trace.ReadOnlySpan
     batchMutex sync.Mutex
-    
+
     stopCh chan struct{}
     wg     sync.WaitGroup
 }
@@ -408,20 +408,20 @@ func NewAdaptiveBatchProcessor(exporter trace.SpanExporter) *AdaptiveBatchProces
         metrics:      &BatchMetrics{},
         stopCh:       make(chan struct{}),
     }
-    
+
     bsp.wg.Add(1)
     go bsp.processBatches()
-    
+
     return bsp
 }
 
 func (bsp *AdaptiveBatchProcessor) OnEnd(s trace.ReadOnlySpan) {
     bsp.batchMutex.Lock()
     bsp.batch = append(bsp.batch, s)
-    
+
     shouldExport := len(bsp.batch) >= bsp.batchSize
     bsp.batchMutex.Unlock()
-    
+
     if shouldExport {
         bsp.exportBatch()
     }
@@ -429,16 +429,16 @@ func (bsp *AdaptiveBatchProcessor) OnEnd(s trace.ReadOnlySpan) {
 
 func (bsp *AdaptiveBatchProcessor) processBatches() {
     defer bsp.wg.Done()
-    
+
     ticker := time.NewTicker(bsp.batchTimeout)
     defer ticker.Stop()
-    
+
     for {
         select {
         case <-bsp.stopCh:
             bsp.exportBatch()
             return
-            
+
         case <-ticker.C:
             bsp.exportBatch()
         }
@@ -447,36 +447,36 @@ func (bsp *AdaptiveBatchProcessor) processBatches() {
 
 func (bsp *AdaptiveBatchProcessor) exportBatch() {
     start := time.Now()
-    
+
     bsp.batchMutex.Lock()
     if len(bsp.batch) == 0 {
         bsp.batchMutex.Unlock()
         return
     }
-    
+
     batch := bsp.batch
     bsp.batch = make([]trace.ReadOnlySpan, 0, bsp.batchSize)
     bsp.batchMutex.Unlock()
-    
+
     // 导出批次
     ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
     defer cancel()
-    
+
     err := bsp.exporter.ExportSpans(ctx, batch)
-    
+
     // 更新指标
     latency := time.Duration(time.Since(start).Nanoseconds() / int64(len(batch)))
     bsp.metrics.totalBatches++
     bsp.metrics.totalSpans += int64(len(batch))
     bsp.metrics.avgBatchLatency = (bsp.metrics.avgBatchLatency + latency) / 2
     bsp.metrics.avgBatchSize = float64(len(batch))
-    
+
     if err != nil {
         bsp.metrics.errorRate = (bsp.metrics.errorRate + 0.1) / 2
     } else {
         bsp.metrics.errorRate = bsp.metrics.errorRate * 0.9
     }
-    
+
     // 自适应调整
     bsp.adjustBatchSize()
 }
@@ -488,14 +488,14 @@ func (bsp *AdaptiveBatchProcessor) adjustBatchSize() {
     } else if bsp.metrics.avgBatchSize > float64(bsp.batchSize)*0.9 {
         bsp.batchSize = int(float64(bsp.batchSize) * 1.2)
     }
-    
+
     // 根据延迟调整超时时间
     if bsp.metrics.avgBatchLatency > bsp.batchTimeout*2 {
         bsp.batchTimeout = bsp.batchTimeout / 2
     } else if bsp.metrics.avgBatchLatency < bsp.batchTimeout/2 {
         bsp.batchTimeout = bsp.batchTimeout * 2
     }
-    
+
     // 根据错误率调整
     if bsp.metrics.errorRate > 0.1 {
         bsp.batchSize = int(float64(bsp.batchSize) * 0.9)
@@ -512,7 +512,7 @@ package main
 
 import (
     "context"
-    
+
     "github.com/klauspost/compress/zstd"
     "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
     "go.opentelemetry.io/otel/sdk/trace"
@@ -520,16 +520,16 @@ import (
 
 // Zstd压缩配置
 func configureZstdCompression() trace.SpanExporter {
-    encoder, _ := zstd.NewWriter(nil, 
+    encoder, _ := zstd.NewWriter(nil,
         zstd.WithEncoderLevel(zstd.SpeedDefault),
         zstd.WithEncoderConcurrency(4),
     )
-    
+
     exporter := otlptracegrpc.NewUnstarted(
         otlptracegrpc.WithEndpoint("collector:4317"),
         otlptracegrpc.WithCompressor("zstd"),
     )
-    
+
     return exporter
 }
 
@@ -543,18 +543,18 @@ func configureCollector() {
           grpc:
             endpoint: 0.0.0.0:4317
             max_recv_msg_size: 4194304  # 4MB
-    
+
     processors:
       batch:
         timeout: 5s
         send_batch_size: 4096
         send_batch_max_size: 8192
-    
+
     exporters:
       otlp:
         endpoint: storage:4317
         compression: zstd
-    
+
     service:
       pipelines:
         traces:
@@ -710,6 +710,6 @@ func configureCollector() {
 
 ---
 
-**最后更新**: 2025年10月11日  
-**维护者**: OTLP深度梳理团队  
+**最后更新**: 2025年10月11日
+**维护者**: OTLP深度梳理团队
 **版本**: 1.0.0

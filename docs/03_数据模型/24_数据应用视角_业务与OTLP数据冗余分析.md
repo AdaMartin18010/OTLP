@@ -1,8 +1,8 @@
 # OTLP数据应用视角：业务与OTLP数据冗余分析
 
-> **文档类型**: 数据模型深度分析  
-> **分析维度**: 数据应用视角 - 业务与OTLP数据冗余  
-> **创建日期**: 2025年10月11日  
+> **文档类型**: 数据模型深度分析
+> **分析维度**: 数据应用视角 - 业务与OTLP数据冗余
+> **创建日期**: 2025年10月11日
 > **文档状态**: ✅ 完成
 
 ---
@@ -143,13 +143,13 @@ func createOrderSpan(ctx context.Context, order Order) trace.Span {
             attribute.Float64("order.amount", order.Amount),
             attribute.String("order.status", order.Status),
             attribute.String("order.created_at", order.CreatedAt.Format(time.RFC3339)),
-            
+
             // 语义约定字段
             attribute.String("service.name", "order-service"),
             attribute.String("service.version", "1.0.0"),
         ),
     )
-    
+
     return span
 }
 
@@ -166,13 +166,13 @@ func createPaymentSpan(ctx context.Context, payment Payment) trace.Span {
             attribute.String("payment.method", payment.Method),
             attribute.String("payment.status", payment.Status),
             attribute.String("payment.created_at", payment.CreatedAt.Format(time.RFC3339)),
-            
+
             // 语义约定字段
             attribute.String("service.name", "payment-service"),
             attribute.String("service.version", "2.0.0"),
         ),
     )
-    
+
     return span
 }
 ```
@@ -257,16 +257,16 @@ func createOrderSpanWithReference(ctx context.Context, orderID string) trace.Spa
         trace.WithAttributes(
             // 只存储引用ID
             attribute.String("order.id", orderID),
-            
+
             // 不存储其他业务字段
             // 通过order.id关联查询业务数据
-            
+
             // 语义约定字段
             attribute.String("service.name", "order-service"),
             attribute.String("service.version", "1.0.0"),
         ),
     )
-    
+
     return span
 }
 
@@ -280,13 +280,13 @@ func queryOrderData(ctx context.Context, span trace.Span) (*Order, error) {
             break
         }
     }
-    
+
     // 通过order.id查询业务数据
     order, err := getOrderByID(ctx, orderID)
     if err != nil {
         return nil, err
     }
-    
+
     return order, nil
 }
 ```
@@ -310,7 +310,7 @@ func compressBusinessData(order Order) ([]byte, error) {
     if err != nil {
         return nil, err
     }
-    
+
     // 压缩
     var buf bytes.Buffer
     writer := gzip.NewWriter(&buf)
@@ -320,7 +320,7 @@ func compressBusinessData(order Order) ([]byte, error) {
     if err := writer.Close(); err != nil {
         return nil, err
     }
-    
+
     return buf.Bytes(), nil
 }
 
@@ -332,18 +332,18 @@ func decompressBusinessData(data []byte) (*Order, error) {
         return nil, err
     }
     defer reader.Close()
-    
+
     var buf bytes.Buffer
     if _, err := buf.ReadFrom(reader); err != nil {
         return nil, err
     }
-    
+
     // 反序列化
     var order Order
     if err := json.Unmarshal(buf.Bytes(), &order); err != nil {
         return nil, err
     }
-    
+
     return &order, nil
 }
 ```
@@ -362,16 +362,16 @@ import (
 // 创建索引
 func createIndex(span trace.Span) map[string]string {
     index := make(map[string]string)
-    
+
     for _, attr := range span.Attributes() {
         // 只索引关键字段
-        if attr.Key == "order.id" || 
-           attr.Key == "user.id" || 
+        if attr.Key == "order.id" ||
+           attr.Key == "user.id" ||
            attr.Key == "payment.id" {
             index[string(attr.Key)] = attr.Value.AsString()
         }
     }
-    
+
     return index
 }
 
@@ -379,13 +379,13 @@ func createIndex(span trace.Span) map[string]string {
 func queryByIndex(ctx context.Context, index map[string]string) ([]trace.Span, error) {
     // 使用索引快速定位
     orderID := index["order.id"]
-    
+
     // 查询相关Span
     spans, err := querySpansByOrderID(ctx, orderID)
     if err != nil {
         return nil, err
     }
-    
+
     return spans, nil
 }
 ```
@@ -411,28 +411,28 @@ func correlateBusinessAndOTLP(ctx context.Context, orderID string) (*CorrelatedD
     if err != nil {
         return nil, err
     }
-    
+
     payment, err := getPaymentByOrderID(ctx, orderID)
     if err != nil {
         return nil, err
     }
-    
+
     // 查询OTLP数据
     spans, err := querySpansByOrderID(ctx, orderID)
     if err != nil {
         return nil, err
     }
-    
+
     metrics, err := queryMetricsByOrderID(ctx, orderID)
     if err != nil {
         return nil, err
     }
-    
+
     logs, err := queryLogsByOrderID(ctx, orderID)
     if err != nil {
         return nil, err
     }
-    
+
     return &CorrelatedData{
         Order:   order,
         Payment: payment,
@@ -468,23 +468,23 @@ func aggregateBusinessAndOTLP(ctx context.Context, orderID string) (*AggregatedD
     if err != nil {
         return nil, err
     }
-    
+
     // 聚合分析
     aggregated := &AggregatedData{
         OrderID: orderID,
-        
+
         // 业务指标
         TotalAmount:     correlated.Order.Amount,
         PaymentMethod:   correlated.Payment.Method,
         OrderStatus:     correlated.Order.Status,
-        
+
         // OTLP指标
         TotalSpans:      len(correlated.Spans),
         AvgSpanDuration: calculateAvgSpanDuration(correlated.Spans),
         ErrorCount:      countErrors(correlated.Spans),
         LogCount:        len(correlated.Logs),
     }
-    
+
     return aggregated, nil
 }
 
@@ -503,12 +503,12 @@ func calculateAvgSpanDuration(spans []trace.Span) time.Duration {
     if len(spans) == 0 {
         return 0
     }
-    
+
     total := time.Duration(0)
     for _, span := range spans {
         total += span.EndTime().Sub(span.StartTime())
     }
-    
+
     return total / time.Duration(len(spans))
 }
 
@@ -540,13 +540,13 @@ func createUnifiedView(ctx context.Context, orderID string) (*UnifiedView, error
     if err != nil {
         return nil, err
     }
-    
+
     // 聚合数据
     aggregated, err := aggregateBusinessAndOTLP(ctx, orderID)
     if err != nil {
         return nil, err
     }
-    
+
     return &UnifiedView{
         Order:      correlated.Order,
         Payment:    correlated.Payment,
@@ -596,13 +596,13 @@ func createOrderSpanBefore(ctx context.Context, order Order) trace.Span {
             attribute.String("order.status", order.Status),
             attribute.String("order.created_at", order.CreatedAt.Format(time.RFC3339)),
             attribute.String("order.updated_at", order.UpdatedAt.Format(time.RFC3339)),
-            
+
             // 语义约定字段
             attribute.String("service.name", "order-service"),
             attribute.String("service.version", "1.0.0"),
         ),
     )
-    
+
     return span
 }
 
@@ -614,13 +614,13 @@ func createOrderSpanAfter(ctx context.Context, orderID string) trace.Span {
         trace.WithAttributes(
             // 只存储引用ID
             attribute.String("order.id", orderID),
-            
+
             // 语义约定字段
             attribute.String("service.name", "order-service"),
             attribute.String("service.version", "1.0.0"),
         ),
     )
-    
+
     return span
 }
 ```
@@ -642,19 +642,19 @@ func analyzePaymentSystem(ctx context.Context, paymentID string) (*PaymentAnalys
     if err != nil {
         return nil, err
     }
-    
+
     // 聚合分析
     aggregated, err := aggregateBusinessAndOTLP(ctx, paymentID)
     if err != nil {
         return nil, err
     }
-    
+
     // 创建统一视图
     unified, err := createUnifiedView(ctx, paymentID)
     if err != nil {
         return nil, err
     }
-    
+
     return &PaymentAnalysis{
         Correlated: correlated,
         Aggregated: aggregated,
@@ -708,6 +708,6 @@ type PaymentAnalysis struct {
 
 ---
 
-**最后更新**: 2025年10月11日  
-**文档版本**: 1.0.0  
+**最后更新**: 2025年10月11日
+**文档版本**: 1.0.0
 **维护者**: OTLP深度梳理团队

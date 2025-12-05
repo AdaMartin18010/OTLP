@@ -1,7 +1,7 @@
 # Metrics 子类型详解
 
-> **标准版本**: v1.27.0  
-> **状态**: Stable  
+> **标准版本**: v1.27.0
+> **状态**: Stable
 > **最后更新**: 2025年10月8日
 
 ---
@@ -132,14 +132,14 @@ import (
 
 func main() {
     meter := otel.Meter("example")
-    
+
     // 创建Counter
     requestCounter, _ := meter.Int64Counter(
         "http.server.requests",
         metric.WithDescription("Total HTTP requests"),
         metric.WithUnit("{request}"),
     )
-    
+
     // 使用Counter
     ctx := context.Background()
     requestCounter.Add(ctx, 1,
@@ -647,28 +647,28 @@ type WebMetrics struct {
 
 func NewWebMetrics() *WebMetrics {
     meter := otel.Meter("web-server")
-    
+
     // Counter: 请求总数
     requestCounter, _ := meter.Int64Counter(
         "http.server.requests",
         metric.WithDescription("Total HTTP requests"),
         metric.WithUnit("{request}"),
     )
-    
+
     // UpDownCounter: 当前活跃请求
     activeRequests, _ := meter.Int64UpDownCounter(
         "http.server.active_requests",
         metric.WithDescription("Currently active requests"),
         metric.WithUnit("{request}"),
     )
-    
+
     // Histogram: 请求延迟
     requestDuration, _ := meter.Float64Histogram(
         "http.server.duration",
         metric.WithDescription("HTTP request duration"),
         metric.WithUnit("ms"),
     )
-    
+
     // Gauge: 内存使用
     memoryUsage, _ := meter.Int64ObservableGauge(
         "process.memory.usage",
@@ -681,7 +681,7 @@ func NewWebMetrics() *WebMetrics {
             return nil
         }),
     )
-    
+
     return &WebMetrics{
         requestCounter:  requestCounter,
         activeRequests:  activeRequests,
@@ -694,21 +694,21 @@ func (m *WebMetrics) HandleRequest(ctx context.Context, method, route string) {
     // 增加活跃请求
     m.activeRequests.Add(ctx, 1)
     defer m.activeRequests.Add(ctx, -1)
-    
+
     // 记录请求总数
     attrs := metric.WithAttributes(
         attribute.String("method", method),
         attribute.String("route", route),
     )
     m.requestCounter.Add(ctx, 1, attrs)
-    
+
     // 测量延迟
     startTime := time.Now()
     defer func() {
         duration := float64(time.Since(startTime).Milliseconds())
         m.requestDuration.Record(ctx, duration, attrs)
     }()
-    
+
     // 处理请求逻辑...
 }
 ```
@@ -723,28 +723,28 @@ class DatabasePoolMetrics:
     def __init__(self, pool):
         self.pool = pool
         meter = metrics.get_meter(__name__)
-        
+
         # Counter: 连接创建总数
         self.connections_created = meter.create_counter(
             name="db.connections.created",
             description="Total database connections created",
             unit="{connection}"
         )
-        
+
         # Counter: 连接错误总数
         self.connection_errors = meter.create_counter(
             name="db.connections.errors",
             description="Total connection errors",
             unit="{error}"
         )
-        
+
         # UpDownCounter: 活跃连接
         self.active_connections = meter.create_up_down_counter(
             name="db.connections.active",
             description="Currently active connections",
             unit="{connection}"
         )
-        
+
         # Gauge: 连接池使用率
         self.pool_usage = meter.create_observable_gauge(
             name="db.pool.usage",
@@ -752,40 +752,40 @@ class DatabasePoolMetrics:
             description="Connection pool usage percentage",
             unit="%"
         )
-        
+
         # Histogram: 连接获取时间
         self.acquire_duration = meter.create_histogram(
             name="db.connections.acquire.duration",
             description="Time to acquire connection",
             unit="ms"
         )
-    
+
     def _observe_pool_usage(self, observer):
         """观察连接池使用率"""
         usage = (self.pool.size() / self.pool.maxsize) * 100
         observer.observe(usage, {
             "pool": self.pool.name
         })
-    
+
     def acquire_connection(self):
         """获取连接"""
         start_time = time.time()
-        
+
         try:
             # 获取连接
             conn = self.pool.get_connection()
-            
+
             # 记录指标
             duration = (time.time() - start_time) * 1000
             self.acquire_duration.record(duration)
             self.active_connections.add(1)
             self.connections_created.add(1)
-            
+
             return conn
         except Exception as e:
             self.connection_errors.add(1)
             raise
-    
+
     def release_connection(self, conn):
         """释放连接"""
         self.pool.return_connection(conn)
@@ -804,7 +804,7 @@ public class ApiMetrics {
     private final LongUpDownCounter activeRequests;
     private final DoubleHistogram requestDuration;
     private final ObservableDoubleGauge errorRate;
-    
+
     public ApiMetrics(Meter meter) {
         // Counter: API调用总数
         this.requestCounter = meter
@@ -812,21 +812,21 @@ public class ApiMetrics {
             .setDescription("Total API requests")
             .setUnit("{request}")
             .build();
-        
+
         // UpDownCounter: 活跃请求
         this.activeRequests = meter
             .upDownCounterBuilder("api.active_requests")
             .setDescription("Currently active API requests")
             .setUnit("{request}")
             .build();
-        
+
         // Histogram: 请求延迟
         this.requestDuration = meter
             .histogramBuilder("api.duration")
             .setDescription("API request duration")
             .setUnit("ms")
             .build();
-        
+
         // Gauge: 错误率
         this.errorRate = meter
             .gaugeBuilder("api.error_rate")
@@ -837,27 +837,27 @@ public class ApiMetrics {
                 measurement.record(rate);
             });
     }
-    
+
     public void recordRequest(String endpoint, String method, long durationMs, boolean success) {
         Attributes attrs = Attributes.of(
             AttributeKey.stringKey("endpoint"), endpoint,
             AttributeKey.stringKey("method"), method,
             AttributeKey.stringKey("status"), success ? "success" : "error"
         );
-        
+
         // 记录所有指标
         requestCounter.add(1, attrs);
         requestDuration.record(durationMs, attrs);
     }
-    
+
     public void startRequest() {
         activeRequests.add(1);
     }
-    
+
     public void endRequest() {
         activeRequests.add(-1);
     }
-    
+
     private double calculateErrorRate() {
         // 计算错误率逻辑
         return 0.0;
@@ -888,7 +888,7 @@ public class ApiMetrics {
 
 ---
 
-**文档维护**: OTLP深度梳理项目组  
-**最后更新**: 2025年10月8日  
-**文档版本**: v1.0  
+**文档维护**: OTLP深度梳理项目组
+**最后更新**: 2025年10月8日
+**文档版本**: v1.0
 **质量等级**: ⭐⭐⭐⭐⭐

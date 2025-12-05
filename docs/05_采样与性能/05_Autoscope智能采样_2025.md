@@ -1,9 +1,9 @@
 # Autoscope：智能追踪采样技术（2025年最新）
 
-> **论文来源**: arXiv:2509.13852  
-> **发表时间**: 2025年9月  
-> **研究机构**: [待补充]  
-> **技术成熟度**: 研究阶段  
+> **论文来源**: arXiv:2509.13852
+> **发表时间**: 2025年9月
+> **研究机构**: [待补充]
+> **技术成熟度**: 研究阶段
 > **重要性**: ⭐⭐⭐⭐⭐ 极高
 
 ---
@@ -124,30 +124,30 @@ class AutoscopeAnalyzer:
     """
     Autoscope静态代码分析器
     """
-    
+
     def __init__(self, source_code: str):
         self.tree = ast.parse(source_code)
         self.call_graph = {}
         self.span_importance = {}
-    
+
     def analyze(self) -> Dict[str, float]:
         """
         分析代码并生成span重要性评分
-        
+
         Returns:
             {span_name: importance_score}
         """
         # Step 1: 构建调用图
         self.build_call_graph()
-        
+
         # Step 2: 识别关键路径
         self.identify_critical_paths()
-        
+
         # Step 3: 计算重要性评分
         self.calculate_importance_scores()
-        
+
         return self.span_importance
-    
+
     def build_call_graph(self):
         """构建函数调用图"""
         for node in ast.walk(self.tree):
@@ -155,7 +155,7 @@ class AutoscopeAnalyzer:
                 func_name = node.name
                 calls = self._extract_function_calls(node)
                 self.call_graph[func_name] = calls
-    
+
     def _extract_function_calls(self, func_node: ast.FunctionDef) -> List[str]:
         """提取函数内的所有调用"""
         calls = []
@@ -166,19 +166,19 @@ class AutoscopeAnalyzer:
                 elif isinstance(node.func, ast.Attribute):
                     calls.append(node.func.attr)
         return calls
-    
+
     def identify_critical_paths(self):
         """识别关键执行路径"""
         for func_name, func_node in self._get_all_functions():
             # 检查错误处理
             has_try_except = self._has_exception_handling(func_node)
-            
+
             # 检查外部调用
             has_external_calls = self._has_external_calls(func_node)
-            
+
             # 检查复杂逻辑
             complexity = self._calculate_complexity(func_node)
-            
+
             # 初始化重要性评分
             self.span_importance[func_name] = {
                 'error_handling': has_try_except,
@@ -186,36 +186,36 @@ class AutoscopeAnalyzer:
                 'complexity': complexity,
                 'score': 0.0
             }
-    
+
     def calculate_importance_scores(self):
         """计算最终重要性评分（0.0-1.0）"""
         for func_name, info in self.span_importance.items():
             score = 0.0
-            
+
             # 错误处理路径：最高优先级
             if info['error_handling']:
                 score += 0.5
-            
+
             # 外部调用：高优先级
             if info['external_calls']:
                 score += 0.3
-            
+
             # 复杂度：中优先级
             if info['complexity'] > 5:
                 score += 0.2
             elif info['complexity'] > 2:
                 score += 0.1
-            
+
             # 归一化到[0,1]
             info['score'] = min(1.0, score)
-    
+
     def _has_exception_handling(self, func_node: ast.FunctionDef) -> bool:
         """检查是否有异常处理"""
         for node in ast.walk(func_node):
             if isinstance(node, (ast.Try, ast.Raise)):
                 return True
         return False
-    
+
     def _has_external_calls(self, func_node: ast.FunctionDef) -> bool:
         """检查是否有外部系统调用"""
         external_keywords = [
@@ -223,18 +223,18 @@ class AutoscopeAnalyzer:
             'http', 'request', 'fetch', 'api',
             'redis', 'cache', 'get', 'set'
         ]
-        
+
         for node in ast.walk(func_node):
             if isinstance(node, ast.Call):
                 call_str = ast.unparse(node).lower()
                 if any(kw in call_str for kw in external_keywords):
                     return True
         return False
-    
+
     def _calculate_complexity(self, func_node: ast.FunctionDef) -> int:
         """计算圈复杂度"""
         complexity = 1  # 基础路径
-        
+
         for node in ast.walk(func_node):
             # 分支语句增加复杂度
             if isinstance(node, (ast.If, ast.While, ast.For, ast.ExceptHandler)):
@@ -242,22 +242,22 @@ class AutoscopeAnalyzer:
             # 布尔运算符增加复杂度
             elif isinstance(node, ast.BoolOp):
                 complexity += len(node.values) - 1
-        
+
         return complexity
-    
+
     def _get_all_functions(self):
         """获取所有函数定义"""
         for node in ast.walk(self.tree):
             if isinstance(node, ast.FunctionDef):
                 yield node.name, node
-    
+
     def generate_sampling_config(self, threshold: float = 0.3) -> Dict:
         """
         生成采样配置
-        
+
         Args:
             threshold: 重要性阈值（高于此值的span被采样）
-        
+
         Returns:
             采样配置字典
         """
@@ -266,7 +266,7 @@ class AutoscopeAnalyzer:
             'threshold': threshold,
             'spans': {}
         }
-        
+
         for func_name, info in self.span_importance.items():
             if info['score'] >= threshold:
                 config['spans'][func_name] = {
@@ -279,9 +279,9 @@ class AutoscopeAnalyzer:
                     'sample': False,
                     'priority': info['score']
                 }
-        
+
         return config
-    
+
     def _get_reason(self, info: Dict) -> str:
         """生成采样原因说明"""
         reasons = []
@@ -300,14 +300,14 @@ def handle_user_request(user_id):
     try:
         # 高重要性：外部数据库调用
         user = db.query_user(user_id)
-        
+
         if user.is_premium():
             # 中重要性：复杂业务逻辑
             result = process_premium_user(user)
         else:
             # 低重要性：简单快速路径
             result = process_normal_user(user)
-        
+
         return result
     except DatabaseError as e:
         # 高重要性：错误处理
@@ -385,20 +385,20 @@ class AutoscopeSampler(Sampler):
     """
     Autoscope运行时采样器
     """
-    
+
     def __init__(self, config_path: str):
         """
         初始化采样器
-        
+
         Args:
             config_path: 静态分析生成的配置文件路径
         """
         with open(config_path, 'r') as f:
             self.config = json.load(f)
-        
+
         self.spans = self.config['spans']
         self.threshold = self.config['threshold']
-    
+
     def should_sample(
         self,
         parent_context,
@@ -411,17 +411,17 @@ class AutoscopeSampler(Sampler):
     ) -> SamplingResult:
         """
         采样决策
-        
+
         Args:
             name: span名称（通常是函数名或操作名）
-        
+
         Returns:
             SamplingResult: 采样决策结果
         """
         # 检查配置中的span
         if name in self.spans:
             span_config = self.spans[name]
-            
+
             if span_config['sample']:
                 # 高优先级span：采样
                 return SamplingResult(
@@ -440,10 +440,10 @@ class AutoscopeSampler(Sampler):
                         'autoscope.reason': 'low_priority'
                     }
                 )
-        
+
         # 未知span：使用默认策略（采样）
         return SamplingResult(Decision.RECORD_AND_SAMPLE)
-    
+
     def get_description(self) -> str:
         return f"AutoscopeSampler(threshold={self.threshold})"
 
@@ -457,12 +457,12 @@ tracer = trace.get_tracer(__name__)
 # 高优先级span会被采样
 with tracer.start_as_current_span("handle_user_request"):
     # ... 业务逻辑 ...
-    
+
     # 高优先级span会被采样
     with tracer.start_as_current_span("process_premium_user"):
         # ... 业务逻辑 ...
         pass
-    
+
     # 低优先级span会被丢弃
     with tracer.start_as_current_span("process_normal_user"):
         # ... 业务逻辑 ...
@@ -687,9 +687,9 @@ cron: 0 2 * * 0 /scripts/analyze_and_deploy.sh
 ```python
 from prometheus_client import Counter, Histogram
 
-sampled_spans = Counter('autoscope_sampled_spans_total', 
+sampled_spans = Counter('autoscope_sampled_spans_total',
                        'Total sampled spans')
-dropped_spans = Counter('autoscope_dropped_spans_total', 
+dropped_spans = Counter('autoscope_dropped_spans_total',
                        'Total dropped spans')
 sampling_decision_time = Histogram('autoscope_decision_seconds',
                                   'Sampling decision time')
@@ -699,15 +699,15 @@ sampling_decision_time = Histogram('autoscope_decision_seconds',
 
 ```python
 class AutoscopeSamplerWithErrorOverride(AutoscopeSampler):
-    def should_sample(self, parent_context, trace_id, name, 
+    def should_sample(self, parent_context, trace_id, name,
                      kind=None, attributes=None, **kwargs):
         # 强制采样错误span
         if attributes and attributes.get('error', False):
             return SamplingResult(Decision.RECORD_AND_SAMPLE,
                                 attributes={'autoscope.reason': 'error'})
-        
+
         # 否则使用默认逻辑
-        return super().should_sample(parent_context, trace_id, name, 
+        return super().should_sample(parent_context, trace_id, name,
                                     kind, attributes, **kwargs)
 ```
 
@@ -757,9 +757,9 @@ class AutoscopeSamplerWithErrorOverride(AutoscopeSampler):
 
 ---
 
-**文档版本**: v1.0  
-**最后更新**: 2025-10-18  
-**状态**: 研究阶段，生产使用需等待成熟实现  
+**文档版本**: v1.0
+**最后更新**: 2025-10-18
+**状态**: 研究阶段，生产使用需等待成熟实现
 **反馈**: [GitHub Issues待添加]
 
 ---

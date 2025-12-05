@@ -1,9 +1,9 @@
 # OTLP Rust 代码示例补充
 
-> **文档编号**: 35  
-> **创建日期**: 2025年10月11日  
-> **文档类型**: Rust代码示例补充  
-> **文档状态**: ✅ 完成  
+> **文档编号**: 35
+> **创建日期**: 2025年10月11日
+> **文档类型**: Rust代码示例补充
+> **文档状态**: ✅ 完成
 > **内容规模**: 1,500+ 行
 
 ---
@@ -40,16 +40,16 @@ use opentelemetry::KeyValue;
 
 fn create_span(name: &str) {
     let tracer = global::tracer("example-service");
-    
+
     let mut span = tracer.start(name);
-    
+
     // 添加属性
     span.set_attribute(KeyValue::new("http.method", "GET"));
     span.set_attribute(KeyValue::new("http.status_code", 200));
-    
+
     // 执行业务逻辑
     std::thread::sleep(std::time::Duration::from_millis(100));
-    
+
     span.end();
 }
 
@@ -66,23 +66,23 @@ use opentelemetry::global;
 
 fn parent_span() {
     let tracer = global::tracer("example-service");
-    
+
     let mut parent = tracer.start("parent-operation");
-    
+
     // 创建子Span
     child_span();
-    
+
     parent.end();
 }
 
 fn child_span() {
     let tracer = global::tracer("example-service");
-    
+
     let mut child = tracer.start("child-operation");
-    
+
     // 执行业务逻辑
     std::thread::sleep(std::time::Duration::from_millis(50));
-    
+
     child.end();
 }
 
@@ -100,14 +100,14 @@ use opentelemetry::trace::Status;
 
 fn operation_with_error() -> Result<(), Box<dyn std::error::Error>> {
     let tracer = global::tracer("example-service");
-    
+
     let mut span = tracer.start("operation-with-error");
-    
+
     let result = std::panic::catch_unwind(|| {
         // 模拟错误
         panic!("something went wrong");
     });
-    
+
     match result {
         Ok(_) => {
             span.set_attribute(KeyValue::new("success", true));
@@ -143,12 +143,12 @@ use opentelemetry::KeyValue;
 
 fn create_counter() {
     let mut meter = global::meter("example-service");
-    
+
     let counter = meter
         .u64_counter("http_requests_total")
         .with_description("Total number of HTTP requests")
         .init();
-    
+
     // 增加计数
     counter.add(
         1,
@@ -174,12 +174,12 @@ use opentelemetry::KeyValue;
 
 fn create_histogram() {
     let mut meter = global::meter("example-service");
-    
+
     let histogram = meter
         .u64_histogram("http_request_duration_ms")
         .with_description("HTTP request duration in milliseconds")
         .init();
-    
+
     // 记录值
     histogram.record(
         150,
@@ -205,23 +205,23 @@ use opentelemetry::KeyValue;
 
 fn create_gauge() {
     let mut meter = global::meter("example-service");
-    
+
     let gauge = meter
         .u64_observable_gauge("memory_usage_bytes")
         .with_description("Memory usage in bytes")
         .init();
-    
+
     // 注册回调
     meter.register_callback(&[Box::new(gauge)], |observer| {
         let memory_usage = get_memory_usage();
-        
+
         observer.observe_u64(
             &gauge,
             memory_usage,
             &[KeyValue::new("type", "heap")],
         );
     });
-    
+
     println!("Gauge registered");
 }
 
@@ -248,7 +248,7 @@ use opentelemetry::KeyValue;
 
 fn create_log() {
     let logger = global::logger("example-service");
-    
+
     logger.emit(opentelemetry::logs::LogRecord {
         body: Some("User logged in".into()),
         severity_number: Some(opentelemetry::logs::Severity::Info),
@@ -280,16 +280,16 @@ use tokio;
 
 async fn async_operation() -> Result<String, Box<dyn std::error::Error>> {
     let tracer = global::tracer("example-service");
-    
+
     let mut span = tracer.start("async-operation");
-    
+
     // 异步操作
     let result = tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
-    
+
     span.set_attribute(KeyValue::new("async.duration_ms", 100));
     span.set_status(opentelemetry::trace::Status::Ok);
     span.end();
-    
+
     Ok("success".to_string())
 }
 
@@ -315,16 +315,16 @@ use opentelemetry_sdk::export::trace::stdout;
 
 fn setup_batch_exporter() {
     let exporter = stdout::new_pretty();
-    
+
     let batch_processor = BatchSpanProcessor::builder(exporter, tokio::spawn)
         .with_max_queue_size(2048)
         .with_scheduled_delay(std::time::Duration::from_secs(5))
         .build();
-    
+
     let _tracer_provider = SdkTracerProvider::builder()
         .with_span_processor(batch_processor)
         .build();
-    
+
     println!("Batch exporter configured");
 }
 
@@ -406,6 +406,6 @@ Rust支持核心要点:
 
 ---
 
-**最后更新**: 2025年10月11日  
-**维护者**: OTLP深度梳理团队  
+**最后更新**: 2025年10月11日
+**维护者**: OTLP深度梳理团队
 **版本**: 1.0.0

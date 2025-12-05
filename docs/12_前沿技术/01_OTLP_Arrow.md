@@ -1,14 +1,14 @@
 # OTLP Arrow: 高性能列式编码
 
-> **规范版本**: v0.21.0 (Experimental)  
+> **规范版本**: v0.21.0 (Experimental)
 > **最后更新**: 2025年10月8日
 
 ---
 
-## 目录
+## 📋 目录
 
 - [OTLP Arrow: 高性能列式编码](#otlp-arrow-高性能列式编码)
-  - [目录](#目录)
+  - [📋 目录](#-目录)
   - [1. 概述](#1-概述)
     - [1.1 为什么需要OTLP Arrow](#11-为什么需要otlp-arrow)
     - [1.2 性能对比](#12-性能对比)
@@ -478,7 +478,7 @@ Arrow Stream Protocol:
 
 gRPC实现:
 service ArrowTraceService {
-  rpc Export(stream ExportArrowTraceRequest) 
+  rpc Export(stream ExportArrowTraceRequest)
     returns (ExportArrowTraceResponse);
 }
 
@@ -513,7 +513,7 @@ import (
 // Span转Arrow RecordBatch
 func SpansToArrow(spans []*Span) arrow.Record {
     pool := memory.NewGoAllocator()
-    
+
     // 定义Schema
     schema := arrow.NewSchema(
         []arrow.Field{
@@ -525,17 +525,17 @@ func SpansToArrow(spans []*Span) arrow.Record {
         },
         nil,
     )
-    
+
     // 构建列数据
     builder := array.NewRecordBuilder(pool, schema)
     defer builder.Release()
-    
+
     traceIDBuilder := builder.Field(0).(*array.FixedSizeBinaryBuilder)
     spanIDBuilder := builder.Field(1).(*array.FixedSizeBinaryBuilder)
     nameBuilder := builder.Field(2).(*array.StringBuilder)
     startBuilder := builder.Field(3).(*array.Int64Builder)
     endBuilder := builder.Field(4).(*array.Int64Builder)
-    
+
     for _, span := range spans {
         traceIDBuilder.Append(span.TraceID)
         spanIDBuilder.Append(span.SpanID)
@@ -543,7 +543,7 @@ func SpansToArrow(spans []*Span) arrow.Record {
         startBuilder.Append(span.StartTime)
         endBuilder.Append(span.EndTime)
     }
-    
+
     record := builder.NewRecord()
     return record
 }
@@ -551,17 +551,17 @@ func SpansToArrow(spans []*Span) arrow.Record {
 // 序列化为Arrow IPC
 func SerializeArrow(record arrow.Record) ([]byte, error) {
     var buf bytes.Buffer
-    writer := ipc.NewWriter(&buf, 
+    writer := ipc.NewWriter(&buf,
         ipc.WithSchema(record.Schema()),
         ipc.WithAllocator(memory.NewGoAllocator()),
     )
     defer writer.Close()
-    
+
     err := writer.Write(record)
     if err != nil {
         return nil, err
     }
-    
+
     return buf.Bytes(), nil
 }
 
@@ -572,11 +572,11 @@ func DeserializeArrow(data []byte) (arrow.Record, error) {
         return nil, err
     }
     defer reader.Release()
-    
+
     if !reader.Next() {
         return nil, fmt.Errorf("no record in stream")
     }
-    
+
     record := reader.Record()
     record.Retain()  // 增加引用计数
     return record, nil
@@ -591,18 +591,18 @@ func (e *ArrowExporter) ExportSpans(ctx context.Context, spans []*Span) error {
     // 转换为Arrow
     record := SpansToArrow(spans)
     defer record.Release()
-    
+
     // 序列化
     data, err := SerializeArrow(record)
     if err != nil {
         return err
     }
-    
+
     // gRPC发送
     _, err = e.client.Export(ctx, &ExportArrowTraceRequest{
         ArrowPayload: data,
     })
-    
+
     return err
 }
 ```
@@ -615,7 +615,7 @@ import pyarrow.ipc as ipc
 
 def spans_to_arrow(spans):
     """Convert Spans to Arrow RecordBatch"""
-    
+
     # Define schema
     schema = pa.schema([
         ('trace_id', pa.binary(16)),
@@ -624,20 +624,20 @@ def spans_to_arrow(spans):
         ('start_time', pa.int64()),
         ('end_time', pa.int64()),
     ])
-    
+
     # Build arrays
     trace_ids = pa.array([s.trace_id for s in spans], type=pa.binary(16))
     span_ids = pa.array([s.span_id for s in spans], type=pa.binary(8))
     names = pa.array([s.name for s in spans])
     start_times = pa.array([s.start_time for s in spans])
     end_times = pa.array([s.end_time for s in spans])
-    
+
     # Create RecordBatch
     batch = pa.RecordBatch.from_arrays(
         [trace_ids, span_ids, names, start_times, end_times],
         schema=schema
     )
-    
+
     return batch
 
 def serialize_arrow(batch):
@@ -646,7 +646,7 @@ def serialize_arrow(batch):
     writer = ipc.RecordBatchStreamWriter(sink, batch.schema)
     writer.write_batch(batch)
     writer.close()
-    
+
     return sink.getvalue().to_pybytes()
 
 def deserialize_arrow(data):
@@ -659,14 +659,14 @@ def deserialize_arrow(data):
 class ArrowExporter:
     def __init__(self, client):
         self.client = client
-    
+
     def export_spans(self, spans):
         # Convert to Arrow
         batch = spans_to_arrow(spans)
-        
+
         # Serialize
         data = serialize_arrow(batch)
-        
+
         # Send via gRPC
         self.client.Export(ExportArrowTraceRequest(arrow_payload=data))
 ```
@@ -817,6 +817,6 @@ class ArrowExporter:
 
 ---
 
-**文档状态**: ✅ 完成  
-**规范状态**: 🚧 实验性 (Experimental)  
+**文档状态**: ✅ 完成
+**规范状态**: 🚧 实验性 (Experimental)
 **生产就绪**: 预计2025年中

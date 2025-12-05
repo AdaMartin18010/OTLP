@@ -1,15 +1,15 @@
 # IoT可观测性概述与实践
 
-> **标准版本**: v1.27.0  
-> **状态**: Experimental  
+> **标准版本**: v1.27.0
+> **状态**: Experimental
 > **最后更新**: 2025年10月8日
 
 ---
 
-## 目录
+## 📋 目录
 
 - [IoT可观测性概述与实践](#iot可观测性概述与实践)
-  - [目录](#目录)
+  - [📋 目录](#-目录)
   - [1. 概述](#1-概述)
   - [2. IoT可观测性特点](#2-iot可观测性特点)
     - [2.1 核心挑战](#21-核心挑战)
@@ -127,22 +127,22 @@ otel_tracer_t* tracer = otel_init(&config);
 // 记录设备事件
 void report_sensor_reading(float temperature, float humidity) {
     otel_span_t* span = otel_span_start(tracer, "sensor.reading");
-    
+
     otel_span_set_attribute_double(span, "sensor.temperature", temperature);
     otel_span_set_attribute_double(span, "sensor.humidity", humidity);
     otel_span_set_attribute_string(span, "device.id", get_device_id());
-    
+
     otel_span_end(span);
 }
 
 // 上报设备状态
 void report_device_status() {
     otel_span_t* span = otel_span_start(tracer, "device.status");
-    
+
     otel_span_set_attribute_int(span, "device.battery_level", get_battery_level());
     otel_span_set_attribute_int(span, "device.signal_strength", get_signal_strength());
     otel_span_set_attribute_string(span, "device.firmware_version", FIRMWARE_VERSION);
-    
+
     otel_span_end(span);
 }
 ```
@@ -167,7 +167,7 @@ receivers:
       - devices/+/events
     qos: 1
     client_id: otel-gateway
-  
+
   # OTLP Receiver（边缘设备直接上报）
   otlp:
     protocols:
@@ -179,7 +179,7 @@ processors:
   batch:
     timeout: 30s
     send_batch_size: 1000
-  
+
   # 属性增强
   attributes:
     actions:
@@ -190,7 +190,7 @@ processors:
       - key: gateway.location
         value: ${GATEWAY_LOCATION}
         action: insert
-  
+
   # Resource处理
   resource:
     attributes:
@@ -265,7 +265,7 @@ tracer = trace.get_tracer(__name__)
 class DeviceDataAggregator:
     def __init__(self):
         self.buffer = []
-    
+
     def collect_device_data(self, device_id, sensor_data):
         """收集单个设备数据"""
         self.buffer.append({
@@ -273,26 +273,26 @@ class DeviceDataAggregator:
             "timestamp": time.time(),
             "data": sensor_data
         })
-        
+
         # 批量处理
         if len(self.buffer) >= 100:
             self.flush()
-    
+
     def flush(self):
         """批量上报聚合数据"""
         if not self.buffer:
             return
-        
+
         with tracer.start_as_current_span("edge.aggregate") as span:
             span.set_attribute("device.count", len(self.buffer))
             span.set_attribute("edge.node.id", "edge-001")
-            
+
             # 计算聚合统计
             temperatures = [d["data"]["temperature"] for d in self.buffer]
             span.set_attribute("temperature.avg", sum(temperatures) / len(temperatures))
             span.set_attribute("temperature.min", min(temperatures))
             span.set_attribute("temperature.max", max(temperatures))
-            
+
             # 上报数据
             self.send_to_gateway(self.buffer)
             self.buffer.clear()
@@ -354,7 +354,7 @@ class IoTDevice:
         self.client = mqtt.Client(device_id)
         self.client.connect(mqtt_broker, 1883)
         self.client.loop_start()
-    
+
     def send_telemetry(self, sensor_data):
         """发送遥测数据"""
         payload = {
@@ -363,10 +363,10 @@ class IoTDevice:
             "trace_id": generate_trace_id(),
             "data": sensor_data
         }
-        
+
         topic = f"devices/{self.device_id}/telemetry"
         self.client.publish(topic, json.dumps(payload), qos=1)
-    
+
     def send_event(self, event_type, data):
         """发送设备事件"""
         payload = {
@@ -375,7 +375,7 @@ class IoTDevice:
             "event_type": event_type,
             "data": data
         }
-        
+
         topic = f"devices/{self.device_id}/events"
         self.client.publish(topic, json.dumps(payload), qos=1)
 
@@ -405,19 +405,19 @@ import json
 async def send_coap_telemetry(device_id, sensor_data):
     """通过CoAP发送遥测数据"""
     protocol = await Context.create_client_context()
-    
+
     payload = json.dumps({
         "device_id": device_id,
         "timestamp": time.time(),
         "data": sensor_data
     }).encode('utf-8')
-    
+
     request = Message(
         code=POST,
         uri=f'coap://gateway.local/telemetry',
         payload=payload
     )
-    
+
     response = await protocol.request(request).response
     return response
 ```
@@ -448,7 +448,7 @@ package main
 import (
     "context"
     "time"
-    
+
     "go.opentelemetry.io/otel"
     "go.opentelemetry.io/otel/attribute"
     "go.opentelemetry.io/otel/metric"
@@ -463,12 +463,12 @@ type DeviceMonitor struct {
 
 func NewDeviceMonitor() *DeviceMonitor {
     meter := otel.Meter("iot-gateway")
-    
+
     onlineDevices, _ := meter.Int64UpDownCounter(
         "iot.devices.online",
         metric.WithDescription("Number of online devices"),
     )
-    
+
     return &DeviceMonitor{
         meter:         meter,
         onlineDevices: onlineDevices,
@@ -498,7 +498,7 @@ func (m *DeviceMonitor) ReportBatteryLevel(deviceID string, level float64) {
     tracer := otel.Tracer("iot-gateway")
     _, span := tracer.Start(context.Background(), "device.battery_update")
     defer span.End()
-    
+
     span.SetAttributes(
         attribute.String("device.id", deviceID),
         attribute.Float64("battery.level", level),
@@ -528,20 +528,20 @@ class IndustrialSensorCollector:
     def __init__(self, tracer):
         self.tracer = tracer
         self.readings_buffer = []
-    
+
     def collect_sensor_data(self, sensors: List[str]):
         """批量采集传感器数据"""
         with self.tracer.start_as_current_span("sensors.bulk_read") as span:
             span.set_attribute("sensors.count", len(sensors))
-            
+
             for sensor_id in sensors:
                 reading = self.read_sensor(sensor_id)
                 self.readings_buffer.append(reading)
-            
+
             # 批量上报
             if len(self.readings_buffer) >= 50:
                 self.flush_readings()
-    
+
     def read_sensor(self, sensor_id: str) -> SensorReading:
         """读取单个传感器"""
         # 模拟读取传感器
@@ -553,18 +553,18 @@ class IndustrialSensorCollector:
             timestamp=time.time(),
             quality="good"
         )
-    
+
     def flush_readings(self):
         """批量上报读数"""
         with self.tracer.start_as_current_span("sensors.flush") as span:
             span.set_attribute("readings.count", len(self.readings_buffer))
-            
+
             # 计算统计
             values = [r.value for r in self.readings_buffer]
             span.set_attribute("temperature.avg", sum(values) / len(values))
             span.set_attribute("temperature.min", min(values))
             span.set_attribute("temperature.max", max(values))
-            
+
             # 发送数据
             self.send_to_backend(self.readings_buffer)
             self.readings_buffer.clear()
@@ -577,35 +577,35 @@ class IndustrialSensorCollector:
 ```go
 func TrackDeviceLifecycle(tracer trace.Tracer, deviceID string) {
     ctx := context.Background()
-    
+
     // 设备注册
     RegisterDevice := func() {
         _, span := tracer.Start(ctx, "device.register")
         defer span.End()
-        
+
         span.SetAttributes(
             attribute.String("device.id", deviceID),
             attribute.String("event.type", "register"),
         )
     }
-    
+
     // 固件更新
     FirmwareUpdate := func(oldVersion, newVersion string) {
         _, span := tracer.Start(ctx, "device.firmware_update")
         defer span.End()
-        
+
         span.SetAttributes(
             attribute.String("device.id", deviceID),
             attribute.String("firmware.old_version", oldVersion),
             attribute.String("firmware.new_version", newVersion),
         )
     }
-    
+
     // 设备退役
     DecommissionDevice := func() {
         _, span := tracer.Start(ctx, "device.decommission")
         defer span.End()
-        
+
         span.SetAttributes(
             attribute.String("device.id", deviceID),
             attribute.String("event.type", "decommission"),
@@ -630,7 +630,7 @@ class EdgeGatewayMonitor:
     def __init__(self):
         self.meter = metrics.get_meter(__name__)
         self.setup_metrics()
-    
+
     def setup_metrics(self):
         """设置边缘网关指标"""
         # CPU使用率
@@ -639,29 +639,29 @@ class EdgeGatewayMonitor:
             callbacks=[self._observe_cpu],
             unit="%"
         )
-        
+
         # 内存使用率
         self.meter.create_observable_gauge(
             "edge.gateway.memory.usage",
             callbacks=[self._observe_memory],
             unit="%"
         )
-        
+
         # 设备连接数
         self.meter.create_observable_gauge(
             "edge.gateway.devices.connected",
             callbacks=[self._observe_devices],
             unit="{device}"
         )
-    
+
     def _observe_cpu(self, observer):
         cpu_percent = psutil.cpu_percent()
         observer.observe(cpu_percent)
-    
+
     def _observe_memory(self, observer):
         memory = psutil.virtual_memory()
         observer.observe(memory.percent)
-    
+
     def _observe_devices(self, observer):
         # 从设备管理器获取连接数
         device_count = get_connected_device_count()
@@ -681,23 +681,23 @@ class EdgeDataAggregator:
         self.tracer = tracer
         self.aggregation_window = 60  # 60秒窗口
         self.data_buffer = defaultdict(list)
-    
+
     def add_reading(self, device_id, sensor_type, value):
         """添加传感器读数"""
         self.data_buffer[(device_id, sensor_type)].append({
             'value': value,
             'timestamp': time.time()
         })
-    
+
     def aggregate_and_send(self):
         """聚合并发送数据"""
         with self.tracer.start_as_current_span("edge.aggregate") as span:
             aggregated_count = 0
-            
+
             for (device_id, sensor_type), readings in self.data_buffer.items():
                 if not readings:
                     continue
-                
+
                 # 计算聚合统计
                 values = [r['value'] for r in readings]
                 aggregated = {
@@ -709,14 +709,14 @@ class EdgeDataAggregator:
                     'max': max(values),
                     'stdev': statistics.stdev(values) if len(values) > 1 else 0
                 }
-                
+
                 # 发送聚合数据
                 self.send_aggregated(aggregated)
                 aggregated_count += 1
-            
+
             span.set_attribute("aggregated.device_count", aggregated_count)
             span.set_attribute("total.readings", sum(len(r) for r in self.data_buffer.values()))
-            
+
             # 清空缓冲区
             self.data_buffer.clear()
 ```
@@ -733,7 +733,7 @@ class OfflineDataCache:
     def __init__(self, db_path='/var/cache/iot-telemetry.db'):
         self.conn = sqlite3.connect(db_path)
         self.create_table()
-    
+
     def create_table(self):
         self.conn.execute('''
             CREATE TABLE IF NOT EXISTS telemetry_cache (
@@ -744,7 +744,7 @@ class OfflineDataCache:
             )
         ''')
         self.conn.commit()
-    
+
     def cache_telemetry(self, device_id, telemetry_data):
         """缓存离线遥测数据"""
         data_blob = pickle.dumps(telemetry_data)
@@ -753,19 +753,19 @@ class OfflineDataCache:
             (time.time(), device_id, data_blob)
         )
         self.conn.commit()
-    
+
     def flush_when_online(self, sender_func):
         """网络恢复后发送缓存数据"""
         cursor = self.conn.execute('SELECT id, device_id, data FROM telemetry_cache ORDER BY id')
-        
+
         for row in cursor:
             cache_id, device_id, data_blob = row
             telemetry_data = pickle.loads(data_blob)
-            
+
             try:
                 # 发送数据
                 sender_func(device_id, telemetry_data)
-                
+
                 # 删除已发送的缓存
                 self.conn.execute('DELETE FROM telemetry_cache WHERE id = ?', (cache_id,))
                 self.conn.commit()
@@ -806,11 +806,11 @@ void pack_sensor_data(sensor_data_t* packed, float temp, float humid, int batter
 void send_compressed_data() {
     sensor_data_t data;
     pack_sensor_data(&data, 25.5, 60.0, 85);
-    
+
     // 使用gzip进一步压缩
     uint8_t compressed[sizeof(sensor_data_t) * 2];
     size_t compressed_size = compress_data((uint8_t*)&data, sizeof(data), compressed);
-    
+
     // 发送
     mqtt_publish("devices/data", compressed, compressed_size);
 }
@@ -825,21 +825,21 @@ class AdaptiveSampler:
     def __init__(self):
         self.last_value = None
         self.threshold = 0.5  # 变化阈值
-    
+
     def should_sample(self, new_value):
         """基于变化率决定是否采样"""
         if self.last_value is None:
             self.last_value = new_value
             return True
-        
+
         # 计算变化率
         change_rate = abs(new_value - self.last_value) / self.last_value
-        
+
         # 变化超过阈值时采样
         if change_rate > self.threshold:
             self.last_value = new_value
             return True
-        
+
         return False
 
 # 使用示例
@@ -847,10 +847,10 @@ sampler = AdaptiveSampler()
 
 while True:
     temperature = read_temperature_sensor()
-    
+
     if sampler.should_sample(temperature):
         send_telemetry(temperature)
-    
+
     time.sleep(60)  # 每分钟检查一次
 ```
 
@@ -863,7 +863,7 @@ class PowerAwareCollector:
     def __init__(self):
         self.battery_level = 100
         self.sampling_interval = 60  # 默认60秒
-    
+
     def adjust_for_battery(self):
         """根据电池电量调整采样频率"""
         if self.battery_level > 50:
@@ -872,20 +872,20 @@ class PowerAwareCollector:
             self.sampling_interval = 300  # 5分钟
         else:
             self.sampling_interval = 600  # 10分钟
-    
+
     def collect_data(self):
         """节能数据采集"""
         self.adjust_for_battery()
-        
+
         # 批量采集以减少无线电激活
         readings = []
         for _ in range(10):
             reading = read_sensor()
             readings.append(reading)
-        
+
         # 批量发送
         send_batch(readings)
-        
+
         # 进入深度睡眠
         sleep(self.sampling_interval)
 ```
@@ -909,7 +909,7 @@ class IndustrialSensorGateway:
         self.setup_telemetry()
         self.sensor_monitor = DeviceMonitor()
         self.data_aggregator = EdgeDataAggregator(self.tracer)
-    
+
     def setup_telemetry(self):
         # Tracer配置
         provider = TracerProvider(resource=Resource(attributes={
@@ -917,36 +917,36 @@ class IndustrialSensorGateway:
             "deployment.environment": "factory-floor",
             "gateway.location": "building-a-floor-2"
         }))
-        
+
         provider.add_span_processor(BatchSpanProcessor(
             OTLPSpanExporter(endpoint="http://central-collector:4318/v1/traces")
         ))
-        
+
         trace.set_tracer_provider(provider)
         self.tracer = trace.get_tracer(__name__)
-    
+
     def monitor_production_line(self, line_id):
         """监控生产线传感器"""
         with self.tracer.start_as_current_span(f"production_line.{line_id}") as span:
             # 采集温度传感器
             temp_sensors = [f"temp-{i}" for i in range(1, 11)]
             temperatures = [self.read_sensor(s) for s in temp_sensors]
-            
+
             span.set_attribute("line.id", line_id)
             span.set_attribute("sensors.count", len(temp_sensors))
             span.set_attribute("temperature.avg", sum(temperatures) / len(temperatures))
-            
+
             # 检测异常
             if max(temperatures) > 80:
                 span.add_event("temperature_alert", {
                     "severity": "high",
                     "max_temperature": max(temperatures)
                 })
-            
+
             # 聚合数据
             for sensor_id, temp in zip(temp_sensors, temperatures):
                 self.data_aggregator.add_reading(sensor_id, "temperature", temp)
-            
+
             # 定期上报
             if time.time() % 60 == 0:
                 self.data_aggregator.aggregate_and_send()
@@ -960,19 +960,19 @@ class SmartThermostat:
     def __init__(self, device_id):
         self.device_id = device_id
         self.tracer = trace.get_tracer(__name__)
-    
+
     def adjust_temperature(self, target_temp):
         """调整目标温度"""
         with self.tracer.start_as_current_span("thermostat.adjust") as span:
             span.set_attribute("device.id", self.device_id)
             span.set_attribute("temperature.target", target_temp)
             span.set_attribute("temperature.current", self.get_current_temp())
-            
+
             # 执行温度调整
             self.set_hvac_mode(target_temp)
-            
+
             span.add_event("temperature_adjusted")
-    
+
     def report_status(self):
         """定期上报状态"""
         with self.tracer.start_as_current_span("thermostat.status") as span:
@@ -996,14 +996,14 @@ func (v *VehicleTelemetry) CollectVehicleData() {
     ctx := context.Background()
     _, span := v.tracer.Start(ctx, "vehicle.telemetry")
     defer span.End()
-    
+
     // 收集车辆数据
     speed := v.getSpeed()
     rpm := v.getRPM()
     fuelLevel := v.getFuelLevel()
     engineTemp := v.getEngineTemperature()
     location := v.getGPSLocation()
-    
+
     span.SetAttributes(
         attribute.String("vehicle.id", v.vehicleID),
         attribute.Float64("vehicle.speed", speed),
@@ -1012,7 +1012,7 @@ func (v *VehicleTelemetry) CollectVehicleData() {
         attribute.Float64("vehicle.engine_temp", engineTemp),
         attribute.String("vehicle.location", location.String()),
     )
-    
+
     // 检测异常
     if engineTemp > 100 {
         span.AddEvent("engine_overheat", trace.WithAttributes(
@@ -1039,7 +1039,7 @@ func (v *VehicleTelemetry) CollectVehicleData() {
 
 ---
 
-**文档维护**: OTLP深度梳理项目组  
-**最后更新**: 2025年10月8日  
-**文档版本**: v1.0  
+**文档维护**: OTLP深度梳理项目组
+**最后更新**: 2025年10月8日
+**文档版本**: v1.0
 **质量等级**: ⭐⭐⭐⭐⭐

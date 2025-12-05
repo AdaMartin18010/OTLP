@@ -1,7 +1,7 @@
 # Logs 字段与严重性详解
 
-> **标准版本**: v1.27.0  
-> **状态**: Stable  
+> **标准版本**: v1.27.0
+> **状态**: Stable
 > **最后更新**: 2025年10月8日
 
 ---
@@ -358,26 +358,26 @@ func main() {
     logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
         Level: slog.LevelInfo,
     }))
-    
+
     ctx := context.Background()
-    
+
     // INFO级别日志
     logger.InfoContext(ctx, "Application started",
         slog.String("version", "1.0.0"),
         slog.String("environment", "production"),
     )
-    
+
     // 带Trace关联的日志
     tracer := otel.Tracer("example")
     ctx, span := tracer.Start(ctx, "process-order")
     defer span.End()
-    
+
     logger.InfoContext(ctx, "Processing order",
         slog.String("order.id", "ORD-12345"),
         slog.Float64("order.amount", 99.99),
         slog.String("user.id", "user-123"),
     )
-    
+
     // 错误日志
     err := processPayment()
     if err != nil {
@@ -386,7 +386,7 @@ func main() {
             slog.String("error", err.Error()),
         )
     }
-    
+
     // 警告日志
     logger.WarnContext(ctx, "Rate limit approaching",
         slog.String("user.id", "user-123"),
@@ -431,16 +431,16 @@ def process_order(order_id, user_id, amount):
             "user.id": user_id,
             "order.amount": amount
         })
-        
+
         try:
             # 处理订单
             process_payment(order_id, amount)
-            
+
             logger.info("Order processed successfully", extra={
                 "order.id": order_id,
                 "status": "completed"
             })
-            
+
         except PaymentError as e:
             # 错误日志
             logger.error("Payment failed", extra={
@@ -448,7 +448,7 @@ def process_order(order_id, user_id, amount):
                 "error.type": type(e).__name__,
                 "error.message": str(e)
             }, exc_info=True)
-            
+
         # 警告日志
         if check_inventory_low():
             logger.warning("Inventory running low", extra={
@@ -482,56 +482,56 @@ import org.slf4j.MDC;
 public class OrderService {
     private static final Logger logger = LoggerFactory.getLogger(OrderService.class);
     private final Tracer tracer;
-    
+
     public OrderService(OpenTelemetry openTelemetry) {
         this.tracer = openTelemetry.getTracer("order-service");
     }
-    
+
     public void processOrder(String orderId, String userId, double amount) {
         Span span = tracer.spanBuilder("process-order").startSpan();
-        
+
         try (Scope scope = span.makeCurrent()) {
             // 设置MDC（Mapped Diagnostic Context）
             MDC.put("order.id", orderId);
             MDC.put("user.id", userId);
-            
+
             // INFO日志
             logger.info("Processing order: amount={}", amount);
-            
+
             try {
                 processPayment(orderId, amount);
                 logger.info("Order processed successfully");
-                
+
             } catch (PaymentException e) {
                 // 错误日志
                 logger.error("Payment failed", e);
                 MDC.put("error.type", e.getClass().getName());
             }
-            
+
             // 警告日志
             if (isRateLimitApproaching(userId)) {
                 logger.warn("Rate limit approaching for user: remaining={}",
                     getRemainingRequests(userId));
             }
-            
+
         } finally {
             MDC.clear();
             span.end();
         }
     }
-    
+
     private void processPayment(String orderId, double amount) throws PaymentException {
         // 支付处理逻辑
     }
-    
+
     private boolean isRateLimitApproaching(String userId) {
         return false;
     }
-    
+
     private int getRemainingRequests(String userId) {
         return 10;
     }
-    
+
     static class PaymentException extends Exception {
         public PaymentException(String message) {
             super(message);
@@ -558,7 +558,7 @@ public class OrderService {
 
 ---
 
-**文档维护**: OTLP深度梳理项目组  
-**最后更新**: 2025年10月8日  
-**文档版本**: v1.0  
+**文档维护**: OTLP深度梳理项目组
+**最后更新**: 2025年10月8日
+**文档版本**: v1.0
 **质量等级**: ⭐⭐⭐⭐⭐

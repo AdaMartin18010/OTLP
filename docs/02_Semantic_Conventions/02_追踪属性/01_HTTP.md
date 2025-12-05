@@ -1,7 +1,7 @@
 # HTTP语义约定详解
 
-> **Semantic Conventions版本**: v1.27.0  
-> **稳定性**: Stable  
+> **Semantic Conventions版本**: v1.27.0
+> **稳定性**: Stable
 > **最后更新**: 2025年10月8日
 
 ---
@@ -315,7 +315,7 @@ http.route: /static/*  (通配符路由)
 1. 性能聚合
    - 按路由模式分组
    - 计算p50/p95/p99延迟
-   
+
 2. 避免高基数
    - 使用模式而非具体值
    - 防止指标爆炸
@@ -567,7 +567,7 @@ import (
     "context"
     "fmt"
     "net/http"
-    
+
     "go.opentelemetry.io/otel"
     "go.opentelemetry.io/otel/attribute"
     "go.opentelemetry.io/otel/codes"
@@ -596,7 +596,7 @@ func (c *TracedHTTPClient) Do(ctx context.Context, req *http.Request) (*http.Res
             semconv.HTTPRequestMethodKey.String(req.Method),
             semconv.ServerAddress(req.URL.Hostname()),
             semconv.URLFull(req.URL.String()),
-            
+
             // 推荐属性
             semconv.ServerPort(getPort(req.URL)),
             semconv.URLScheme(req.URL.Scheme),
@@ -606,13 +606,13 @@ func (c *TracedHTTPClient) Do(ctx context.Context, req *http.Request) (*http.Res
         ),
     )
     defer span.End()
-    
+
     // 注入追踪上下文
     otel.GetTextMapPropagator().Inject(ctx, propagation.HeaderCarrier(req.Header))
-    
+
     // 发送请求
     resp, err := c.client.Do(req.WithContext(ctx))
-    
+
     if err != nil {
         // 记录错误
         span.SetStatus(codes.Error, err.Error())
@@ -621,13 +621,13 @@ func (c *TracedHTTPClient) Do(ctx context.Context, req *http.Request) (*http.Res
         )
         return nil, err
     }
-    
+
     // 记录响应属性
     span.SetAttributes(
         semconv.HTTPResponseStatusCode(resp.StatusCode),
         semconv.HTTPResponseBodySize(int(resp.ContentLength)),
     )
-    
+
     // 设置Span状态
     if resp.StatusCode >= 400 {
         span.SetStatus(codes.Error, fmt.Sprintf("HTTP %d", resp.StatusCode))
@@ -637,7 +637,7 @@ func (c *TracedHTTPClient) Do(ctx context.Context, req *http.Request) (*http.Res
     } else {
         span.SetStatus(codes.Ok, "")
     }
-    
+
     return resp, nil
 }
 
@@ -674,7 +674,7 @@ package main
 import (
     "net/http"
     "time"
-    
+
     "go.opentelemetry.io/otel"
     "go.opentelemetry.io/otel/attribute"
     "go.opentelemetry.io/otel/codes"
@@ -684,12 +684,12 @@ import (
 
 func TracingMiddleware(next http.Handler) http.Handler {
     tracer := otel.Tracer("http-server")
-    
+
     return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
         // 提取上游SpanContext
-        ctx := otel.GetTextMapPropagator().Extract(r.Context(), 
+        ctx := otel.GetTextMapPropagator().Extract(r.Context(),
             propagation.HeaderCarrier(r.Header))
-        
+
         // 创建服务器span
         ctx, span := tracer.Start(ctx, fmt.Sprintf("%s %s", r.Method, r.URL.Path),
             trace.WithSpanKind(trace.SpanKindServer),
@@ -698,7 +698,7 @@ func TracingMiddleware(next http.Handler) http.Handler {
                 semconv.HTTPRequestMethodKey.String(r.Method),
                 semconv.URLPath(r.URL.Path),
                 semconv.URLScheme(getScheme(r)),
-                
+
                 // 推荐属性
                 semconv.HTTPRoute(getRoute(r)),
                 semconv.ServerAddress(r.Host),
@@ -709,21 +709,21 @@ func TracingMiddleware(next http.Handler) http.Handler {
             ),
         )
         defer span.End()
-        
+
         // 包装ResponseWriter以捕获状态码
         wrapped := &responseWriter{
             ResponseWriter: w,
             statusCode:     200,
         }
-        
+
         // 处理请求
         next.ServeHTTP(wrapped, r.WithContext(ctx))
-        
+
         // 记录响应属性
         span.SetAttributes(
             semconv.HTTPResponseStatusCode(wrapped.statusCode),
         )
-        
+
         // 设置Span状态
         if wrapped.statusCode >= 400 {
             span.SetStatus(codes.Error, http.StatusText(wrapped.statusCode))
@@ -773,12 +773,12 @@ func getClientIP(r *http.Request) string {
         }
         return xff
     }
-    
+
     // 次选X-Real-IP
     if xri := r.Header.Get("X-Real-IP"); xri != "" {
         return xri
     }
-    
+
     // 最后使用RemoteAddr
     host, _, _ := net.SplitHostPort(r.RemoteAddr)
     return host
@@ -840,6 +840,6 @@ func getRoute(r *http.Request) string {
 
 ---
 
-**文档状态**: ✅ 完成  
-**审核状态**: 待审核  
+**文档状态**: ✅ 完成
+**审核状态**: 待审核
 **下一步**: [02_gRPC.md](./02_gRPC.md)

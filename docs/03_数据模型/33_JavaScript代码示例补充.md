@@ -1,9 +1,9 @@
 # OTLP JavaScript/TypeScript 代码示例补充
 
-> **文档编号**: 33  
-> **创建日期**: 2025年10月11日  
-> **文档类型**: JavaScript代码示例补充  
-> **文档状态**: ✅ 完成  
+> **文档编号**: 33
+> **创建日期**: 2025年10月11日
+> **文档类型**: JavaScript代码示例补充
+> **文档状态**: ✅ 完成
 > **内容规模**: 2,000+ 行
 
 ---
@@ -45,7 +45,7 @@ const tracer = trace.getTracer('example-service');
 // 创建Span
 function createSpan(name) {
     const span = tracer.startSpan(name);
-    
+
     try {
         // 设置属性
         span.setAttributes({
@@ -53,10 +53,10 @@ function createSpan(name) {
             'http.url': '/api/users',
             'http.status_code': 200
         });
-        
+
         // 执行业务逻辑
         console.log(`Executing ${name}`);
-        
+
         return span;
     } finally {
         span.end();
@@ -76,7 +76,7 @@ const tracer = trace.getTracer('example-service');
 
 function createSpan(name: string): Span {
     const span = tracer.startSpan(name);
-    
+
     try {
         // 设置属性
         span.setAttributes({
@@ -84,10 +84,10 @@ function createSpan(name: string): Span {
             'http.url': '/api/users',
             'http.status_code': 200
         });
-        
+
         // 执行业务逻辑
         console.log(`Executing ${name}`);
-        
+
         return span;
     } finally {
         span.end();
@@ -109,7 +109,7 @@ const tracer = trace.getTracer('example-service');
 
 function parentSpan() {
     const parent = tracer.startSpan('parent-operation');
-    
+
     try {
         // 创建子Span
         childSpan();
@@ -120,7 +120,7 @@ function parentSpan() {
 
 function childSpan() {
     const child = tracer.startSpan('child-operation');
-    
+
     try {
         // 执行业务逻辑
         console.log('Child operation');
@@ -141,7 +141,7 @@ const tracer = trace.getTracer('example-service');
 
 function parentSpan(): void {
     const parent = tracer.startSpan('parent-operation');
-    
+
     try {
         childSpan();
     } finally {
@@ -151,7 +151,7 @@ function parentSpan(): void {
 
 function childSpan(): void {
     const child = tracer.startSpan('child-operation');
-    
+
     try {
         console.log('Child operation');
     } finally {
@@ -173,17 +173,17 @@ const tracer = trace.getTracer('example-service');
 
 async function asyncOperation() {
     const span = tracer.startSpan('async-operation');
-    
+
     try {
         // 异步操作
         const result = await fetch('https://api.example.com/data');
         const data = await result.json();
-        
+
         span.setAttributes({
             'http.status_code': result.status,
             'data.size': JSON.stringify(data).length
         });
-        
+
         return data;
     } catch (error) {
         span.recordException(error);
@@ -209,16 +209,16 @@ const tracer = trace.getTracer('example-service');
 
 async function asyncOperation(): Promise<any> {
     const span = tracer.startSpan('async-operation');
-    
+
     try {
         const result = await fetch('https://api.example.com/data');
         const data = await result.json();
-        
+
         span.setAttributes({
-            'http.status_code': result.status, 
+            'http.status_code': result.status,
             'data.size': JSON.stringify(data).length
         });
-        
+
         return data;
     } catch (error) {
         span.recordException(error as Error);
@@ -356,7 +356,7 @@ const gauge = meter.createObservableGauge('memory_usage_bytes', {
 // 注册回调
 meter.addBatchObservableCallback(() => {
     const memoryUsage = process.memoryUsage();
-    
+
     gauge.observe(memoryUsage.heapUsed, {
         type: 'heap'
     });
@@ -378,7 +378,7 @@ const gauge: ObservableGauge = meter.createObservableGauge('memory_usage_bytes',
 
 meter.addBatchObservableCallback(() => {
     const memoryUsage = process.memoryUsage();
-    
+
     gauge.observe(memoryUsage.heapUsed, {
         type: 'heap'
     });
@@ -457,8 +457,8 @@ function logInfo(message: string, attributes: Record<string, any>): void {
 }
 
 function logError(
-    message: string, 
-    error: Error, 
+    message: string,
+    error: Error,
     attributes: Record<string, any>
 ): void {
     logger.emit({
@@ -506,27 +506,27 @@ const tracer = trace.getTracer('express-app');
 // 追踪中间件
 function tracingMiddleware(req, res, next) {
     const span = tracer.startSpan(`${req.method} ${req.path}`);
-    
+
     // 设置属性
     span.setAttributes({
         'http.method': req.method,
         'http.url': req.url,
         'http.route': req.route?.path || req.path
     });
-    
+
     // 在响应结束时结束Span
     res.on('finish', () => {
         span.setAttributes({
             'http.status_code': res.statusCode
         });
-        
+
         if (res.statusCode >= 400) {
             span.setStatus({ code: 2, message: 'HTTP Error' });
         }
-        
+
         span.end();
     });
-    
+
     next();
 }
 
@@ -554,25 +554,25 @@ const tracer = trace.getTracer('express-app');
 
 function tracingMiddleware(req: Request, res: Response, next: NextFunction): void {
     const span: Span = tracer.startSpan(`${req.method} ${req.path}`);
-    
+
     span.setAttributes({
         'http.method': req.method,
         'http.url': req.url,
         'http.route': req.route?.path || req.path
     });
-    
+
     res.on('finish', () => {
         span.setAttributes({
             'http.status_code': res.statusCode
         });
-        
+
         if (res.statusCode >= 400) {
             span.setStatus({ code: 2, message: 'HTTP Error' });
         }
-        
+
         span.end();
     });
-    
+
     next();
 }
 
@@ -604,30 +604,30 @@ const tracer = trace.getTracer('web-app');
 // 追踪用户交互
 function trackUserInteraction(action, details) {
     const span = tracer.startSpan('user-interaction');
-    
+
     span.setAttributes({
         'user.action': action,
         'user.details': JSON.stringify(details),
         'user.agent': navigator.userAgent,
         'user.url': window.location.href
     });
-    
+
     span.end();
 }
 
 // 追踪页面加载
 function trackPageLoad() {
     const span = tracer.startSpan('page-load');
-    
+
     window.addEventListener('load', () => {
         const loadTime = performance.now();
-        
+
         span.setAttributes({
             'page.load_time': loadTime,
             'page.url': window.location.href,
             'page.referrer': document.referrer
         });
-        
+
         span.end();
     });
 }
@@ -635,12 +635,12 @@ function trackPageLoad() {
 // 追踪AJAX请求
 function trackAjaxRequest(url, method) {
     const span = tracer.startSpan('ajax-request');
-    
+
     span.setAttributes({
         'http.method': method,
         'http.url': url
     });
-    
+
     fetch(url, { method })
         .then(response => {
             span.setAttributes({
@@ -671,41 +671,41 @@ const tracer = trace.getTracer('web-app');
 
 function trackUserInteraction(action: string, details: Record<string, any>): void {
     const span: Span = tracer.startSpan('user-interaction');
-    
+
     span.setAttributes({
         'user.action': action,
         'user.details': JSON.stringify(details),
         'user.agent': navigator.userAgent,
         'user.url': window.location.href
     });
-    
+
     span.end();
 }
 
 function trackPageLoad(): void {
     const span: Span = tracer.startSpan('page-load');
-    
+
     window.addEventListener('load', () => {
         const loadTime = performance.now();
-        
+
         span.setAttributes({
             'page.load_time': loadTime,
             'page.url': window.location.href,
             'page.referrer': document.referrer
         });
-        
+
         span.end();
     });
 }
 
 function trackAjaxRequest(url: string, method: string): void {
     const span: Span = tracer.startSpan('ajax-request');
-    
+
     span.setAttributes({
         'http.method': method,
         'http.url': url
     });
-    
+
     fetch(url, { method })
         .then(response => {
             span.setAttributes({
@@ -741,20 +741,20 @@ const tracer = trace.getTracer('lambda-function');
 
 exports.handler = async (event, context) => {
     const span = tracer.startSpan('lambda-handler');
-    
+
     try {
         span.setAttributes({
             'lambda.function_name': context.functionName,
             'lambda.request_id': context.requestId,
             'lambda.memory_limit': context.memoryLimitInMB
         });
-        
+
         // 处理业务逻辑
         const result = await processEvent(event);
-        
+
         span.setStatus({ code: 1 });
         span.end();
-        
+
         return {
             statusCode: 200,
             body: JSON.stringify(result)
@@ -763,7 +763,7 @@ exports.handler = async (event, context) => {
         span.recordException(error);
         span.setStatus({ code: 2, message: error.message });
         span.end();
-        
+
         return {
             statusCode: 500,
             body: JSON.stringify({ error: error.message })
@@ -773,7 +773,7 @@ exports.handler = async (event, context) => {
 
 async function processEvent(event) {
     const span = tracer.startSpan('process-event');
-    
+
     try {
         // 处理事件
         return { processed: true };
@@ -796,19 +796,19 @@ export const handler = async (
     context: Context
 ): Promise<APIGatewayProxyResult> => {
     const span: Span = tracer.startSpan('lambda-handler');
-    
+
     try {
         span.setAttributes({
             'lambda.function_name': context.functionName,
             'lambda.request_id': context.requestId,
             'lambda.memory_limit': context.memoryLimitInMB
         });
-        
+
         const result = await processEvent(event);
-        
+
         span.setStatus({ code: 1 });
         span.end();
-        
+
         return {
             statusCode: 200,
             body: JSON.stringify(result)
@@ -817,7 +817,7 @@ export const handler = async (
         span.recordException(error as Error);
         span.setStatus({ code: 2, message: (error as Error).message });
         span.end();
-        
+
         return {
             statusCode: 500,
             body: JSON.stringify({ error: (error as Error).message })
@@ -827,7 +827,7 @@ export const handler = async (
 
 async function processEvent(event: APIGatewayProxyEvent): Promise<any> {
     const span: Span = tracer.startSpan('process-event');
-    
+
     try {
         return { processed: true };
     } finally {
@@ -927,6 +927,6 @@ JavaScript/TypeScript支持核心要点:
 
 ---
 
-**最后更新**: 2025年10月11日  
-**维护者**: OTLP深度梳理团队  
+**最后更新**: 2025年10月11日
+**维护者**: OTLP深度梳理团队
 **版本**: 1.0.0

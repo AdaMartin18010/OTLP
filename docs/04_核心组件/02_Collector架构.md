@@ -1,6 +1,6 @@
 # OpenTelemetry Collector 架构详解
 
-> **Collector版本**: v0.90+  
+> **Collector版本**: v0.90+
 > **最后更新**: 2025年10月8日
 
 ---
@@ -47,7 +47,7 @@
 **定义**：
 
 ```text
-OpenTelemetry Collector: 
+OpenTelemetry Collector:
 独立的服务进程，用于接收、处理和导出遥测数据
 
 特点:
@@ -125,7 +125,7 @@ OpenTelemetry Collector:
 示例场景:
 应用 → Collector → Jaeger + Prometheus + Kafka
 - Traces → Jaeger
-- Metrics → Prometheus  
+- Metrics → Prometheus
 - Events → Kafka
 ```
 
@@ -167,13 +167,13 @@ service:
       receivers: [otlp, jaeger]
       processors: [batch, memory_limiter]
       exporters: [otlp, jaeger]
-    
+
     # Metrics Pipeline
     metrics:
       receivers: [otlp, prometheus]
       processors: [batch]
       exporters: [prometheus, otlp]
-    
+
     # Logs Pipeline
     logs:
       receivers: [otlp]
@@ -238,7 +238,7 @@ receivers:
           enforcement_policy:
             min_time: 5s
             permit_without_stream: true
-      
+
       http:
         endpoint: 0.0.0.0:4318
         cors:
@@ -288,11 +288,11 @@ receivers:
         endpoint: 0.0.0.0:6831
       thrift_binary:
         endpoint: 0.0.0.0:6832
-  
+
   # Zipkin Receiver
   zipkin:
     endpoint: 0.0.0.0:9411
-  
+
   # Prometheus Receiver (Pull)
   prometheus:
     config:
@@ -301,7 +301,7 @@ receivers:
           scrape_interval: 10s
           static_configs:
             - targets: ['localhost:8888']
-  
+
   # Host Metrics Receiver
   hostmetrics:
     collection_interval: 30s
@@ -326,10 +326,10 @@ processors:
   batch:
     # 批处理超时: 10秒
     timeout: 10s
-    
+
     # 批次大小: 8192条记录
     send_batch_size: 8192
-    
+
     # 最大批次大小: 10000条
     send_batch_max_size: 10000
 ```
@@ -369,10 +369,10 @@ processors:
   memory_limiter:
     # 检查间隔
     check_interval: 1s
-    
+
     # 内存限制: 1GB
     limit_mib: 1024
-    
+
     # 软限制: 768MB (75%)
     spike_limit_mib: 256
 ```
@@ -417,25 +417,25 @@ processors:
       - key: environment
         value: production
         action: insert
-      
+
       # 更新属性
       - key: service.version
         value: "2.0.0"
         action: update
-      
+
       # 添加或更新
       - key: cluster
         value: us-west-1
         action: upsert
-      
+
       # 删除属性
       - key: sensitive_data
         action: delete
-      
+
       # 哈希脱敏
       - key: user.id
         action: hash
-      
+
       # 从其他属性提取
       - key: http.status_code
         from_attribute: http.response.status_code
@@ -475,13 +475,13 @@ processors:
   tail_sampling:
     # 等待trace完成时间
     decision_wait: 10s
-    
+
     # 缓存trace数量
     num_traces: 100000
-    
+
     # 预期新trace速率
     expected_new_traces_per_sec: 1000
-    
+
     # 采样策略
     policies:
       # 总是采样错误
@@ -489,19 +489,19 @@ processors:
         type: status_code
         status_code:
           status_codes: [ERROR]
-      
+
       # 采样慢trace
       - name: latency-policy
         type: latency
         latency:
           threshold_ms: 1000
-      
+
       # 10%概率采样
       - name: probabilistic-policy
         type: probabilistic
         probabilistic:
           sampling_percentage: 10
-      
+
       # 基于属性采样
       - name: important-customer-policy
         type: string_attribute
@@ -521,27 +521,27 @@ processors:
 exporters:
   otlp:
     endpoint: backend:4317
-    
+
     # TLS配置
     tls:
       insecure: false
       cert_file: /path/to/cert.pem
       key_file: /path/to/key.pem
       ca_file: /path/to/ca.pem
-    
+
     # 压缩
     compression: gzip
-    
+
     # 超时
     timeout: 30s
-    
+
     # 重试
     retry_on_failure:
       enabled: true
       initial_interval: 5s
       max_interval: 30s
       max_elapsed_time: 300s
-    
+
     # 发送队列
     sending_queue:
       enabled: true
@@ -558,7 +558,7 @@ exporters:
     namespace: otel
     const_labels:
       environment: production
-    
+
     # 资源到标签映射
     resource_to_telemetry_conversion:
       enabled: true
@@ -573,7 +573,7 @@ exporters:
     endpoint: jaeger:14250
     tls:
       insecure: true
-  
+
   # Kafka Exporter
   kafka:
     brokers:
@@ -581,7 +581,7 @@ exporters:
       - kafka2:9092
     topic: otlp-traces
     encoding: otlp_proto
-  
+
   # Logging Exporter (调试)
   logging:
     loglevel: info
@@ -599,11 +599,11 @@ extensions:
   health_check:
     endpoint: 0.0.0.0:13133
     path: /health
-  
+
   # pprof性能分析
   pprof:
     endpoint: 0.0.0.0:1777
-  
+
   # zpages诊断
   zpages:
     endpoint: 0.0.0.0:55679
@@ -660,16 +660,16 @@ processors:
     check_interval: 1s
     limit_mib: 1024
     spike_limit_mib: 256
-  
+
   # 批处理
   batch:
     timeout: 10s
     send_batch_size: 8192
-  
+
   # 资源检测
   resourcedetection:
     detectors: [env, system, docker, gcp]
-  
+
   # 属性处理
   attributes:
     actions:
@@ -878,6 +878,6 @@ level: info
 
 ---
 
-**文档状态**: ✅ 完成  
-**审核状态**: 待审核  
+**文档状态**: ✅ 完成
+**审核状态**: 待审核
 **相关文档**: [SDK概述](01_SDK概述.md), [采样策略](../05_采样与性能/01_采样策略.md)

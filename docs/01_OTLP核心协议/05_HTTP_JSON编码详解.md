@@ -1,8 +1,8 @@
 # OTLP/HTTP JSON编码详解
 
-> **标准版本**: v1.3.0 (JSON支持自v1.1.0)  
-> **发布日期**: 2024年9月  
-> **状态**: Stable  
+> **标准版本**: v1.3.0 (JSON支持自v1.1.0)
+> **发布日期**: 2024年9月
+> **状态**: Stable
 > **最后更新**: 2025年10月9日
 
 ---
@@ -604,7 +604,7 @@ OTLP JSON编码严格遵循**Protocol Buffers Proto3 JSON映射规范**。
 def snake_to_camel(snake_str):
     """
     Snake case转Camel case
-    
+
     例子:
     resource_spans -> resourceSpans
     start_time_unix_nano -> startTimeUnixNano
@@ -788,7 +788,7 @@ function createAnyValue(val) {
   if (typeof val === 'string') {
     return { stringValue: val };
   } else if (typeof val === 'number') {
-    return Number.isInteger(val) 
+    return Number.isInteger(val)
       ? { intValue: val.toString() }
       : { doubleValue: val };
   } else if (typeof val === 'boolean') {
@@ -995,7 +995,7 @@ import { useState, useEffect, useCallback } from 'react';
 
 export function useOTLP(collectorUrl = 'http://localhost:4318') {
   const [traceId] = useState(() => generateTraceId());
-  
+
   const sendSpan = useCallback(async (name, attributes = {}, duration = 0) => {
     const now = Date.now();
     const span = {
@@ -1051,7 +1051,7 @@ function App() {
   useEffect(() => {
     // 追踪组件挂载
     const startTime = performance.now();
-    
+
     return () => {
       const duration = performance.now() - startTime;
       sendSpan('App.mount', {
@@ -1063,10 +1063,10 @@ function App() {
 
   const handleClick = async () => {
     const startTime = performance.now();
-    
+
     // 模拟API调用
     await fetch('/api/data');
-    
+
     const duration = performance.now() - startTime;
     sendSpan('api.fetch', {
       'http.url': '/api/data',
@@ -1173,9 +1173,9 @@ onUnmounted(() => {
 
 const handleClick = async () => {
   const startTime = performance.now();
-  
+
   await fetch('/api/data');
-  
+
   const duration = performance.now() - startTime;
   sendSpan('api.fetch', {
     'http.url': '/api/data',
@@ -1239,13 +1239,13 @@ fetch('http://localhost:4318/v1/traces', {
 **常见CORS错误**:
 
 ```text
-❌ Access to fetch at 'http://localhost:4318/v1/traces' from origin 
-   'http://localhost:3000' has been blocked by CORS policy: 
+❌ Access to fetch at 'http://localhost:4318/v1/traces' from origin
+   'http://localhost:3000' has been blocked by CORS policy:
    No 'Access-Control-Allow-Origin' header is present
 
 ✅ 解决: 在Collector配置中添加 allowed_origins
 
-❌ Request header field content-type is not allowed by 
+❌ Request header field content-type is not allowed by
    Access-Control-Allow-Headers
 
 ✅ 解决: 添加 "Content-Type" 到 allowed_headers
@@ -1671,7 +1671,7 @@ class SpanBatcher {
 
   async flush() {
     if (this.spans.length === 0) return;
-    
+
     const batch = this.spans.splice(0, this.spans.length);
     await this.send(batch);
   }
@@ -1819,23 +1819,23 @@ service:
 1. 🌐 Web/浏览器应用
    原因: 原生支持,零依赖
    示例: React、Vue、Angular单页应用
-   
+
 2. 🔍 开发和调试
    原因: 可读性强,易排查
    示例: 本地开发环境、CI测试
-   
+
 3. 🚀 快速原型/POC
    原因: 无需工具链,快速验证
    示例: Demo、技术评估、教学
-   
+
 4. 📱 轻量级场景
    原因: 实现简单,维护容易
    示例: 低频率(<10 req/s)、小规模
-   
+
 5. 🔌 第三方集成
    原因: 通用性强,兼容性好
    示例: Webhook、API网关、Serverless
-   
+
 6. 📊 数据分析和ETL
    原因: 易于解析和转换
    示例: 日志分析、数据管道
@@ -1884,24 +1884,24 @@ function PageTracker() {
    原因: 性能最优,资源消耗低
    示例: 核心服务、高QPS应用
    阈值: >1000 req/s 或 >10MB/s
-   
+
 2. 📦 大数据量传输
    原因: 压缩效率高,节省带宽
    示例: 批量处理、离线分析
    阈值: 单批次>1MB
-   
+
 3. 🔐 关键业务路径
    原因: 稳定性好,类型安全
    示例: 支付、订单、金融交易
-   
+
 4. 🌍 跨数据中心传输
    原因: 最小化网络开销
    示例: 多Region部署、CDN回源
-   
+
 5. 📱 资源受限环境
    原因: CPU/内存/带宽高效
    示例: IoT设备、边缘计算、移动端
-   
+
 6. 🔄 长期存储
    原因: 向后兼容性优秀
    示例: 日志归档、审计数据
@@ -1929,7 +1929,7 @@ func sendSpansProtobuf(spans []*tracepb.Span) error {
     defer conn.Close()
 
     client := collectortracepb.NewTraceServiceClient(conn)
-    
+
     req := &collectortracepb.ExportTraceServiceRequest{
         ResourceSpans: []*tracepb.ResourceSpans{{
             ScopeSpans: []*tracepb.ScopeSpans{{
@@ -1971,10 +1971,10 @@ location /v1/traces {
         local json = require "cjson"
         local body = ngx.req.get_body_data()
         local data = json.decode(body)
-        
+
         -- 转换为Protobuf并转发到后端
         local protobuf = convert_to_protobuf(data)
-        
+
         local res = ngx.location.capture(
             "/internal/traces",
             {
@@ -1983,7 +1983,7 @@ location /v1/traces {
                 headers = {["Content-Type"] = "application/x-protobuf"}
             }
         )
-        
+
         ngx.status = res.status
         ngx.say(res.body)
     }
@@ -2096,7 +2096,7 @@ fetch(url, {
 **错误信息**:
 
 ```text
-Access to fetch at 'http://localhost:4318/v1/traces' from origin 
+Access to fetch at 'http://localhost:4318/v1/traces' from origin
 'http://localhost:3000' has been blocked by CORS policy
 ```
 
@@ -2231,29 +2231,29 @@ fetch(url, {...}).then(res => {
 class DebugOTLPExporter {
   async send(span) {
     console.group('🔍 OTLP JSON Debug');
-    
+
     console.log('1️⃣ Original Span:', span);
-    
+
     const payload = this.buildPayload(span);
     console.log('2️⃣ Payload:', JSON.stringify(payload, null, 2));
-    
+
     console.log('3️⃣ Payload Size:', JSON.stringify(payload).length, 'bytes');
-    
+
     try {
       const response = await fetch(this.url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
-      
+
       console.log('4️⃣ Response Status:', response.status);
       console.log('5️⃣ Response Headers:', [...response.headers]);
-      
+
       const body = await response.text();
       console.log('6️⃣ Response Body:', body);
-      
+
       console.groupEnd();
-      
+
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${body}`);
       }
@@ -2303,13 +2303,13 @@ const tracesSchema = {
                     type: 'object',
                     required: ['traceId', 'spanId', 'name'],
                     properties: {
-                      traceId: { 
-                        type: 'string', 
-                        pattern: '^[0-9a-f]{32}$' 
+                      traceId: {
+                        type: 'string',
+                        pattern: '^[0-9a-f]{32}$'
                       },
-                      spanId: { 
-                        type: 'string', 
-                        pattern: '^[0-9a-f]{16}$' 
+                      spanId: {
+                        type: 'string',
+                        pattern: '^[0-9a-f]{16}$'
                       },
                       name: { type: 'string' }
                     }
@@ -2408,10 +2408,10 @@ class OTLPJSONExporter {
     this.serviceName = options.serviceName || 'browser-app';
     this.batchSize = options.batchSize || 100;
     this.flushInterval = options.flushInterval || 5000;
-    
+
     this.spans = [];
     this.timer = setInterval(() => this.flush(), this.flushInterval);
-    
+
     // 生成session级别的trace ID
     this.sessionTraceId = this.generateTraceId();
   }
@@ -2446,7 +2446,7 @@ class OTLPJSONExporter {
     if (typeof val === 'string') {
       return { stringValue: val };
     } else if (typeof val === 'number') {
-      return Number.isInteger(val) 
+      return Number.isInteger(val)
         ? { intValue: val.toString() }
         : { doubleValue: val };
     } else if (typeof val === 'boolean') {
@@ -2491,7 +2491,7 @@ class OTLPJSONExporter {
       span,
       end: (finalAttributes = {}, status = 'OK') => {
         span.endTime = new Date();
-        
+
         // 添加最终属性
         Object.entries(finalAttributes).forEach(([key, val]) => {
           span.attributes.push({
@@ -2499,13 +2499,13 @@ class OTLPJSONExporter {
             value: this.createAnyValue(val)
           });
         });
-        
+
         // 设置状态
         span.status = {
           code: status === 'OK' ? 'STATUS_CODE_OK' : 'STATUS_CODE_ERROR',
           message: typeof status === 'string' && status !== 'OK' ? status : ''
         };
-        
+
         this.addSpan(span);
       }
     };
@@ -2624,12 +2624,12 @@ async function fetchData() {
   try {
     const response = await fetch('/api/data');
     const data = await response.json();
-    
+
     end({
       'http.status_code': response.status,
       'response.size': JSON.stringify(data).length
     }, 'OK');
-    
+
     return data;
   } catch (error) {
     end({
@@ -2688,24 +2688,24 @@ class OTLPJSONExporter:
         self.service_name = service_name
         self.batch_size = batch_size
         self.flush_interval = flush_interval
-        
+
         self.spans: List[Dict] = []
         self.session_trace_id = self.generate_trace_id()
-        
+
     def generate_trace_id(self) -> str:
         """生成32字符十六进制Trace ID"""
         return secrets.token_hex(16)
-    
+
     def generate_span_id(self) -> str:
         """生成16字符十六进制Span ID"""
         return secrets.token_hex(8)
-    
+
     def date_to_nano(self, dt: datetime) -> str:
         """datetime转纳秒字符串"""
         timestamp_ms = int(dt.timestamp() * 1000)
         timestamp_nano = timestamp_ms * 1_000_000
         return str(timestamp_nano)
-    
+
     def create_any_value(self, val: Any) -> Dict:
         """创建AnyValue"""
         if isinstance(val, str):
@@ -2733,7 +2733,7 @@ class OTLPJSONExporter:
             }
         else:
             return {"stringValue": str(val)}
-    
+
     def start_span(
         self,
         name: str,
@@ -2751,22 +2751,22 @@ class OTLPJSONExporter:
             kind=kind,
             attributes=attributes or {}
         )
-    
+
     def add_span(self, span: Dict):
         """添加Span到批次"""
         self.spans.append(span)
-        
+
         if len(self.spans) >= self.batch_size:
             self.flush()
-    
+
     def flush(self):
         """刷新批次"""
         if not self.spans:
             return
-        
+
         spans = self.spans[:]
         self.spans.clear()
-        
+
         payload = {
             "resourceSpans": [{
                 "resource": {
@@ -2786,7 +2786,7 @@ class OTLPJSONExporter:
                 }]
             }]
         }
-        
+
         try:
             response = requests.post(
                 f"{self.collector_url}/v1/traces",
@@ -2799,7 +2799,7 @@ class OTLPJSONExporter:
             print(f"Failed to send spans: {e}")
             # 重新加回失败的spans
             self.spans.extend(spans)
-    
+
     def shutdown(self):
         """关闭并刷新"""
         self.flush()
@@ -2827,19 +2827,19 @@ class Span:
         self.end_time = None
         self.status = "OK"
         self.status_message = ""
-    
+
     def __enter__(self):
         return self
-    
+
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.end_time = datetime.now()
-        
+
         if exc_type is not None:
             self.status = "ERROR"
             self.status_message = str(exc_val)
             self.attributes["error.type"] = exc_type.__name__
             self.attributes["error.message"] = str(exc_val)
-        
+
         # 构建OTLP格式
         otlp_span = {
             "traceId": self.trace_id,
@@ -2857,12 +2857,12 @@ class Span:
                 "message": self.status_message
             }
         }
-        
+
         if self.parent_span_id:
             otlp_span["parentSpanId"] = self.parent_span_id
-        
+
         self.exporter.add_span(otlp_span)
-        
+
         return False  # 不抑制异常
 
 
@@ -2886,14 +2886,14 @@ with exporter.start_span("http_request", {
     "http.method": "GET",
     "http.url": "/api/users"
 }) as parent_span:
-    
+
     with exporter.start_span(
         "database_query",
         {"db.system": "postgresql"},
         parent_span_id=parent_span.span_id
     ):
         time.sleep(0.05)
-    
+
     with exporter.start_span(
         "cache_lookup",
         {"cache.system": "redis"},
@@ -3156,8 +3156,8 @@ func main() {
 
 ---
 
-**文档状态**: ✅ 完成  
-**作者**: OTLP项目改进小组  
-**审核**: 待审核  
-**版本**: v1.0  
+**文档状态**: ✅ 完成
+**作者**: OTLP项目改进小组
+**审核**: 待审核
+**版本**: v1.0
 **总行数**: ~2,100行

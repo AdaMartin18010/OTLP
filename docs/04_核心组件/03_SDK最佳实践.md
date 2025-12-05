@@ -1,6 +1,6 @@
 # OpenTelemetry SDK 最佳实践
 
-> **SDK版本**: v1.30.0  
+> **SDK版本**: v1.30.0
 > **最后更新**: 2025年10月8日
 
 ---
@@ -42,7 +42,7 @@ package main
 import (
     "context"
     "log"
-    
+
     "go.opentelemetry.io/otel"
     "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
     "go.opentelemetry.io/otel/sdk/resource"
@@ -52,7 +52,7 @@ import (
 
 func initTracer() (func(), error) {
     ctx := context.Background()
-    
+
     // 1. 创建Exporter
     exporter, err := otlptracegrpc.New(ctx,
         otlptracegrpc.WithEndpoint("localhost:4317"),
@@ -61,7 +61,7 @@ func initTracer() (func(), error) {
     if err != nil {
         return nil, err
     }
-    
+
     // 2. 创建Resource
     res, err := resource.New(ctx,
         resource.WithAttributes(
@@ -73,24 +73,24 @@ func initTracer() (func(), error) {
     if err != nil {
         return nil, err
     }
-    
+
     // 3. 创建TracerProvider
     tp := sdktrace.NewTracerProvider(
         sdktrace.WithBatcher(exporter),
         sdktrace.WithResource(res),
         sdktrace.WithSampler(sdktrace.AlwaysSample()),
     )
-    
+
     // 4. 设置全局TracerProvider
     otel.SetTracerProvider(tp)
-    
+
     // 5. 返回清理函数
     cleanup := func() {
         if err := tp.Shutdown(context.Background()); err != nil {
             log.Printf("Error shutting down tracer provider: %v", err)
         }
     }
-    
+
     return cleanup, nil
 }
 
@@ -100,7 +100,7 @@ func main() {
         log.Fatal(err)
     }
     defer cleanup()
-    
+
     // 应用代码...
 }
 ```
@@ -112,7 +112,7 @@ func main() {
 ```go
 func initProductionTracer() (func(), error) {
     ctx := context.Background()
-    
+
     // 1. Exporter配置（带重试和超时）
     exporter, err := otlptracegrpc.New(ctx,
         otlptracegrpc.WithEndpoint(os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT")),
@@ -128,7 +128,7 @@ func initProductionTracer() (func(), error) {
     if err != nil {
         return nil, fmt.Errorf("failed to create exporter: %w", err)
     }
-    
+
     // 2. Resource配置（完整信息）
     res, err := resource.New(ctx,
         resource.WithFromEnv(),   // 从环境变量读取
@@ -146,19 +146,19 @@ func initProductionTracer() (func(), error) {
     if err != nil {
         return nil, fmt.Errorf("failed to create resource: %w", err)
     }
-    
+
     // 3. 采样器配置（生产级）
     sampler := sdktrace.ParentBased(
         sdktrace.TraceIDRatioBased(getSamplingRate()),
     )
-    
+
     // 4. Span Limits（防止过大Span）
     spanLimits := sdktrace.NewSpanLimits()
     spanLimits.AttributeCountLimit = 128
     spanLimits.EventCountLimit = 128
     spanLimits.LinkCountLimit = 128
     spanLimits.AttributeValueLengthLimit = 4096
-    
+
     // 5. BatchSpanProcessor配置
     bsp := sdktrace.NewBatchSpanProcessor(
         exporter,
@@ -167,7 +167,7 @@ func initProductionTracer() (func(), error) {
         sdktrace.WithBatchTimeout(5*time.Second),
         sdktrace.WithExportTimeout(30*time.Second),
     )
-    
+
     // 6. 创建TracerProvider
     tp := sdktrace.NewTracerProvider(
         sdktrace.WithSpanProcessor(bsp),
@@ -175,25 +175,25 @@ func initProductionTracer() (func(), error) {
         sdktrace.WithSampler(sampler),
         sdktrace.WithSpanLimits(spanLimits),
     )
-    
+
     otel.SetTracerProvider(tp)
-    
+
     // 7. 配置Propagator
     otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(
         propagation.TraceContext{},
         propagation.Baggage{},
     ))
-    
+
     // 8. 优雅关闭
     cleanup := func() {
         ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
         defer cancel()
-        
+
         if err := tp.Shutdown(ctx); err != nil {
             log.Printf("Error shutting down tracer provider: %v", err)
         }
     }
-    
+
     return cleanup, nil
 }
 
@@ -202,12 +202,12 @@ func getSamplingRate() float64 {
     if rate == "" {
         return 0.01 // 默认1%
     }
-    
+
     f, err := strconv.ParseFloat(rate, 64)
     if err != nil {
         return 0.01
     }
-    
+
     return f
 }
 ```
@@ -336,21 +336,21 @@ type CustomSampler struct {
 
 func (s *CustomSampler) ShouldSample(p sdktrace.SamplingParameters) sdktrace.SamplingResult {
     // 自定义逻辑
-    
+
     // 示例: 总是采样错误
     if containsError(p.Attributes) {
         return sdktrace.SamplingResult{
             Decision: sdktrace.RecordAndSample,
         }
     }
-    
+
     // 示例: 高优先级请求100%采样
     if hasPriority(p.Attributes, "high") {
         return sdktrace.SamplingResult{
             Decision: sdktrace.RecordAndSample,
         }
     }
-    
+
     // 其他请求使用基础采样器
     return s.base.ShouldSample(p)
 }
@@ -369,31 +369,31 @@ func createResource(ctx context.Context) (*resource.Resource, error) {
     return resource.New(ctx,
         // 1. 从环境变量读取
         resource.WithFromEnv(),
-        
+
         // 2. 进程信息
         resource.WithProcess(),
-        
+
         // 3. 操作系统信息
         resource.WithOS(),
-        
+
         // 4. 容器信息（如果在容器中）
         resource.WithContainer(),
-        
+
         // 5. 主机信息
         resource.WithHost(),
-        
+
         // 6. Kubernetes信息（如果在K8s中）
         resource.WithDetectors(
             &k8sDetector{},
         ),
-        
+
         // 7. 自定义属性
         resource.WithAttributes(
             semconv.ServiceNameKey.String("my-service"),
             semconv.ServiceVersionKey.String(getVersion()),
             semconv.ServiceInstanceIDKey.String(getInstanceID()),
             semconv.DeploymentEnvironmentKey.String(getEnv()),
-            
+
             // 业务属性
             attribute.String("team", "backend"),
             attribute.String("component", "api"),
@@ -408,7 +408,7 @@ func (d *k8sDetector) Detect(ctx context.Context) (*resource.Resource, error) {
     if !isK8s() {
         return resource.Empty(), nil
     }
-    
+
     return resource.NewWithAttributes(
         semconv.SchemaURL,
         semconv.K8SPodNameKey.String(os.Getenv("POD_NAME")),
@@ -427,7 +427,7 @@ func (d *k8sDetector) Detect(ctx context.Context) (*resource.Resource, error) {
 ```go
 func initMeter() (func(), error) {
     ctx := context.Background()
-    
+
     // 1. 创建Metric Exporter
     exporter, err := otlpmetricgrpc.New(ctx,
         otlpmetricgrpc.WithEndpoint("localhost:4317"),
@@ -436,7 +436,7 @@ func initMeter() (func(), error) {
     if err != nil {
         return nil, err
     }
-    
+
     // 2. 创建MeterProvider
     provider := metric.NewMeterProvider(
         metric.WithReader(
@@ -447,36 +447,36 @@ func initMeter() (func(), error) {
         ),
         metric.WithResource(res),
     )
-    
+
     otel.SetMeterProvider(provider)
-    
+
     cleanup := func() {
         if err := provider.Shutdown(context.Background()); err != nil {
             log.Printf("Error shutting down meter provider: %v", err)
         }
     }
-    
+
     return cleanup, nil
 }
 
 // 使用示例
 func recordMetrics() {
     meter := otel.Meter("my-service")
-    
+
     // Counter
     requestCounter, _ := meter.Int64Counter(
         "http.server.requests",
         metric.WithDescription("Total HTTP requests"),
         metric.WithUnit("1"),
     )
-    
+
     // Histogram
     requestDuration, _ := meter.Float64Histogram(
         "http.server.duration",
         metric.WithDescription("HTTP request duration"),
         metric.WithUnit("ms"),
     )
-    
+
     // Gauge (via Callback)
     _, _ = meter.Int64ObservableGauge(
         "process.runtime.go.mem.heap_alloc",
@@ -489,15 +489,15 @@ func recordMetrics() {
             return nil
         }),
     )
-    
+
     // 记录
-    requestCounter.Add(context.Background(), 1, 
+    requestCounter.Add(context.Background(), 1,
         metric.WithAttributes(
             attribute.String("method", "GET"),
             attribute.Int("status", 200),
         ),
     )
-    
+
     requestDuration.Record(context.Background(), 123.45,
         metric.WithAttributes(
             attribute.String("method", "GET"),
@@ -558,22 +558,22 @@ spanLimits.AttributeValueLengthLimit = 4096
 func monitorMemory() {
     ticker := time.NewTicker(30 * time.Second)
     defer ticker.Stop()
-    
+
     meter := otel.Meter("monitoring")
     heapAlloc, _ := meter.Int64ObservableGauge("heap_alloc")
-    
+
     for range ticker.C {
         var m runtime.MemStats
         runtime.ReadMemStats(&m)
-        
+
         if m.HeapAlloc > 500*1024*1024 { // 500MB
             log.Printf("High memory usage: %d MB", m.HeapAlloc/1024/1024)
-            
+
             // 强制导出
             if err := tp.ForceFlush(context.Background()); err != nil {
                 log.Printf("Force flush error: %v", err)
             }
-            
+
             // 触发GC
             runtime.GC()
         }
@@ -596,7 +596,7 @@ bsp := sdktrace.NewBatchSpanProcessor(
 func handleRequest(ctx context.Context) error {
     ctx, span := tracer.Start(ctx, "handleRequest")
     defer span.End()
-    
+
     err := doSomething(ctx)
     if err != nil {
         // 记录错误
@@ -604,7 +604,7 @@ func handleRequest(ctx context.Context) error {
         span.SetStatus(codes.Error, err.Error())
         return err
     }
-    
+
     span.SetStatus(codes.Ok, "")
     return nil
 }
@@ -613,7 +613,7 @@ func handleRequest(ctx context.Context) error {
 otel.SetErrorHandler(otel.ErrorHandlerFunc(func(err error) {
     // 记录到日志
     log.Printf("OpenTelemetry error: %v", err)
-    
+
     // 发送到监控系统
     metrics.IncrementCounter("otel.errors")
 }))
@@ -644,7 +644,7 @@ func (e *SafeExporter) ExportSpans(ctx context.Context, spans []sdktrace.ReadOnl
 func parentFunction(ctx context.Context) {
     ctx, span := tracer.Start(ctx, "parent")
     defer span.End()
-    
+
     // 传递ctx到子函数
     childFunction(ctx)
 }
@@ -652,20 +652,20 @@ func parentFunction(ctx context.Context) {
 func childFunction(ctx context.Context) {
     _, span := tracer.Start(ctx, "child")
     defer span.End()
-    
+
     // Span自动关联到父Span
 }
 
 // ✅ HTTP客户端传播
 func makeHTTPRequest(ctx context.Context, url string) (*http.Response, error) {
     req, _ := http.NewRequestWithContext(ctx, "GET", url, nil)
-    
+
     // 自动注入TraceContext header
     // (如果使用otelhttp instrumentation)
     client := &http.Client{
         Transport: otelhttp.NewTransport(http.DefaultTransport),
     }
-    
+
     return client.Do(req)
 }
 
@@ -674,10 +674,10 @@ func handler(w http.ResponseWriter, r *http.Request) {
     // 自动提取TraceContext
     // (如果使用otelhttp instrumentation)
     ctx := r.Context()
-    
+
     _, span := tracer.Start(ctx, "handler")
     defer span.End()
-    
+
     // 使用ctx...
 }
 
@@ -701,28 +701,28 @@ func instrumentedQuery(ctx context.Context, query string, args ...interface{}) (
         trace.WithSpanKind(trace.SpanKindClient),
     )
     defer span.End()
-    
+
     // 添加属性
     span.SetAttributes(
         semconv.DBSystemMySQL,
         semconv.DBStatementKey.String(query),
         semconv.DBNameKey.String("mydb"),
     )
-    
+
     // 执行查询
     start := time.Now()
     rows, err := db.QueryContext(ctx, query, args...)
     duration := time.Since(start)
-    
+
     // 记录指标
     queryDuration.Record(ctx, duration.Milliseconds())
-    
+
     if err != nil {
         span.RecordError(err)
         span.SetStatus(codes.Error, err.Error())
         return nil, err
     }
-    
+
     span.SetStatus(codes.Ok, "")
     return rows, nil
 }
@@ -731,12 +731,12 @@ func instrumentedQuery(ctx context.Context, query string, args ...interface{}) (
 func getCachedValue(ctx context.Context, key string) (string, error) {
     ctx, span := tracer.Start(ctx, "cache.get")
     defer span.End()
-    
+
     span.SetAttributes(
         attribute.String("cache.key", key),
         attribute.String("cache.system", "redis"),
     )
-    
+
     value, err := redisClient.Get(ctx, key).Result()
     if err == redis.Nil {
         span.SetAttributes(attribute.Bool("cache.hit", false))
@@ -747,7 +747,7 @@ func getCachedValue(ctx context.Context, key string) (string, error) {
         span.SetStatus(codes.Error, err.Error())
         return "", err
     }
-    
+
     span.SetAttributes(attribute.Bool("cache.hit", true))
     span.SetStatus(codes.Ok, "")
     return value, nil
@@ -763,16 +763,16 @@ func getCachedValue(ctx context.Context, key string) (string, error) {
 func TestWithTracing(t *testing.T) {
     // 使用内存Exporter
     exporter := tracetest.NewInMemoryExporter()
-    
+
     tp := sdktrace.NewTracerProvider(
         sdktrace.WithSyncer(exporter),
     )
     otel.SetTracerProvider(tp)
-    
+
     // 执行测试
     ctx := context.Background()
     myFunction(ctx)
-    
+
     // 验证Span
     spans := exporter.GetSpans()
     assert.Len(t, spans, 1)
@@ -784,7 +784,7 @@ func initDebugTracer() {
     exporter, _ := stdouttrace.New(
         stdouttrace.WithPrettyPrint(),
     )
-    
+
     tp := sdktrace.NewTracerProvider(
         sdktrace.WithSyncer(exporter),
         sdktrace.WithSampler(sdktrace.AlwaysSample()),
@@ -799,7 +799,7 @@ func BenchmarkWithTracing(b *testing.B) {
         sdktrace.WithSampler(sdktrace.NeverSample()),
     )
     tracer := tp.Tracer("benchmark")
-    
+
     b.ResetTimer()
     for i := 0; i < b.N; i++ {
         ctx := context.Background()
@@ -819,7 +819,7 @@ func BenchmarkWithTracing(b *testing.B) {
 func badFunction(ctx context.Context) {
     _, span := tracer.Start(ctx, "bad")
     // 忘记 defer span.End()
-    
+
     if someCondition {
         return // Span泄漏!
     }
@@ -829,7 +829,7 @@ func badFunction(ctx context.Context) {
 func goodFunction(ctx context.Context) {
     _, span := tracer.Start(ctx, "good")
     defer span.End() // 总是调用
-    
+
     if someCondition {
         return
     }
@@ -848,7 +848,7 @@ func badLoop(ctx context.Context) {
 func goodLoop(ctx context.Context) {
     _, span := tracer.Start(ctx, "loop")
     defer span.End()
-    
+
     for i := 0; i < 10000; i++ {
         // 使用Event而非Span
         span.AddEvent("iteration", trace.WithAttributes(
@@ -879,7 +879,7 @@ func goodExport() {
 func badAttributes(ctx context.Context, userID string) {
     _, span := tracer.Start(ctx, "operation")
     defer span.End()
-    
+
     // userID可能有数百万个不同值!
     span.SetAttributes(attribute.String("user.id", userID))
 }
@@ -888,7 +888,7 @@ func badAttributes(ctx context.Context, userID string) {
 func goodAttributes(ctx context.Context, userTier string) {
     _, span := tracer.Start(ctx, "operation")
     defer span.End()
-    
+
     // 低基数 (只有几个值)
     span.SetAttributes(attribute.String("user.tier", userTier))
 }
@@ -927,6 +927,6 @@ func goodAttributes(ctx context.Context, userTier string) {
 
 ---
 
-**文档状态**: ✅ 完成  
-**审核状态**: 待审核  
+**文档状态**: ✅ 完成
+**审核状态**: 待审核
 **相关文档**: [SDK概述](01_SDK概述.md), [Collector架构](02_Collector架构.md)

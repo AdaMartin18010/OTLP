@@ -1,6 +1,6 @@
 # MQTT语义约定详解
 
-> **IoT消息协议**: MQTT Tracing与Metrics完整规范  
+> **IoT消息协议**: MQTT Tracing与Metrics完整规范
 > **最后更新**: 2025年10月8日
 
 ---
@@ -269,7 +269,7 @@ MQTT Subscriber属性:
         semconv.MessagingDestinationNameKey.String(
             "home/+/temperature"), // 通配符订阅
         semconv.MessagingOperationKey.String("receive"),
-        attribute.String("messaging.mqtt.subscription_pattern", 
+        attribute.String("messaging.mqtt.subscription_pattern",
             "home/+/temperature"),
         attribute.Int("messaging.mqtt.qos", 1),
     )
@@ -338,19 +338,19 @@ MQTT 3.1.1 Context传播挑战:
      "traceparent": "00-...",
      "data": { ... }
    }
-   
+
    优点: 简单易实现
    缺点: 增加消息体大小
 
 2. Topic编码 ⭐
    sensors/trace-abc123/temperature
-   
+
    优点: 不改变消息体
    缺点: Topic污染，难管理
 
 3. 独立追踪消息 ⭐
    发送独立的追踪消息到特殊Topic
-   
+
    优点: 不影响业务消息
    缺点: 增加消息数量，关联复杂
 
@@ -402,7 +402,7 @@ package main
 import (
     "context"
     "encoding/json"
-    
+
     mqtt "github.com/eclipse/paho.mqtt.golang"
     "go.opentelemetry.io/otel"
     "go.opentelemetry.io/otel/attribute"
@@ -420,7 +420,7 @@ func PublishWithTracing(
     payload []byte,
 ) error {
     tracer := otel.Tracer("mqtt-publisher")
-    
+
     // 创建Publisher Span
     ctx, span := tracer.Start(ctx, "mqtt.publish",
         trace.WithSpanKind(trace.SpanKindProducer),
@@ -435,26 +435,26 @@ func PublishWithTracing(
         ),
     )
     defer span.End()
-    
+
     // MQTT 5.0: 使用User Properties
     properties := make(map[string]string)
-    
+
     // 注入Trace Context
     carrier := &MQTTPropertiesCarrier{properties: properties}
     otel.GetTextMapPropagator().Inject(ctx, carrier)
-    
+
     // 创建MQTT 5.0消息 (带User Properties)
     token := client.Publish(topic, qos, retained, payload)
     // Note: paho.mqtt.golang需要使用支持MQTT 5.0的版本
     // 或使用其他MQTT 5.0客户端库
-    
+
     // 等待发布完成
     if token.Wait() && token.Error() != nil {
         span.RecordError(token.Error())
         span.SetStatus(codes.Error, "publish failed")
         return token.Error()
     }
-    
+
     span.SetStatus(codes.Ok, "published")
     return nil
 }
@@ -492,14 +492,14 @@ func SubscribeWithTracing(
     handler func(context.Context, []byte) error,
 ) error {
     tracer := otel.Tracer("mqtt-subscriber")
-    
+
     // 订阅回调
     callback := func(client mqtt.Client, msg mqtt.Message) {
         // 提取Trace Context (MQTT 5.0 User Properties)
         properties := extractUserProperties(msg)
         carrier := &MQTTPropertiesCarrier{properties: properties}
         msgCtx := otel.GetTextMapPropagator().Extract(ctx, carrier)
-        
+
         // 创建Consumer Span
         msgCtx, span := tracer.Start(msgCtx, "mqtt.receive",
             trace.WithSpanKind(trace.SpanKindConsumer),
@@ -510,30 +510,30 @@ func SubscribeWithTracing(
                 attribute.Int("messaging.mqtt.qos", int(msg.Qos())),
                 attribute.Bool("messaging.mqtt.retained", msg.Retained()),
                 attribute.Bool("messaging.mqtt.duplicate", msg.Duplicate()),
-                attribute.Int("messaging.message.body.size", 
+                attribute.Int("messaging.message.body.size",
                     len(msg.Payload())),
             ),
         )
-        
+
         // 处理消息
         err := handler(msgCtx, msg.Payload())
-        
+
         if err != nil {
             span.RecordError(err)
             span.SetStatus(codes.Error, "handler failed")
         } else {
             span.SetStatus(codes.Ok, "processed")
         }
-        
+
         span.End()
     }
-    
+
     // 订阅Topic
     token := client.Subscribe(topic, qos, callback)
     if token.Wait() && token.Error() != nil {
         return token.Error()
     }
-    
+
     return nil
 }
 
@@ -567,31 +567,31 @@ func PublishWithTracing311(
     data []byte,
 ) error {
     tracer := otel.Tracer("mqtt-publisher")
-    
+
     ctx, span := tracer.Start(ctx, "mqtt.publish",
         trace.WithSpanKind(trace.SpanKindProducer),
     )
     defer span.End()
-    
+
     // 创建包装消息
     wrapper := MessageWithContext{
         Data: data,
     }
-    
+
     // 提取trace context
     spanCtx := trace.SpanContextFromContext(ctx)
     if spanCtx.IsValid() {
-        wrapper.Traceparent = spanCtx.TraceID().String() + "-" + 
+        wrapper.Traceparent = spanCtx.TraceID().String() + "-" +
                              spanCtx.SpanID().String()
     }
-    
+
     // JSON序列化
     payload, err := json.Marshal(wrapper)
     if err != nil {
         span.RecordError(err)
         return err
     }
-    
+
     // 发布
     token := client.Publish(topic, qos, false, payload)
     if token.Wait() && token.Error() != nil {
@@ -599,7 +599,7 @@ func PublishWithTracing311(
         span.SetStatus(codes.Error, "publish failed")
         return token.Error()
     }
-    
+
     span.SetStatus(codes.Ok, "published")
     return nil
 }
@@ -612,7 +612,7 @@ func SubscribeWithTracing311(
     handler func(context.Context, []byte) error,
 ) error {
     tracer := otel.Tracer("mqtt-subscriber")
-    
+
     callback := func(client mqtt.Client, msg mqtt.Message) {
         // 解析包装消息
         var wrapper MessageWithContext
@@ -620,20 +620,20 @@ func SubscribeWithTracing311(
             // 处理错误
             return
         }
-        
+
         // 重建trace context (简化版)
         msgCtx := ctx
         if wrapper.Traceparent != "" {
             // 从traceparent重建context
             // 需要完整实现W3C Trace Context解析
         }
-        
+
         // 创建span
         msgCtx, span := tracer.Start(msgCtx, "mqtt.receive",
             trace.WithSpanKind(trace.SpanKindConsumer),
         )
         defer span.End()
-        
+
         // 处理实际数据
         err := handler(msgCtx, wrapper.Data)
         if err != nil {
@@ -643,7 +643,7 @@ func SubscribeWithTracing311(
             span.SetStatus(codes.Ok, "processed")
         }
     }
-    
+
     token := client.Subscribe(topic, qos, callback)
     return token.Error()
 }
@@ -686,11 +686,11 @@ def publish_with_tracing(
     ) as span:
         # MQTT 5.0: 使用User Properties
         properties = mqtt.Properties(mqtt.PacketTypes.PUBLISH)
-        
+
         # 注入trace context
         carrier = {}
         propagate.inject(carrier)
-        
+
         # 添加User Properties
         if 'traceparent' in carrier:
             properties.UserProperty = [
@@ -700,7 +700,7 @@ def publish_with_tracing(
             properties.UserProperty.append(
                 ('tracestate', carrier['tracestate'])
             )
-        
+
         try:
             # 发布消息
             result = client.publish(
@@ -710,10 +710,10 @@ def publish_with_tracing(
                 retain=retain,
                 properties=properties
             )
-            
+
             result.wait_for_publish()
             span.set_status(Status(StatusCode.OK))
-            
+
         except Exception as e:
             span.record_exception(e)
             span.set_status(Status(StatusCode.ERROR))
@@ -733,23 +733,23 @@ def publish_with_tracing_311(
         # 注入trace context到payload
         carrier = {}
         propagate.inject(carrier)
-        
+
         # 包装消息
         wrapper = {
             'traceparent': carrier.get('traceparent', ''),
             'tracestate': carrier.get('tracestate', ''),
             'data': data
         }
-        
+
         try:
             # JSON序列化
             payload = json.dumps(wrapper).encode('utf-8')
-            
+
             # 发布
             result = client.publish(topic, payload, qos=qos)
             result.wait_for_publish()
             span.set_status(Status(StatusCode.OK))
-            
+
         except Exception as e:
             span.record_exception(e)
             span.set_status(Status(StatusCode.ERROR))
@@ -766,17 +766,17 @@ def create_subscriber_with_tracing(
     handler
 ):
     """创建带追踪的订阅者 (MQTT 5.0)"""
-    
+
     def on_message(client, userdata, msg):
         # 提取User Properties
         properties = {}
         if hasattr(msg, 'properties') and msg.properties:
             for key, value in msg.properties.UserProperty:
                 properties[key] = value
-        
+
         # 提取trace context
         ctx = propagate.extract(properties)
-        
+
         # 创建span
         with tracer.start_as_current_span(
             "mqtt.receive",
@@ -798,7 +798,7 @@ def create_subscriber_with_tracing(
             except Exception as e:
                 span.record_exception(e)
                 span.set_status(Status(StatusCode.ERROR))
-    
+
     client.on_message = on_message
     client.subscribe(topic, qos)
 
@@ -809,19 +809,19 @@ def create_subscriber_with_tracing_311(
     handler
 ):
     """创建带追踪的订阅者 (MQTT 3.1.1)"""
-    
+
     def on_message(client, userdata, msg):
         try:
             # 解析包装消息
             wrapper = json.loads(msg.payload.decode('utf-8'))
-            
+
             # 提取trace context
             carrier = {
                 'traceparent': wrapper.get('traceparent', ''),
                 'tracestate': wrapper.get('tracestate', '')
             }
             ctx = propagate.extract(carrier)
-            
+
             # 创建span
             with tracer.start_as_current_span(
                 "mqtt.receive",
@@ -835,11 +835,11 @@ def create_subscriber_with_tracing_311(
                 except Exception as e:
                     span.record_exception(e)
                     span.set_status(Status(StatusCode.ERROR))
-        
+
         except json.JSONDecodeError:
             # 非包装消息，直接处理
             handler(msg.payload)
-    
+
     client.on_message = on_message
     client.subscribe(topic, qos)
 ```
@@ -858,10 +858,10 @@ import io.opentelemetry.api.trace.*;
 import io.opentelemetry.context.Context;
 
 public class MQTTPublisherTracing {
-    
-    private static final Tracer tracer = 
+
+    private static final Tracer tracer =
         openTelemetry.getTracer("mqtt-publisher");
-    
+
     public void publishWithTracing(
         MqttAsyncClient client,
         String topic,
@@ -869,7 +869,7 @@ public class MQTTPublisherTracing {
         int qos,
         boolean retained
     ) throws MqttException {
-        
+
         // 创建span
         Span span = tracer.spanBuilder("mqtt.publish")
             .setSpanKind(SpanKind.PRODUCER)
@@ -879,26 +879,26 @@ public class MQTTPublisherTracing {
             .setAttribute("messaging.mqtt.qos", qos)
             .setAttribute("messaging.mqtt.retained", retained)
             .startSpan();
-        
+
         try (Scope scope = span.makeCurrent()) {
             // MQTT 5.0: 创建User Properties
             MqttProperties properties = new MqttProperties();
-            
+
             // 注入trace context
             Context.current().propagate((key, value) -> {
                 properties.setUserProperty(key, value);
             });
-            
+
             // 创建消息
             MqttMessage message = new MqttMessage(payload);
             message.setQos(qos);
             message.setRetained(retained);
             message.setProperties(properties);
-            
+
             // 发布
             client.publish(topic, message).waitForCompletion();
             span.setStatus(StatusCode.OK);
-            
+
         } catch (Exception e) {
             span.recordException(e);
             span.setStatus(StatusCode.ERROR);
@@ -914,17 +914,17 @@ public class MQTTPublisherTracing {
 
 ```java
 public class MQTTSubscriberTracing {
-    
-    private static final Tracer tracer = 
+
+    private static final Tracer tracer =
         openTelemetry.getTracer("mqtt-subscriber");
-    
+
     public void subscribeWithTracing(
         MqttAsyncClient client,
         String topic,
         int qos,
         MessageHandler handler
     ) throws MqttException {
-        
+
         client.subscribe(topic, qos, (t, msg) -> {
             // 提取User Properties
             Map<String, String> properties = new HashMap<>();
@@ -933,10 +933,10 @@ public class MQTTSubscriberTracing {
                     .forEach(prop -> properties.put(
                         prop.getKey(), prop.getValue()));
             }
-            
+
             // 提取trace context
             Context extractedContext = propagate.extract(properties);
-            
+
             // 创建span
             Span span = tracer.spanBuilder("mqtt.receive")
                 .setParent(extractedContext)
@@ -946,12 +946,12 @@ public class MQTTSubscriberTracing {
                 .setAttribute("messaging.operation", "receive")
                 .setAttribute("messaging.mqtt.qos", msg.getQos())
                 .startSpan();
-            
+
             try (Scope scope = span.makeCurrent()) {
                 // 处理消息
                 handler.handle(msg.getPayload());
                 span.setStatus(StatusCode.OK);
-                
+
             } catch (Exception e) {
                 span.recordException(e);
                 span.setStatus(StatusCode.ERROR);
@@ -1239,8 +1239,8 @@ client := mqtt.NewClient(opts)
 
 ---
 
-**文档状态**: ✅ 完成  
-**MQTT版本**: 3.1.1 / 5.0  
+**文档状态**: ✅ 完成
+**MQTT版本**: 3.1.1 / 5.0
 **适用场景**: IoT设备、智能家居、车联网、工业4.0
 
 **关键特性**:

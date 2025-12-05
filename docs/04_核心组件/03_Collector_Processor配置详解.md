@@ -1,7 +1,7 @@
 # Collector Processor 配置详解
 
-> **标准版本**: v1.27.0  
-> **状态**: Stable  
+> **标准版本**: v1.27.0
+> **状态**: Stable
 > **最后更新**: 2025年10月8日
 
 ---
@@ -88,10 +88,10 @@ processors:
   batch:
     # 批次超时时间
     timeout: 10s
-    
+
     # 每批最大Span数（针对traces）
     send_batch_size: 8192
-    
+
     # 批次队列最大大小
     send_batch_max_size: 16384
 ```
@@ -148,13 +148,13 @@ processors:
   memory_limiter:
     # 检查间隔
     check_interval: 1s
-    
+
     # 内存限制（软限制）
     limit_mib: 512
-    
+
     # 内存峰值限制（硬限制）
     spike_limit_mib: 128
-    
+
     # 达到限制时的行为
     # - percentage: 按百分比拒绝
     # - refuse_data: 拒绝所有新数据
@@ -217,22 +217,22 @@ processors:
       - key: environment
         value: production
         action: insert
-      
+
       # 更新属性
       - key: http.url
         action: update
         value: "redacted"
-      
+
       # 删除属性
       - key: http.user_agent
         action: delete
-      
+
       # 从其他属性提取
       - key: region
         from_attribute: cloud.region
         action: extract
         pattern: ^([^-]+)
-      
+
       # 哈希敏感信息
       - key: user.email
         action: hash
@@ -300,12 +300,12 @@ processors:
       - key: cloud.provider
         value: aws
         action: insert
-      
+
       # 从环境变量获取
       - key: deployment.environment
         value: ${ENVIRONMENT}
         action: insert
-      
+
       # 删除资源属性
       - key: host.name
         action: delete
@@ -335,12 +335,12 @@ processors:
       span:
         - 'attributes["http.url"] == "/health"'
         - 'attributes["http.url"] == "/ready"'
-  
+
   # 过滤DEBUG日志
   filter/debug_logs:
     logs:
       - 'severity_number < SEVERITY_NUMBER_INFO'
-  
+
   # 过滤特定Metric
   filter/internal_metrics:
     metrics:
@@ -359,13 +359,13 @@ processors:
       span:
         # 按属性过滤
         - 'attributes["http.method"] == "GET"'
-        
+
         # 按Span name过滤
         - 'name == "health_check"'
-        
+
         # 按Resource过滤
         - 'resource.attributes["service.name"] == "test-service"'
-        
+
         # 复杂条件
         - 'attributes["http.status_code"] >= 500 and attributes["http.status_code"] < 600'
 ```
@@ -378,10 +378,10 @@ processors:
     logs:
       # 按严重性过滤
       - 'severity_number < SEVERITY_NUMBER_WARN'
-      
+
       # 按Body内容过滤
       - 'body matches "^DEBUG:"'
-      
+
       # 按属性过滤
       - 'attributes["service.name"] == "test-service"'
 ```
@@ -437,10 +437,10 @@ processors:
           # 重命名属性
           - set(attributes["http.method"], attributes["method"])
           - delete_key(attributes, "method")
-          
+
           # 标准化状态码
           - set(attributes["http.status_code"], Int(attributes["http.status_code"]))
-          
+
           # 添加计算属性
           - set(attributes["is_error"], attributes["http.status_code"] >= 400)
 ```
@@ -503,13 +503,13 @@ processors:
         type: status_code
         status_code:
           status_codes: [ERROR]
-      
+
       # 保留慢请求
       - name: slow_requests
         type: latency
         latency:
           threshold_ms: 1000
-      
+
       # 按比例采样正常请求
       - name: normal_requests
         type: probabilistic
@@ -543,26 +543,26 @@ processors:
         type: status_code
         status_code:
           status_codes: [ERROR]
-      
+
       # 2. 保留慢请求
       - name: slow_requests
         type: latency
         latency:
           threshold_ms: 500
-      
+
       # 3. 保留特定用户
       - name: premium_users
         type: string_attribute
         string_attribute:
           key: user.tier
           values: [premium, enterprise]
-      
+
       # 4. 限速采样
       - name: rate_limit
         type: rate_limiting
         rate_limiting:
           spans_per_second: 1000
-      
+
       # 5. 兜底概率采样
       - name: probabilistic
         type: probabilistic
@@ -582,18 +582,18 @@ processors:
 processors:
   # 1. 内存保护（必须第一）
   - memory_limiter
-  
+
   # 2. 采样决策
   - tail_sampling
-  
+
   # 3. 数据过滤
   - filter/healthcheck
-  
+
   # 4. 数据转换
   - attributes
   - resource
   - transform
-  
+
   # 5. 批处理（必须最后）
   - batch
 ```
@@ -651,14 +651,14 @@ processors:
     check_interval: 1s
     limit_mib: 1024
     spike_limit_mib: 256
-  
+
   # 2. 过滤健康检查
   filter/healthcheck:
     traces:
       span:
         - 'attributes["http.target"] == "/health"'
         - 'attributes["http.target"] == "/ready"'
-  
+
   # 3. 尾部采样
   tail_sampling:
     decision_wait: 10s
@@ -677,7 +677,7 @@ processors:
         type: probabilistic
         probabilistic:
           sampling_percentage: 10
-  
+
   # 4. 添加环境标签
   resource:
     attributes:
@@ -687,7 +687,7 @@ processors:
       - key: cloud.provider
         value: aws
         action: insert
-  
+
   # 5. 属性处理
   attributes:
     actions:
@@ -702,7 +702,7 @@ processors:
         pattern: "(password|token)=([^&]+)"
         replacement: "$1=***"
         action: update
-  
+
   # 6. 批处理
   batch:
     timeout: 10s
@@ -766,7 +766,7 @@ service:
 
 ---
 
-**文档维护**: OTLP深度梳理项目组  
-**最后更新**: 2025年10月8日  
-**文档版本**: v1.0  
+**文档维护**: OTLP深度梳理项目组
+**最后更新**: 2025年10月8日
+**文档版本**: v1.0
 **质量等级**: ⭐⭐⭐⭐⭐

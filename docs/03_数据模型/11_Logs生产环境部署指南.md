@@ -1,8 +1,8 @@
 # OTLP Logs 生产环境部署指南
 
-> **标准版本**: v1.3.0 (Logs GA自v1.2.0)  
-> **发布日期**: 2024年9月  
-> **状态**: GA (生产就绪)  
+> **标准版本**: v1.3.0 (Logs GA自v1.2.0)
+> **发布日期**: 2024年9月
+> **状态**: GA (生产就绪)
 > **最后更新**: 2025年10月9日
 
 ---
@@ -263,22 +263,22 @@ import (
 
 func main() {
     ctx := context.Background()
-    
+
     // 直连到日志后端 (假设后端支持OTLP)
     exporter, _ := otlploggrpc.New(ctx,
         otlploggrpc.WithEndpoint("logs-backend.example.com:4317"),
         otlploggrpc.WithInsecure(), // 生产环境应使用TLS
     )
-    
+
     loggerProvider := log.NewLoggerProvider(
         log.WithBatcher(exporter,
             log.WithBatchTimeout(5*time.Second),
             log.WithMaxQueueSize(2048),
         ),
     )
-    
+
     global.SetLoggerProvider(loggerProvider)
-    
+
     // 使用logger
     logger := global.Logger("my-app")
     logger.Info("Application started")
@@ -344,7 +344,7 @@ spec:
     env:
     - name: OTEL_EXPORTER_OTLP_ENDPOINT
       value: "http://localhost:4317"  # 发送到边车
-    
+
   # Collector边车容器
   - name: otel-collector
     image: otel/opentelemetry-collector-contrib:0.90.0
@@ -360,7 +360,7 @@ spec:
     volumeMounts:
     - name: otel-collector-config
       mountPath: /conf
-  
+
   volumes:
   - name: otel-collector-config
     configMap:
@@ -379,19 +379,19 @@ data:
             endpoint: 0.0.0.0:4317
           http:
             endpoint: 0.0.0.0:4318
-    
+
     processors:
       batch:
         timeout: 10s
         send_batch_size: 1024
-      
+
       # 添加资源属性
       resource:
         attributes:
         - key: pod.name
           value: ${POD_NAME}
           action: upsert
-      
+
       # 过滤敏感信息
       attributes:
         actions:
@@ -399,13 +399,13 @@ data:
           action: delete
         - key: api_key
           action: delete
-    
+
     exporters:
       otlp:
         endpoint: logs-backend.example.com:4317
         tls:
           insecure: false
-    
+
     service:
       pipelines:
         logs:
@@ -539,17 +539,17 @@ processors:
     timeout: 10s
     send_batch_size: 10000
     send_batch_max_size: 11000
-  
+
   # 采样 (10%采样)
   probabilistic_sampler:
     sampling_percentage: 10
-  
+
   # 限流 (保护后端)
   memory_limiter:
     check_interval: 1s
     limit_mib: 1500
     spike_limit_mib: 300
-  
+
   # 数据脱敏
   attributes:
     actions:
@@ -566,7 +566,7 @@ exporters:
     auth:
       username: elastic
       password: ${ES_PASSWORD}
-  
+
   # 同时导出到S3 (归档)
   awss3:
     region: us-west-2
@@ -579,7 +579,7 @@ service:
       receivers: [otlp]
       processors: [memory_limiter, batch, probabilistic_sampler, attributes]
       exporters: [elasticsearch, awss3]
-  
+
   telemetry:
     logs:
       level: info
@@ -695,7 +695,7 @@ receivers:
           cert_file: /certs/server.crt
           key_file: /certs/server.key
           client_ca_file: /certs/ca.crt
-      
+
       http:
         endpoint: 0.0.0.0:4318
         # CORS配置 (Web应用)
@@ -778,13 +778,13 @@ processors:
         action: delete
       - key: credit_card
         action: delete
-      
+
       # 哈希PII
       - key: user.email
         action: hash
       - key: user.phone
         action: hash
-      
+
       # 添加环境标签
       - key: deployment.environment
         value: production
@@ -800,14 +800,14 @@ processors:
     logs:
       log_record:
         - 'severity_number < SEVERITY_NUMBER_INFO'
-  
+
   # 基于内容的过滤
   filter/health_checks:
     logs:
       log_record:
         - 'IsMatch(body, ".*health.*check.*")'
         - 'IsMatch(body, ".*readiness.*probe.*")'
-  
+
   # 概率采样 (10%)
   probabilistic_sampler:
     sampling_percentage: 10
@@ -908,7 +908,7 @@ processors:
     check_interval: 1s
     limit_mib: 1500
     spike_limit_mib: 300
-  
+
   # 2. 数据脱敏
   attributes/pii:
     actions:
@@ -916,24 +916,24 @@ processors:
       action: delete
     - key: user.email
       action: hash
-  
+
   # 3. 过滤健康检查日志
   filter/health:
     logs:
       log_record:
         - 'IsMatch(body, ".*health.*check.*")'
-  
+
   # 4. 采样 (可选)
   probabilistic_sampler:
     sampling_percentage: 100  # 100% = 不采样
-  
+
   # 5. 添加元数据
   resource:
     attributes:
     - key: cluster.name
       value: production-us-west
       action: upsert
-  
+
   # 6. 批处理 (最后)
   batch:
     timeout: 10s
@@ -955,14 +955,14 @@ exporters:
       enabled: true
       initial_interval: 5s
       max_interval: 30s
-  
+
   # 备份: S3归档
   awss3:
     region: us-west-2
     bucket: logs-archive-prod
     partition: hour
     compression: gzip
-  
+
   # 监控: Prometheus metrics
   prometheus:
     endpoint: 0.0.0.0:8889
@@ -971,11 +971,11 @@ extensions:
   # 健康检查
   health_check:
     endpoint: 0.0.0.0:13133
-  
+
   # Prometheus指标
   pprof:
     endpoint: 0.0.0.0:1777
-  
+
   # 持久化队列
   file_storage:
     directory: /var/lib/otelcol/file_storage
@@ -983,7 +983,7 @@ extensions:
 
 service:
   extensions: [health_check, pprof, file_storage]
-  
+
   pipelines:
     logs:
       receivers: [otlp]
@@ -995,7 +995,7 @@ service:
         - resource
         - batch
       exporters: [elasticsearch, awss3, prometheus]
-  
+
   telemetry:
     logs:
       level: info
@@ -1227,13 +1227,13 @@ public class UserService {
     public void login(String userId) {
         // MDC会自动添加到OTLP日志属性
         MDC.put("user.id", userId);
-        
+
         try {
             logger.info("User login attempt");
-            
+
             // 业务逻辑
             Thread.sleep(100);
-            
+
             logger.info("User logged in successfully");
         } catch (Exception e) {
             logger.error("Login failed", e);
@@ -1271,13 +1271,13 @@ def init_otlp_logging():
         ResourceAttributes.SERVICE_VERSION: "1.0.0",
         ResourceAttributes.DEPLOYMENT_ENVIRONMENT: "production"
     })
-    
+
     # OTLP Exporter
     exporter = OTLPLogExporter(
         endpoint="localhost:4317",
         insecure=True,  # 生产环境使用TLS
     )
-    
+
     # Logger Provider
     logger_provider = LoggerProvider(resource=resource)
     logger_provider.add_log_record_processor(
@@ -1289,15 +1289,15 @@ def init_otlp_logging():
             export_timeout_millis=30000,
         )
     )
-    
+
     # 设置全局provider
     _logs.set_logger_provider(logger_provider)
-    
+
     # 配置Python logging
     handler = LoggingHandler(logger_provider=logger_provider)
     logging.getLogger().addHandler(handler)
     logging.getLogger().setLevel(logging.INFO)
-    
+
     return logger_provider
 
 # app.py
@@ -1306,21 +1306,21 @@ import logging
 def main():
     # 初始化
     logger_provider = init_otlp_logging()
-    
+
     try:
         # 使用标准logging
         logging.info("Application started", extra={
             "version": "1.0.0",
             "port": 8080
         })
-        
+
         # 结构化日志
         logging.info("User login", extra={
             "user.id": "user123",
             "user.email": "user@example.com",
             "login.duration_ms": 150
         })
-        
+
         # 错误日志
         try:
             1 / 0
@@ -1328,7 +1328,7 @@ def main():
             logging.error("Division error", exc_info=True, extra={
                 "error.type": type(e).__name__
             })
-    
+
     finally:
         # 关闭
         logger_provider.shutdown()
@@ -1418,7 +1418,7 @@ const logger = winston.createLogger({
             timestamp: undefined,
           }
         };
-        
+
         otelLogger.emit(logRecord);
         callback();
       }
@@ -1480,16 +1480,16 @@ processors:
     # - 低延迟场景: 1-5s
     # - 高吞吐场景: 10-30s
     # - 归档场景: 60s+
-    
+
     # 批大小
     send_batch_size: 8192  # 基线: 8192
     # 建议:
     # - 低QPS (<1K/s): 512-1024
     # - 中QPS (1K-10K/s): 2048-8192
     # - 高QPS (>10K/s): 8192-16384
-    
+
     send_batch_max_size: 10000  # 最大批大小
-    
+
     # 元数据基数限制
     metadata_cardinality_limit: 1000
     # 说明: 限制元数据组合数量,防止内存泄漏
@@ -1515,7 +1515,7 @@ exporters:
     endpoint: backend.example.com:4317
     # gRPC压缩
     compression: gzip  # gzip, snappy, zstd (v1.1.0+)
-    
+
     # HTTP压缩
     # encoding: gzip  # for HTTP
 ```
@@ -1555,14 +1555,14 @@ processors:
         - 'severity_number == SEVERITY_NUMBER_INFO and random() < 0.1'
         # DEBUG级别采样1%
         - 'severity_number == SEVERITY_NUMBER_DEBUG and random() < 0.01'
-  
+
   # 2. 概率采样
   probabilistic_sampler:
     sampling_percentage: 10  # 10%采样
     # 基于属性的采样
     hash_seed: 12345
     attribute_source: record  # record或traceID
-  
+
   # 3. Tail Sampling (基于Trace)
   tail_sampling:
     decision_wait: 30s
@@ -1572,12 +1572,12 @@ processors:
         type: status_code
         status_code:
           status_codes: [ERROR]  # 保留所有错误Trace
-      
+
       - name: slow-traces
         type: latency
         latency:
           threshold_ms: 1000  # 保留慢Trace
-      
+
       - name: probabilistic
         type: probabilistic
         probabilistic:
@@ -1612,7 +1612,7 @@ processors:
     check_interval: 1s
     limit_mib: 1500  # 硬限制
     spike_limit_mib: 300  # 软限制 (开始限流)
-    
+
     # 计算公式:
     # limit_mib = (容器内存 * 0.8) - (其他进程内存)
     # spike_limit_mib = limit_mib * 0.2
@@ -1635,7 +1635,7 @@ exporters:
       num_consumers: 10  # 并发导出
       queue_size: 10000  # 队列大小
       storage: file_storage  # 持久化队列
-    
+
     # 重试配置
     retry_on_failure:
       enabled: true
@@ -1665,39 +1665,39 @@ exporters:
 exporters:
   elasticsearch:
     # 集群配置
-    endpoints: 
+    endpoints:
       - https://es-node1.example.com:9200
       - https://es-node2.example.com:9200
       - https://es-node3.example.com:9200
-    
+
     # 索引配置
     index: "otel-logs-%{+yyyy.MM.dd}"  # 按日分片
     # 其他选项:
     # - "otel-logs-%{+yyyy.MM}"  # 按月
     # - "otel-logs-%{+yyyy.ww}"  # 按周
-    
+
     # 认证
     auth:
       authenticator: basicauth
     user: elastic
     password: ${ES_PASSWORD}
-    
+
     # 性能优化
     flush_bytes: 5242880  # 5MB
     num_workers: 4
-    
+
     # 批量配置
     sending_queue:
       enabled: true
       num_consumers: 10
       queue_size: 10000
-    
+
     # 重试
     retry_on_failure:
       enabled: true
       initial_interval: 5s
       max_interval: 30s
-    
+
     # 映射模式
     mapping:
       mode: ecs  # Elastic Common Schema
@@ -1724,7 +1724,7 @@ PUT _index_template/otel-logs-template
         "@timestamp": { "type": "date" },
         "severity_text": { "type": "keyword" },
         "severity_number": { "type": "byte" },
-        "body": { 
+        "body": {
           "type": "text",
           "fields": {
             "keyword": { "type": "keyword", "ignore_above": 256 }
@@ -1790,7 +1790,7 @@ PUT _ilm/policy/otel-logs-policy
 exporters:
   loki:
     endpoint: https://loki.example.com:3100/loki/api/v1/push
-    
+
     # 标签配置 (关键: 低基数!)
     labels:
       # 资源标签
@@ -1798,25 +1798,25 @@ exporters:
         service.name: "service_name"
         service.namespace: "namespace"
         deployment.environment: "environment"
-      
+
       # 属性标签 (低基数)
       attributes:
         level: "severity_text"  # ERROR, WARN, INFO
         # 避免: user_id, request_id等高基数标签
-    
+
     # 租户
     tenant_id: "production"
-    
+
     # 认证
     headers:
       Authorization: "Bearer ${LOKI_TOKEN}"
-    
+
     # 性能
     sending_queue:
       enabled: true
       num_consumers: 5
       queue_size: 5000
-    
+
     # 格式
     format: json  # json或logfmt
 ```
@@ -1850,20 +1850,20 @@ exporters:
     endpoint: tcp://clickhouse.example.com:9000
     database: otel
     table: otel_logs
-    
+
     # TTL
     ttl_days: 30  # 30天后自动删除
-    
+
     # 认证
     username: default
     password: ${CLICKHOUSE_PASSWORD}
-    
+
     # 批量插入
     sending_queue:
       enabled: true
       num_consumers: 5
       queue_size: 10000
-    
+
     # 压缩
     compression: lz4  # lz4, zstd
 ```
@@ -1914,10 +1914,10 @@ exporters:
     region: us-west-2
     log_group_name: "/aws/otel/logs"
     log_stream_name: "production"
-    
+
     # 认证 (使用IAM Role)
     role_arn: "arn:aws:iam::123456789012:role/OTELCollectorRole"
-    
+
     # 性能
     sending_queue:
       enabled: true
@@ -1932,7 +1932,7 @@ exporters:
     instrumentation_key: "${AZURE_INSTRUMENTATION_KEY}"
     # 或使用连接字符串
     # connection_string: "${AZURE_CONNECTION_STRING}"
-    
+
     maxbatchsize: 1024
     maxbatchinterval: 10s
 ```
@@ -1944,10 +1944,10 @@ exporters:
   googlecloud:
     project_id: "my-project"
     log_id: "otel-logs"
-    
+
     # 认证 (使用服务账号)
     credentials_file: "/path/to/credentials.json"
-    
+
     # 或使用Workload Identity (GKE)
     use_insecure: false
 ```
@@ -2010,11 +2010,11 @@ groups:
 - name: otel-collector
   interval: 30s
   rules:
-  
+
   # 1. 接收率下降
   - alert: OTELCollectorReceiveRateDropped
     expr: |
-      rate(otelcol_receiver_accepted_log_records[5m]) < 
+      rate(otelcol_receiver_accepted_log_records[5m]) <
       rate(otelcol_receiver_accepted_log_records[30m] offset 1h) * 0.5
     for: 10m
     labels:
@@ -2022,11 +2022,11 @@ groups:
     annotations:
       summary: "Collector接收率下降50%"
       description: "{{ $labels.instance }} 接收率异常下降"
-  
+
   # 2. 导出失败率高
   - alert: OTELCollectorExportFailureRateHigh
     expr: |
-      rate(otelcol_exporter_send_failed_log_records[5m]) / 
+      rate(otelcol_exporter_send_failed_log_records[5m]) /
       rate(otelcol_exporter_sent_log_records[5m]) > 0.05
     for: 5m
     labels:
@@ -2034,7 +2034,7 @@ groups:
     annotations:
       summary: "导出失败率 > 5%"
       description: "{{ $labels.instance }} 导出失败率: {{ $value | humanizePercentage }}"
-  
+
   # 3. 队列接近满
   - alert: OTELCollectorQueueAlmostFull
     expr: |
@@ -2045,7 +2045,7 @@ groups:
     annotations:
       summary: "导出队列接近满 (>90%)"
       description: "{{ $labels.instance }} 队列使用率: {{ $value | humanizePercentage }}"
-  
+
   # 4. 内存使用过高
   - alert: OTELCollectorMemoryHigh
     expr: |
@@ -2056,7 +2056,7 @@ groups:
     annotations:
       summary: "Collector内存使用 > 1.4GB"
       description: "{{ $labels.instance }} 内存: {{ $value }}MB"
-  
+
   # 5. Collector宕机
   - alert: OTELCollectorDown
     expr: up{job="otel-collector"} == 0
@@ -2066,12 +2066,12 @@ groups:
     annotations:
       summary: "Collector宕机"
       description: "{{ $labels.instance }} 无法访问"
-  
+
   # 6. 批处理延迟高
   - alert: OTELCollectorBatchTimeoutHigh
     expr: |
       rate(otelcol_processor_batch_timeout_trigger[5m]) /
-      (rate(otelcol_processor_batch_timeout_trigger[5m]) + 
+      (rate(otelcol_processor_batch_timeout_trigger[5m]) +
        rate(otelcol_processor_batch_batch_send_size_trigger[5m])) > 0.8
     for: 10m
     labels:
@@ -2090,7 +2090,7 @@ extensions:
   health_check:
     endpoint: 0.0.0.0:13133
     path: /health
-    
+
     # 检查间隔
     check_collector_pipeline:
       enabled: true
@@ -2117,7 +2117,7 @@ spec:
       periodSeconds: 10
       timeoutSeconds: 5
       failureThreshold: 3
-    
+
     readinessProbe:
       httpGet:
         path: /health
@@ -2146,19 +2146,19 @@ receivers:
           # 服务器证书
           cert_file: /certs/server.crt
           key_file: /certs/server.key
-          
+
           # 客户端认证 (mTLS)
           client_ca_file: /certs/ca.crt
-          
+
           # TLS版本
           min_version: "1.2"
           max_version: "1.3"
-          
+
           # 密码套件
           cipher_suites:
             - TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
             - TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-          
+
           # 重新加载证书
           reload_interval: 24h
 
@@ -2169,14 +2169,14 @@ exporters:
       # 客户端证书
       cert_file: /certs/client.crt
       key_file: /certs/client.key
-      
+
       # 验证服务器
       ca_file: /certs/ca.crt
-      
+
       # 跳过验证 (仅测试)
       insecure: false
       insecure_skip_verify: false
-      
+
       # 服务器名称验证
       server_name_override: backend.example.com
 ```
@@ -2288,7 +2288,7 @@ processors:
         action: delete
       - key: authorization
         action: delete
-  
+
   # 2. 哈希PII
   attributes/hash_pii:
     actions:
@@ -2298,7 +2298,7 @@ processors:
         action: hash
       - key: user.ip
         action: hash
-  
+
   # 3. 正则脱敏 (日志正文)
   transform/redact:
     log_statements:
@@ -2306,13 +2306,13 @@ processors:
         statements:
           # 信用卡号 (保留后4位)
           - replace_pattern(body, "\\b\\d{4}[- ]?\\d{4}[- ]?\\d{4}[- ]?(\\d{4})\\b", "****-****-****-$$1")
-          
+
           # Email (保留域名)
           - replace_pattern(body, "\\b([a-zA-Z0-9._%+-]+)@([a-zA-Z0-9.-]+\\.[a-zA-Z]{2,})\\b", "***@$$2")
-          
+
           # IP地址 (保留子网)
           - replace_pattern(body, "\\b(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\b", "$$1.$$2.$$3.***")
-          
+
           # 手机号 (保留前3后4)
           - replace_pattern(body, "\\b(\\d{3})\\d{4}(\\d{4})\\b", "$$1****$$2")
 
@@ -2337,16 +2337,16 @@ service:
 诊断步骤:
 1. 检查Collector日志
    kubectl logs -f otel-collector-xxx
-   
+
 2. 检查健康状态
    curl http://collector:13133/health
-   
+
 3. 检查指标
    curl http://collector:8888/metrics | grep refused
-   
+
 4. 检查网络
    telnet backend.example.com 4317
-   
+
 5. 检查认证
    - TLS证书是否过期
    - Token是否有效
@@ -2545,7 +2545,7 @@ import (
 func handleRequest(ctx context.Context) {
     span := trace.SpanFromContext(ctx)
     spanCtx := span.SpanContext()
-    
+
     logger.InfoContext(ctx, "Processing request",
         log.String("trace_id", spanCtx.TraceID().String()),
         log.String("span_id", spanCtx.SpanID().String()),
@@ -2584,34 +2584,34 @@ ORDER BY timestamp;
    ├─ WARN: 100%
    ├─ INFO: 10-50%
    └─ DEBUG: 0-5%
-   
+
    预期节省: 50-80%
 
 2. 压缩
    ├─ 启用zstd (7:1压缩比)
    └─ 传输+存储成本降低
-   
+
    预期节省: 60-80%
 
 3. 分层存储
    ├─ 热数据 (7天): SSD/Elasticsearch
    ├─ 温数据 (30天): HDD/Loki
    └─ 冷数据 (1年): S3 Glacier
-   
+
    预期节省: 70-90%
 
 4. 过滤无用日志
    ├─ 健康检查
    ├─ 静态资源请求
    └─ 内部探针
-   
+
    预期节省: 20-40%
 
 5. 索引优化
    ├─ 减少副本 (1 → 0)
    ├─ 增大refresh_interval (1s → 30s)
    └─ 使用best_compression
-   
+
    预期节省: 30-50%
 ```
 
@@ -2686,9 +2686,9 @@ ORDER BY timestamp;
 
 ---
 
-**文档完成状态**: ✅ 已完成  
-**总行数**: ~2,900行  
-**作者**: OTLP项目改进小组  
+**文档完成状态**: ✅ 已完成
+**总行数**: ~2,900行
+**作者**: OTLP项目改进小组
 **审核**: 待审核
 
 ---

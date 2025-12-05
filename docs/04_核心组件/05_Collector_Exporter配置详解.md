@@ -1,7 +1,7 @@
 # Collector Exporter 配置详解
 
-> **标准版本**: v1.27.0  
-> **状态**: Stable  
+> **标准版本**: v1.27.0
+> **状态**: Stable
 > **最后更新**: 2025年10月8日
 
 ---
@@ -78,7 +78,7 @@ exporters:
   otlp:
     # 后端端点
     endpoint: otel-collector:4317
-    
+
     # TLS设置
     tls:
       # 是否不安全连接
@@ -90,10 +90,10 @@ exporters:
       key_file: /path/to/key.pem
       # 跳过证书验证（不推荐生产环境）
       insecure_skip_verify: false
-    
+
     # 压缩
     compression: gzip
-    
+
     # 超时
     timeout: 30s
 ```
@@ -145,10 +145,10 @@ exporters:
 exporters:
   otlp:
     endpoint: backend.example.com:4317
-    
+
     # 超时配置
     timeout: 30s
-    
+
     # 重试配置
     retry_on_failure:
       # 启用重试
@@ -159,7 +159,7 @@ exporters:
       max_interval: 30s
       # 最大经过时间
       max_elapsed_time: 300s
-    
+
     # 发送队列配置
     sending_queue:
       # 启用持久化队列
@@ -183,7 +183,7 @@ exporters:
     endpoint: backend-1.example.com:4317
     tls:
       insecure: false
-  
+
   # 备份后端
   otlp/backup:
     endpoint: backend-2.example.com:4317
@@ -223,7 +223,7 @@ exporters:
     const_labels:
       environment: production
       cluster: us-east-1
-    
+
     # 资源到标签映射
     resource_to_telemetry_conversion:
       enabled: true
@@ -236,22 +236,22 @@ exporters:
   prometheusremotewrite:
     # Remote Write端点
     endpoint: "https://prometheus.example.com/api/v1/write"
-    
+
     # HTTP配置
     tls:
       insecure: false
       ca_file: /path/to/ca.pem
-    
+
     # 认证
     headers:
       Authorization: "Bearer ${PROM_TOKEN}"
-    
+
     # 重试配置
     retry_on_failure:
       enabled: true
       initial_interval: 5s
       max_interval: 30s
-    
+
     # 资源属性作为标签
     resource_to_telemetry_conversion:
       enabled: true
@@ -273,13 +273,13 @@ exporters:
       - kafka1.example.com:9092
       - kafka2.example.com:9092
       - kafka3.example.com:9092
-    
+
     # 目标topic
     topic: otlp-traces
-    
+
     # 编码格式
     encoding: otlp_proto
-    
+
     # 协议版本
     protocol_version: 2.0.0
 ```
@@ -295,7 +295,7 @@ exporters:
       - kafka.example.com:9092
     topic: otlp-traces
     encoding: otlp_proto
-    
+
     # 认证
     auth:
       sasl:
@@ -305,7 +305,7 @@ exporters:
       tls:
         insecure: false
         ca_file: /certs/ca.pem
-    
+
     # 生产者配置
     producer:
       # 最大消息字节
@@ -318,14 +318,14 @@ exporters:
       retry:
         max_retries: 3
         backoff: 100ms
-    
+
     # 元数据
     metadata:
       full: false
       retry:
         max: 3
         backoff: 250ms
-    
+
     # 超时
     timeout: 10s
 ```
@@ -339,13 +339,13 @@ exporters:
     brokers: [kafka.example.com:9092]
     topic: otlp-traces
     encoding: otlp_proto
-  
+
   # Metrics到Kafka
   kafka/metrics:
     brokers: [kafka.example.com:9092]
     topic: otlp-metrics
     encoding: otlp_proto
-  
+
   # Logs到Kafka
   kafka/logs:
     brokers: [kafka.example.com:9092]
@@ -391,13 +391,13 @@ exporters:
   file:
     # 输出文件路径
     path: /var/log/otel/traces.json
-    
+
     # 格式（json/proto）
     format: json
-    
+
     # 压缩
     compression: gzip
-    
+
     # 轮转配置
     rotation:
       # 最大文件大小（MB）
@@ -419,12 +419,12 @@ exporters:
   jaeger:
     # Jaeger gRPC端点
     endpoint: jaeger-collector:14250
-    
+
     # TLS配置
     tls:
       insecure: false
       ca_file: /certs/ca.pem
-    
+
     # 超时
     timeout: 10s
 ```
@@ -436,10 +436,10 @@ exporters:
   zipkin:
     # Zipkin端点
     endpoint: http://zipkin:9411/api/v2/spans
-    
+
     # 格式（json/proto）
     format: json
-    
+
     # 超时
     timeout: 10s
 ```
@@ -452,20 +452,20 @@ exporters:
     # Elasticsearch端点
     endpoints:
       - https://elasticsearch:9200
-    
+
     # 认证
     auth:
       authenticator: basicauth
-    
+
     # 索引配置
     logs_index: otel-logs
     traces_index: otel-traces
-    
+
     # 批量配置
     bulk:
       max_size: 5000
       flush_interval: 30s
-    
+
     # 重试
     retry:
       enabled: true
@@ -487,19 +487,19 @@ exporters:
   awsxray:
     # AWS区域
     region: us-east-1
-    
+
     # 端点（可选）
     endpoint: ""
-    
+
     # 索引全属性
     index_all_attributes: true
-    
+
     # 索引的属性
     indexed_attributes:
       - http.method
       - http.status_code
       - error
-    
+
     # IAM角色ARN
     role_arn: "arn:aws:iam::123456789012:role/OtelCollectorRole"
 ```
@@ -521,7 +521,7 @@ exporters:
     retry_on_failure:
       enabled: true
       initial_interval: 5s
-  
+
   # 备份后端
   otlp/backup:
     endpoint: backup-backend:4317
@@ -577,14 +577,14 @@ extensions:
 exporters:
   otlp:
     endpoint: backend:4317
-    
+
     # 重试配置
     retry_on_failure:
       enabled: true
       initial_interval: 5s
       max_interval: 30s
       max_elapsed_time: 300s
-    
+
     # 持久化队列
     sending_queue:
       enabled: true
@@ -621,7 +621,7 @@ processors:
   batch:
     timeout: 10s
     send_batch_size: 8192
-  
+
   memory_limiter:
     check_interval: 1s
     limit_mib: 2048
@@ -641,7 +641,7 @@ exporters:
       enabled: true
       initial_interval: 5s
       max_interval: 30s
-  
+
   # 2. Prometheus Remote Write
   prometheusremotewrite:
     endpoint: "https://prometheus.example.com/api/v1/write"
@@ -649,20 +649,20 @@ exporters:
       Authorization: "Bearer ${PROM_TOKEN}"
     resource_to_telemetry_conversion:
       enabled: true
-  
+
   # 3. Kafka归档
   kafka:
     brokers: [kafka.example.com:9092]
     topic: otlp-telemetry
     encoding: otlp_proto
     compression: gzip
-  
+
   # 4. Jaeger（遗留系统）
   jaeger:
     endpoint: jaeger:14250
     tls:
       insecure: true
-  
+
   # 5. Logging（调试）
   logging:
     loglevel: info
@@ -680,7 +680,7 @@ service:
         - jaeger            # 遗留系统
         - kafka             # 归档
         - logging           # 调试
-    
+
     # Metrics Pipeline
     metrics:
       receivers: [otlp]
@@ -689,7 +689,7 @@ service:
         - otlp/primary              # 主后端
         - prometheusremotewrite     # Prometheus
         - kafka                      # 归档
-    
+
     # Logs Pipeline
     logs:
       receivers: [otlp]
@@ -707,11 +707,11 @@ extensions:
   file_storage:
     directory: /var/lib/otelcol
     timeout: 10s
-  
+
   # 健康检查
   health_check:
     endpoint: 0.0.0.0:13133
-  
+
   # PPROFextensions
   pprof:
     endpoint: 0.0.0.0:1777
@@ -729,12 +729,12 @@ processors:
     check_interval: 1s
     limit_mib: 2048
     spike_limit_mib: 512
-  
+
   batch:
     timeout: 10s
     send_batch_size: 8192
     send_batch_max_size: 16384
-  
+
   # 资源检测
   resourcedetection:
     detectors: [env, system]
@@ -761,7 +761,7 @@ exporters:
       num_consumers: 20
       queue_size: 10000
       storage: file_storage
-  
+
   # 备份后端
   otlp/backup:
     endpoint: backup-backend.example.com:4317
@@ -781,7 +781,7 @@ exporters:
       num_consumers: 10
       queue_size: 5000
       storage: file_storage
-  
+
   # Kafka归档（长期存储）
   kafka/archive:
     brokers:
@@ -805,7 +805,7 @@ exporters:
 
 service:
   extensions: [file_storage, health_check, pprof]
-  
+
   pipelines:
     traces:
       receivers: [otlp]
@@ -817,7 +817,7 @@ service:
         - otlp/primary    # 主后端（实时）
         - otlp/backup     # 备份后端（实时）
         - kafka/archive   # Kafka（归档）
-    
+
     metrics:
       receivers: [otlp]
       processors:
@@ -828,7 +828,7 @@ service:
         - otlp/primary
         - otlp/backup
         - kafka/archive
-    
+
     logs:
       receivers: [otlp]
       processors:
@@ -839,7 +839,7 @@ service:
         - otlp/primary
         - otlp/backup
         - kafka/archive
-  
+
   telemetry:
     logs:
       level: info
@@ -866,7 +866,7 @@ service:
 
 ---
 
-**文档维护**: OTLP深度梳理项目组  
-**最后更新**: 2025年10月8日  
-**文档版本**: v1.0  
+**文档维护**: OTLP深度梳理项目组
+**最后更新**: 2025年10月8日
+**文档版本**: v1.0
 **质量等级**: ⭐⭐⭐⭐⭐

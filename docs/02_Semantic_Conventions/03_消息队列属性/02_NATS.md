@@ -1,6 +1,6 @@
 # NATS语义约定详解
 
-> **云原生消息系统**: NATS Tracing与Metrics完整规范  
+> **云原生消息系统**: NATS Tracing与Metrics完整规范
 > **最后更新**: 2025年10月8日
 
 ---
@@ -79,9 +79,9 @@ JetStream (持久化):
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 1. Core NATS (Fire-and-Forget)
-   
+
    Publisher → [NATS Server] → Subscribers
-   
+
    特点:
    - 无持久化
    - At-most-once
@@ -91,9 +91,9 @@ JetStream (持久化):
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 2. JetStream (Persistent)
-   
+
    Publisher → [Stream] → Consumer
-   
+
    特点:
    - 消息持久化
    - At-least-once
@@ -188,7 +188,7 @@ span.SetAttributes(
     attribute.String("messaging.nats.jetstream.stream", "ORDERS"),
     attribute.String("messaging.message.id", msgID),
     attribute.Int64("messaging.nats.jetstream.sequence", pubAck.Sequence),
-    attribute.String("messaging.nats.jetstream.duplicate", 
+    attribute.String("messaging.nats.jetstream.duplicate",
         fmt.Sprintf("%v", pubAck.Duplicate)),
 )
 ```
@@ -250,11 +250,11 @@ span.SetAttributes(
     attribute.String("messaging.nats.jetstream.consumer", "order-processor"),
     attribute.String("messaging.nats.jetstream.stream", "ORDERS"),
     attribute.String("messaging.destination.name", msg.Subject),
-    attribute.Int64("messaging.nats.jetstream.sequence", 
+    attribute.Int64("messaging.nats.jetstream.sequence",
         meta.Sequence.Stream),
-    attribute.Int("messaging.nats.jetstream.num_delivered", 
+    attribute.Int("messaging.nats.jetstream.num_delivered",
         meta.NumDelivered),
-    attribute.Int("messaging.nats.jetstream.num_pending", 
+    attribute.Int("messaging.nats.jetstream.num_pending",
         meta.NumPending),
 )
 ```
@@ -320,7 +320,7 @@ package main
 import (
     "context"
     "encoding/json"
-    
+
     "github.com/nats-io/nats.go"
     "go.opentelemetry.io/otel"
     "go.opentelemetry.io/otel/attribute"
@@ -343,7 +343,7 @@ func PublishWithTracing(
     data map[string]interface{},
 ) error {
     tracer := otel.Tracer("nats-publisher")
-    
+
     // 创建Span
     ctx, span := tracer.Start(ctx, "nats.publish",
         trace.WithSpanKind(trace.SpanKindProducer),
@@ -355,19 +355,19 @@ func PublishWithTracing(
         ),
     )
     defer span.End()
-    
+
     // 注入Trace Context到消息
     msg := MessageWithContext{
         Data: data,
     }
-    
+
     // 使用MapCarrier提取context
     carrier := propagation.MapCarrier{}
     otel.GetTextMapPropagator().Inject(ctx, carrier)
-    
+
     msg.TraceParent = carrier["traceparent"]
     msg.TraceState = carrier["tracestate"]
-    
+
     // 序列化消息
     payload, err := json.Marshal(msg)
     if err != nil {
@@ -375,19 +375,19 @@ func PublishWithTracing(
         span.SetStatus(codes.Error, "marshal failed")
         return err
     }
-    
+
     // 添加消息大小属性
     span.SetAttributes(
         attribute.Int("messaging.message.body.size", len(payload)),
     )
-    
+
     // 发布消息
     if err := nc.Publish(subject, payload); err != nil {
         span.RecordError(err)
         span.SetStatus(codes.Error, "publish failed")
         return err
     }
-    
+
     span.SetStatus(codes.Ok, "published")
     return nil
 }
@@ -403,7 +403,7 @@ func SubscribeWithTracing(
     handler func(context.Context, map[string]interface{}) error,
 ) (*nats.Subscription, error) {
     tracer := otel.Tracer("nats-subscriber")
-    
+
     _, err := nc.QueueSubscribe(subject, queueGroup, func(m *nats.Msg) {
         // 解析消息
         var msg MessageWithContext
@@ -411,18 +411,18 @@ func SubscribeWithTracing(
             // 错误处理
             return
         }
-        
+
         // 提取Trace Context
         carrier := propagation.MapCarrier{
             "traceparent": msg.TraceParent,
             "tracestate":  msg.TraceState,
         }
-        
+
         ctx := otel.GetTextMapPropagator().Extract(
             context.Background(),
             carrier,
         )
-        
+
         // 创建Consumer Span
         ctx, span := tracer.Start(ctx, "nats.receive",
             trace.WithSpanKind(trace.SpanKindConsumer),
@@ -435,17 +435,17 @@ func SubscribeWithTracing(
             ),
         )
         defer span.End()
-        
+
         // 处理消息
         if err := handler(ctx, msg.Data); err != nil {
             span.RecordError(err)
             span.SetStatus(codes.Error, "handler failed")
             return
         }
-        
+
         span.SetStatus(codes.Ok, "processed")
     })
-    
+
     return nil, err
 }
 ```
@@ -460,7 +460,7 @@ func PublishJetStreamWithTracing(
     data []byte,
 ) error {
     tracer := otel.Tracer("jetstream-publisher")
-    
+
     ctx, span := tracer.Start(ctx, "jetstream.publish",
         trace.WithSpanKind(trace.SpanKindProducer),
         trace.WithAttributes(
@@ -470,20 +470,20 @@ func PublishJetStreamWithTracing(
         ),
     )
     defer span.End()
-    
+
     // 创建消息
     msg := nats.NewMsg(subject)
     msg.Data = data
-    
+
     // JetStream支持Headers，直接注入
     if msg.Header == nil {
         msg.Header = nats.Header{}
     }
-    
+
     // 注入Trace Context到Headers
     otel.GetTextMapPropagator().Inject(ctx,
         propagation.HeaderCarrier(msg.Header))
-    
+
     // 发布消息
     pubAck, err := js.PublishMsg(msg)
     if err != nil {
@@ -491,17 +491,17 @@ func PublishJetStreamWithTracing(
         span.SetStatus(codes.Error, "publish failed")
         return err
     }
-    
+
     // 记录JetStream属性
     span.SetAttributes(
         attribute.String("messaging.nats.jetstream.stream", pubAck.Stream),
-        attribute.Int64("messaging.nats.jetstream.sequence", 
+        attribute.Int64("messaging.nats.jetstream.sequence",
             int64(pubAck.Sequence)),
-        attribute.Bool("messaging.nats.jetstream.duplicate", 
+        attribute.Bool("messaging.nats.jetstream.duplicate",
             pubAck.Duplicate),
         attribute.Int("messaging.message.body.size", len(data)),
     )
-    
+
     span.SetStatus(codes.Ok, "published")
     return nil
 }
@@ -516,31 +516,31 @@ func ConsumeJetStreamWithTracing(
     handler func(context.Context, *nats.Msg) error,
 ) error {
     tracer := otel.Tracer("jetstream-consumer")
-    
+
     // 订阅
     sub, err := js.PullSubscribe("", consumerName,
         nats.BindStream(streamName))
     if err != nil {
         return err
     }
-    
+
     // 消费循环
     for {
         msgs, err := sub.Fetch(10, nats.MaxWait(5*time.Second))
         if err != nil {
             continue
         }
-        
+
         for _, msg := range msgs {
             // 提取Trace Context
             ctx := otel.GetTextMapPropagator().Extract(
                 context.Background(),
                 propagation.HeaderCarrier(msg.Header),
             )
-            
+
             // 获取元数据
             meta, _ := msg.Metadata()
-            
+
             // 创建Span
             ctx, span := tracer.Start(ctx, "jetstream.receive",
                 trace.WithSpanKind(trace.SpanKindConsumer),
@@ -548,21 +548,21 @@ func ConsumeJetStreamWithTracing(
                     semconv.MessagingSystemKey.String("nats"),
                     semconv.MessagingOperationKey.String("receive"),
                     semconv.MessagingDestinationNameKey.String(msg.Subject),
-                    attribute.String("messaging.nats.jetstream.consumer", 
+                    attribute.String("messaging.nats.jetstream.consumer",
                         consumerName),
-                    attribute.String("messaging.nats.jetstream.stream", 
+                    attribute.String("messaging.nats.jetstream.stream",
                         streamName),
-                    attribute.Int64("messaging.nats.jetstream.sequence", 
+                    attribute.Int64("messaging.nats.jetstream.sequence",
                         int64(meta.Sequence.Stream)),
-                    attribute.Int("messaging.nats.jetstream.num_delivered", 
+                    attribute.Int("messaging.nats.jetstream.num_delivered",
                         int(meta.NumDelivered)),
-                    attribute.Int("messaging.nats.jetstream.num_pending", 
+                    attribute.Int("messaging.nats.jetstream.num_pending",
                         int(meta.NumPending)),
-                    attribute.Int("messaging.message.body.size", 
+                    attribute.Int("messaging.message.body.size",
                         len(msg.Data)),
                 ),
             )
-            
+
             // 处理消息
             if err := handler(ctx, msg); err != nil {
                 span.RecordError(err)
@@ -572,11 +572,11 @@ func ConsumeJetStreamWithTracing(
                 span.SetStatus(codes.Ok, "processed")
                 msg.Ack() // ACK
             }
-            
+
             span.End()
         }
     }
-    
+
     return nil
 }
 ```
@@ -619,20 +619,20 @@ async def publish_with_tracing(
         # 注入trace context
         carrier = {}
         propagate.inject(carrier)
-        
+
         # 封装消息
         message = {
             "traceparent": carrier.get("traceparent"),
             "tracestate": carrier.get("tracestate"),
             "data": data
         }
-        
+
         # 序列化
         payload = json.dumps(message).encode()
-        
+
         # 添加消息大小
         span.set_attribute("messaging.message.body.size", len(payload))
-        
+
         try:
             # 发布
             await nc.publish(subject, payload)
@@ -652,14 +652,14 @@ async def subscribe_with_tracing(
     async def message_handler(msg):
         # 解析消息
         message = json.loads(msg.data.decode())
-        
+
         # 提取trace context
         carrier = {
             "traceparent": message.get("traceparent"),
             "tracestate": message.get("tracestate")
         }
         ctx = propagate.extract(carrier)
-        
+
         # 创建span
         with tracer.start_as_current_span(
             "nats.receive",
@@ -680,7 +680,7 @@ async def subscribe_with_tracing(
             except Exception as e:
                 span.record_exception(e)
                 span.set_status(Status(StatusCode.ERROR))
-    
+
     await nc.subscribe(subject, queue=queue, cb=message_handler)
 ```
 
@@ -705,11 +705,11 @@ async def publish_jetstream_with_tracing(
         # JetStream支持headers
         headers = {}
         propagate.inject(headers)
-        
+
         try:
             # 发布消息
             ack = await js.publish(subject, data, headers=headers)
-            
+
             # 记录JetStream属性
             span.set_attributes({
                 "messaging.nats.jetstream.stream": ack.stream,
@@ -717,7 +717,7 @@ async def publish_jetstream_with_tracing(
                 "messaging.nats.jetstream.duplicate": ack.duplicate,
                 "messaging.message.body.size": len(data),
             })
-            
+
             span.set_status(Status(StatusCode.OK))
         except Exception as e:
             span.record_exception(e)
@@ -733,19 +733,19 @@ async def consume_jetstream_with_tracing(
     """JetStream消费with tracing"""
     # 创建pull consumer
     psub = await js.pull_subscribe("", consumer_name, stream=stream_name)
-    
+
     while True:
         try:
             # 拉取消息
             msgs = await psub.fetch(10, timeout=5.0)
-            
+
             for msg in msgs:
                 # 提取trace context
                 ctx = propagate.extract(msg.headers or {})
-                
+
                 # 获取元数据
                 meta = msg.metadata
-                
+
                 # 创建span
                 with tracer.start_as_current_span(
                     "jetstream.receive",
@@ -772,7 +772,7 @@ async def consume_jetstream_with_tracing(
                         span.record_exception(e)
                         span.set_status(Status(StatusCode.ERROR))
                         await msg.nak()
-        
+
         except asyncio.TimeoutError:
             continue
 ```
@@ -818,13 +818,13 @@ var (
         metric.WithUnit("ms"),
         metric.WithDescription("NATS publish latency"),
     )
-    
+
     publishMessages = meter.Int64Counter(
         "messaging.nats.publish.messages",
         metric.WithUnit("messages"),
         metric.WithDescription("Number of published messages"),
     )
-    
+
     pendingMessages = meter.Int64ObservableGauge(
         "messaging.nats.pending.messages",
         metric.WithUnit("messages"),
@@ -835,21 +835,21 @@ var (
 // 使用
 func publish(nc *nats.Conn, subject string, data []byte) error {
     start := time.Now()
-    
+
     err := nc.Publish(subject, data)
-    
+
     duration := time.Since(start).Milliseconds()
     publishDuration.Record(ctx, float64(duration),
         attribute.String("subject", subject),
         attribute.String("result", status(err)),
     )
-    
+
     if err == nil {
         publishMessages.Add(ctx, 1,
             attribute.String("subject", subject),
         )
     }
-    
+
     return err
 }
 ```
@@ -973,7 +973,7 @@ func RequestReplyWithTracing(
     data []byte,
 ) ([]byte, error) {
     tracer := otel.Tracer("nats-request-reply")
-    
+
     ctx, span := tracer.Start(ctx, "nats.request",
         trace.WithSpanKind(trace.SpanKindClient),
         trace.WithAttributes(
@@ -983,16 +983,16 @@ func RequestReplyWithTracing(
         ),
     )
     defer span.End()
-    
+
     // 创建消息with trace context
     msg := MessageWithContext{Data: make(map[string]interface{})}
     carrier := propagation.MapCarrier{}
     otel.GetTextMapPropagator().Inject(ctx, carrier)
     msg.TraceParent = carrier["traceparent"]
     msg.TraceState = carrier["tracestate"]
-    
+
     payload, _ := json.Marshal(msg)
-    
+
     // 发送请求
     resp, err := nc.Request(subject, payload, 5*time.Second)
     if err != nil {
@@ -1000,12 +1000,12 @@ func RequestReplyWithTracing(
         span.SetStatus(codes.Error, "request failed")
         return nil, err
     }
-    
+
     span.SetAttributes(
         attribute.Int("messaging.response.body.size", len(resp.Data)),
     )
     span.SetStatus(codes.Ok, "success")
-    
+
     return resp.Data, nil
 }
 
@@ -1016,12 +1016,12 @@ func ReplyHandlerWithTracing(
     handler func(context.Context, map[string]interface{}) (interface{}, error),
 ) error {
     tracer := otel.Tracer("nats-reply-handler")
-    
+
     _, err := nc.Subscribe(subject, func(m *nats.Msg) {
         // 解析请求
         var msg MessageWithContext
         json.Unmarshal(m.Data, &msg)
-        
+
         // 提取context
         carrier := propagation.MapCarrier{
             "traceparent": msg.TraceParent,
@@ -1030,7 +1030,7 @@ func ReplyHandlerWithTracing(
         ctx := otel.GetTextMapPropagator().Extract(
             context.Background(), carrier,
         )
-        
+
         // 创建span
         ctx, span := tracer.Start(ctx, "nats.reply",
             trace.WithSpanKind(trace.SpanKindServer),
@@ -1042,7 +1042,7 @@ func ReplyHandlerWithTracing(
             ),
         )
         defer span.End()
-        
+
         // 处理请求
         result, err := handler(ctx, msg.Data)
         if err != nil {
@@ -1051,14 +1051,14 @@ func ReplyHandlerWithTracing(
             m.Respond([]byte("error"))
             return
         }
-        
+
         // 发送响应
         response, _ := json.Marshal(result)
         m.Respond(response)
-        
+
         span.SetStatus(codes.Ok, "replied")
     })
-    
+
     return err
 }
 ```
@@ -1075,17 +1075,17 @@ func StartWorkerPool(
     handler func(context.Context, []byte) error,
 ) error {
     tracer := otel.Tracer("nats-worker")
-    
+
     for i := 0; i < numWorkers; i++ {
         workerID := i
-        
+
         _, err := nc.QueueSubscribe(subject, queueGroup, func(m *nats.Msg) {
             // 提取context (假设使用JetStream with headers)
             ctx := otel.GetTextMapPropagator().Extract(
                 context.Background(),
                 propagation.HeaderCarrier(m.Header),
             )
-            
+
             ctx, span := tracer.Start(ctx, "nats.worker.process",
                 trace.WithSpanKind(trace.SpanKindConsumer),
                 trace.WithAttributes(
@@ -1097,7 +1097,7 @@ func StartWorkerPool(
                     attribute.Int("messaging.message.body.size", len(m.Data)),
                 ),
             )
-            
+
             // 处理消息
             if err := handler(ctx, m.Data); err != nil {
                 span.RecordError(err)
@@ -1105,24 +1105,24 @@ func StartWorkerPool(
             } else {
                 span.SetStatus(codes.Ok, "processed")
             }
-            
+
             span.End()
         })
-        
+
         if err != nil {
             return err
         }
     }
-    
+
     return nil
 }
 ```
 
 ---
 
-**文档状态**: ✅ 完成  
-**NATS版本**: v2.10.0+  
-**JetStream**: v2.2.0+  
+**文档状态**: ✅ 完成
+**NATS版本**: v2.10.0+
+**JetStream**: v2.2.0+
 **适用场景**: 微服务、事件驱动、实时通信
 
 **关键特性**:

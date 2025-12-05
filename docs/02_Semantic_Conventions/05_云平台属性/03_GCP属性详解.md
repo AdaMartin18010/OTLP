@@ -1,6 +1,6 @@
 # GCP云平台属性详解
 
-> **Google Cloud Platform**: Resource与Span完整语义约定规范  
+> **Google Cloud Platform**: Resource与Span完整语义约定规范
 > **最后更新**: 2025年10月8日
 
 ---
@@ -231,30 +231,30 @@ func DetectGCE(ctx context.Context) (*resource.Resource, error) {
     client := &http.Client{
         Timeout: 2 * time.Second,
     }
-    
+
     // 获取实例ID
     instanceID, err := gcpMetadataRequest(ctx, client, "instance/id")
     if err != nil {
         return nil, err
     }
-    
+
     // 获取实例名称
     instanceName, _ := gcpMetadataRequest(ctx, client, "instance/name")
-    
+
     // 获取机器类型
     machineType, _ := gcpMetadataRequest(ctx, client, "instance/machine-type")
     // machineType格式: "projects/PROJECT_NUMBER/machineTypes/n1-standard-4"
     machineType = extractMachineType(machineType)
-    
+
     // 获取Zone
     zone, _ := gcpMetadataRequest(ctx, client, "instance/zone")
     // zone格式: "projects/PROJECT_NUMBER/zones/us-central1-a"
     zone = extractZone(zone)
     region := zoneToRegion(zone)
-    
+
     // 获取项目ID
     projectID, _ := gcpMetadataRequest(ctx, client, "project/project-id")
-    
+
     // 构建Resource
     attrs := []attribute.KeyValue{
         semconv.CloudProviderGCP,
@@ -270,7 +270,7 @@ func DetectGCE(ctx context.Context) (*resource.Resource, error) {
         attribute.String("gcp.gce.machine.type", machineType),
         attribute.String("gcp.project.id", projectID),
     }
-    
+
     return resource.NewWithAttributes(semconv.SchemaURL, attrs...), nil
 }
 
@@ -286,21 +286,21 @@ func gcpMetadataRequest(
     if err != nil {
         return "", err
     }
-    
+
     // GCP Metadata Server必需Header
     req.Header.Set("Metadata-Flavor", "Google")
-    
+
     resp, err := client.Do(req)
     if err != nil {
         return "", err
     }
     defer resp.Body.Close()
-    
+
     body, err := io.ReadAll(resp.Body)
     if err != nil {
         return "", err
     }
-    
+
     return string(body), nil
 }
 
@@ -380,27 +380,27 @@ func DetectGKE(ctx context.Context) (*resource.Resource, error) {
     if err != nil {
         return nil, err
     }
-    
+
     // 检查是否在GKE中
     clusterName := os.Getenv("GKE_CLUSTER_NAME")
     if clusterName == "" {
         // 从GCE metadata获取
-        clusterName, _ = gcpMetadataRequest(ctx, 
+        clusterName, _ = gcpMetadataRequest(ctx,
             http.DefaultClient,
             "instance/attributes/cluster-name")
     }
-    
+
     if clusterName == "" {
         return k8sResource, nil // 不是GKE
     }
-    
+
     // 获取GCP信息
     attrs := []attribute.KeyValue{
         semconv.CloudProviderGCP,
         semconv.CloudPlatformGCPKubernetesEngine,
         attribute.String("gcp.gke.cluster.name", clusterName),
     }
-    
+
     // 获取GCE元数据
     if projectID, err := gcpMetadataRequest(ctx, http.DefaultClient,
         "project/project-id"); err == nil {
@@ -408,7 +408,7 @@ func DetectGKE(ctx context.Context) (*resource.Resource, error) {
             semconv.CloudAccountIDKey.String(projectID),
             attribute.String("gcp.project.id", projectID))
     }
-    
+
     if zone, err := gcpMetadataRequest(ctx, http.DefaultClient,
         "instance/zone"); err == nil {
         zone = extractZone(zone)
@@ -418,9 +418,9 @@ func DetectGKE(ctx context.Context) (*resource.Resource, error) {
             semconv.CloudAvailabilityZoneKey.String(zone),
             attribute.String("gcp.gke.cluster.location", zone))
     }
-    
+
     gkeResource := resource.NewWithAttributes(semconv.SchemaURL, attrs...)
-    
+
     // 合并K8s和GKE资源
     return resource.Merge(k8sResource, gkeResource)
 }
@@ -548,29 +548,29 @@ func DetectCloudRun(ctx context.Context) (*resource.Resource, error) {
     serviceName := os.Getenv("K_SERVICE")
     revision := os.Getenv("K_REVISION")
     configuration := os.Getenv("K_CONFIGURATION")
-    
+
     if serviceName == "" {
         return nil, errors.New("not running in Cloud Run")
     }
-    
+
     attrs := []attribute.KeyValue{
         semconv.CloudProviderGCP,
         semconv.CloudPlatformKey.String("gcp_cloud_run"),
         semconv.ServiceNameKey.String(serviceName),
         attribute.String("gcp.cloud_run.service.name", serviceName),
     }
-    
+
     if revision != "" {
         attrs = append(attrs,
             attribute.String("gcp.cloud_run.revision.name", revision))
     }
-    
+
     if configuration != "" {
         attrs = append(attrs,
-            attribute.String("gcp.cloud_run.configuration.name", 
+            attribute.String("gcp.cloud_run.configuration.name",
                 configuration))
     }
-    
+
     // 从GCP Metadata获取项目和区域
     if projectID, err := gcpMetadataRequest(ctx, http.DefaultClient,
         "project/project-id"); err == nil {
@@ -578,13 +578,13 @@ func DetectCloudRun(ctx context.Context) (*resource.Resource, error) {
             semconv.CloudAccountIDKey.String(projectID),
             attribute.String("gcp.project.id", projectID))
     }
-    
+
     // Cloud Run的region从GOOGLE_CLOUD_REGION环境变量获取
     if region := os.Getenv("GOOGLE_CLOUD_REGION"); region != "" {
         attrs = append(attrs,
             semconv.CloudRegionKey.String(region))
     }
-    
+
     return resource.NewWithAttributes(semconv.SchemaURL, attrs...), nil
 }
 ```
@@ -633,36 +633,36 @@ def detect_app_engine() -> Resource:
     service_name = os.getenv("GAE_SERVICE")
     version_id = os.getenv("GAE_VERSION")
     instance_id = os.getenv("GAE_INSTANCE")
-    
+
     if not service_name:
         return Resource.empty()
-    
+
     attributes = {
         ResourceAttributes.CLOUD_PROVIDER: CloudProviderValues.GCP.value,
         ResourceAttributes.CLOUD_PLATFORM: CloudPlatformValues.GCP_APP_ENGINE.value,
         ResourceAttributes.FAAS_NAME: service_name,
         "gcp.app_engine.service.name": service_name,
     }
-    
+
     if version_id:
         attributes[ResourceAttributes.FAAS_VERSION] = version_id
         attributes["gcp.app_engine.version.id"] = version_id
-    
+
     if instance_id:
         attributes[ResourceAttributes.FAAS_INSTANCE] = instance_id
         attributes["gcp.app_engine.instance.id"] = instance_id
-    
+
     # 项目ID
     if project_id := os.getenv("GOOGLE_CLOUD_PROJECT"):
         attributes[ResourceAttributes.CLOUD_ACCOUNT_ID] = project_id
         attributes["gcp.project.id"] = project_id
-    
+
     # Region
     if region := os.getenv("GAE_ENV"):
         # GAE_ENV: "standard" or "flex"
         # 需要从其他来源获取实际region
         pass
-    
+
     return Resource.create(attributes)
 ```
 
@@ -688,25 +688,25 @@ func DetectCloudFunctions(ctx context.Context) (*resource.Resource, error) {
         // 尝试Gen2环境变量
         functionName = os.Getenv("K_SERVICE")
     }
-    
+
     if functionName == "" {
         return nil, errors.New("not running in Cloud Functions")
     }
-    
+
     attrs := []attribute.KeyValue{
         semconv.CloudProviderGCP,
         semconv.CloudPlatformGCPCloudFunctions,
         semconv.FaaSNameKey.String(functionName),
         attribute.String("gcp.cloud_function.name", functionName),
     }
-    
+
     // Region
     if region := os.Getenv("FUNCTION_REGION"); region != "" {
         attrs = append(attrs, semconv.CloudRegionKey.String(region))
-        attrs = append(attrs, 
+        attrs = append(attrs,
             attribute.String("gcp.cloud_function.region", region))
     }
-    
+
     // 项目ID
     if projectID, err := gcpMetadataRequest(ctx, http.DefaultClient,
         "project/project-id"); err == nil {
@@ -714,13 +714,13 @@ func DetectCloudFunctions(ctx context.Context) (*resource.Resource, error) {
             semconv.CloudAccountIDKey.String(projectID),
             attribute.String("gcp.project.id", projectID))
     }
-    
+
     // Runtime
     if runtime := os.Getenv("FUNCTION_RUNTIME"); runtime != "" {
         attrs = append(attrs,
             attribute.String("gcp.cloud_function.runtime", runtime))
     }
-    
+
     // Gen1 vs Gen2
     if os.Getenv("K_SERVICE") != "" {
         attrs = append(attrs,
@@ -729,7 +729,7 @@ func DetectCloudFunctions(ctx context.Context) (*resource.Resource, error) {
         attrs = append(attrs,
             attribute.String("gcp.cloud_function.generation", "1"))
     }
-    
+
     return resource.NewWithAttributes(semconv.SchemaURL, attrs...), nil
 }
 ```
@@ -762,20 +762,20 @@ def detect_gce() -> Resource:
             timeout=2
         )
         response.raise_for_status()
-        
+
         instance_id = response.text
-        
+
         # 获取其他元数据
         instance_name = gcp_metadata_request("instance/name")
         machine_type = gcp_metadata_request("instance/machine-type")
         zone = gcp_metadata_request("instance/zone")
         project_id = gcp_metadata_request("project/project-id")
-        
+
         # 提取简短名称
         machine_type = machine_type.split("/")[-1] if machine_type else ""
         zone = zone.split("/")[-1] if zone else ""
         region = "-".join(zone.split("-")[:-1]) if zone else ""
-        
+
         attributes = {
             ResourceAttributes.CLOUD_PROVIDER: CloudProviderValues.GCP.value,
             ResourceAttributes.CLOUD_PLATFORM: CloudPlatformValues.GCP_COMPUTE_ENGINE.value,
@@ -790,9 +790,9 @@ def detect_gce() -> Resource:
             "gcp.gce.machine.type": machine_type,
             "gcp.project.id": project_id,
         }
-        
+
         return Resource.create(attributes)
-        
+
     except Exception:
         return Resource.empty()
 
@@ -811,32 +811,32 @@ def gcp_metadata_request(path: str) -> str:
 def detect_cloud_functions() -> Resource:
     """检测Cloud Functions环境"""
     function_name = os.getenv("FUNCTION_NAME") or os.getenv("K_SERVICE")
-    
+
     if not function_name:
         return Resource.empty()
-    
+
     attributes = {
         ResourceAttributes.CLOUD_PROVIDER: CloudProviderValues.GCP.value,
         ResourceAttributes.CLOUD_PLATFORM: CloudPlatformValues.GCP_CLOUD_FUNCTIONS.value,
         ResourceAttributes.FAAS_NAME: function_name,
         "gcp.cloud_function.name": function_name,
     }
-    
+
     # Region
     if region := os.getenv("FUNCTION_REGION"):
         attributes[ResourceAttributes.CLOUD_REGION] = region
         attributes["gcp.cloud_function.region"] = region
-    
+
     # 项目ID
     project_id = os.getenv("GCP_PROJECT") or gcp_metadata_request("project/project-id")
     if project_id:
         attributes[ResourceAttributes.CLOUD_ACCOUNT_ID] = project_id
         attributes["gcp.project.id"] = project_id
-    
+
     # Generation
     generation = "2" if os.getenv("K_SERVICE") else "1"
     attributes["gcp.cloud_function.generation"] = generation
-    
+
     return Resource.create(attributes)
 ```
 
@@ -857,20 +857,20 @@ exporters:
     project: ${GCP_PROJECT_ID}
     # 使用默认凭据
     # use_default_credentials: true
-    
+
     # 或使用服务账号
     # credentials_file: /path/to/key.json
-    
+
     # Trace配置
     trace:
       endpoint: cloudtrace.googleapis.com:443
       use_insecure: false
-      
+
     # Metric配置
     metric:
       endpoint: monitoring.googleapis.com:443
       use_insecure: false
-      
+
     # 资源映射
     resource_mappings:
       - source_type: gce_instance
@@ -884,7 +884,7 @@ service:
       receivers: [otlp]
       processors: [batch, resource]
       exporters: [googlecloud]
-    
+
     metrics:
       receivers: [otlp]
       processors: [batch]
@@ -908,47 +908,47 @@ func InitCloudTrace(ctx context.Context, projectID string) (*trace.TracerProvide
     if err != nil {
         return nil, err
     }
-    
+
     // 检测GCP资源
     gcpResource, _ := DetectGCP(ctx)
-    
+
     // 创建TracerProvider
     tp := trace.NewTracerProvider(
         trace.WithBatcher(exporter),
         trace.WithResource(gcpResource),
     )
-    
+
     return tp, nil
 }
 
 func DetectGCP(ctx context.Context) (*resource.Resource, error) {
     // 尝试各种GCP环境
-    
+
     // 1. Cloud Functions
     if res, err := DetectCloudFunctions(ctx); err == nil {
         return res, nil
     }
-    
+
     // 2. Cloud Run
     if res, err := DetectCloudRun(ctx); err == nil {
         return res, nil
     }
-    
+
     // 3. GKE
     if res, err := DetectGKE(ctx); err == nil {
         return res, nil
     }
-    
+
     // 4. GCE
     if res, err := DetectGCE(ctx); err == nil {
         return res, nil
     }
-    
+
     // 5. App Engine
     if res, err := DetectAppEngine(ctx); err == nil {
         return res, nil
     }
-    
+
     return resource.Default(), nil
 }
 ```
@@ -999,9 +999,9 @@ func GetGCPMetadata(ctx context.Context) (map[string]string, error) {
     gcpMetadataOnce.Do(func() {
         ctx, cancel := context.WithTimeout(ctx, 2*time.Second)
         defer cancel()
-        
+
         gcpMetadataCache = make(map[string]string)
-        
+
         // 批量获取元数据
         paths := []string{
             "instance/id",
@@ -1010,15 +1010,15 @@ func GetGCPMetadata(ctx context.Context) (map[string]string, error) {
             "instance/zone",
             "project/project-id",
         }
-        
+
         for _, path := range paths {
-            if value, err := gcpMetadataRequest(ctx, 
+            if value, err := gcpMetadataRequest(ctx,
                 http.DefaultClient, path); err == nil {
                 gcpMetadataCache[path] = value
             }
         }
     })
-    
+
     return gcpMetadataCache, gcpMetadataErr
 }
 ```
@@ -1062,8 +1062,8 @@ Cloud Monitoring定价:
 
 ---
 
-**文档状态**: ✅ 完成  
-**GCP SDK版本**: Latest  
+**文档状态**: ✅ 完成
+**GCP SDK版本**: Latest
 **适用场景**: GCP云原生应用、Kubernetes、Serverless
 
 **关键特性**:

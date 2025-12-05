@@ -1,7 +1,7 @@
 # Collector Receiver 配置详解
 
-> **标准版本**: v1.27.0  
-> **状态**: Stable  
+> **标准版本**: v1.27.0
+> **状态**: Stable
 > **最后更新**: 2025年10月8日
 
 ---
@@ -93,7 +93,7 @@ receivers:
         write_buffer_size: 524288
         # 连接超时
         transport: tcp
-        
+
       # HTTP协议
       http:
         endpoint: 0.0.0.0:4318
@@ -251,32 +251,32 @@ receivers:
                 names:
                   - default
                   - production
-          
+
           # 重标记规则
           relabel_configs:
             # 只抓取有注解的Pod
             - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
               action: keep
               regex: true
-            
+
             # 使用注解中的路径
             - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
               action: replace
               target_label: __metrics_path__
               regex: (.+)
-            
+
             # 使用注解中的端口
             - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
               action: replace
               regex: ([^:]+)(?::\d+)?;(\d+)
               replacement: $1:$2
               target_label: __address__
-            
+
             # 添加namespace标签
             - source_labels: [__meta_kubernetes_namespace]
               action: replace
               target_label: kubernetes_namespace
-            
+
             # 添加pod name标签
             - source_labels: [__meta_kubernetes_pod_name]
               action: replace
@@ -297,7 +297,7 @@ receivers:
               services:
                 - 'api-service'
                 - 'web-service'
-          
+
           relabel_configs:
             - source_labels: [__meta_consul_service]
               target_label: service
@@ -317,21 +317,21 @@ receivers:
         - job_name: 'app'
           static_configs:
             - targets: ['localhost:8080']
-          
+
           # 抓取后重标记
           metric_relabel_configs:
             # 添加环境标签
             - target_label: environment
               replacement: production
-            
+
             # 删除高基数标签
             - source_labels: [user_id]
               action: labeldrop
-            
+
             # 重命名标签
             - source_labels: [old_label]
               target_label: new_label
-            
+
             # 过滤指标
             - source_labels: [__name__]
               regex: 'debug_.*'
@@ -353,15 +353,15 @@ receivers:
       # gRPC协议（端口14250）
       grpc:
         endpoint: 0.0.0.0:14250
-      
+
       # Thrift HTTP协议（端口14268）
       thrift_http:
         endpoint: 0.0.0.0:14268
-      
+
       # Thrift Binary协议（端口6832）
       thrift_binary:
         endpoint: 0.0.0.0:6832
-      
+
       # Thrift Compact协议（端口6831）
       thrift_compact:
         endpoint: 0.0.0.0:6831
@@ -380,19 +380,19 @@ receivers:
         tls:
           cert_file: /path/to/cert.pem
           key_file: /path/to/key.pem
-      
+
       thrift_http:
         endpoint: 0.0.0.0:14268
         cors:
           allowed_origins:
             - "*"
-      
+
       thrift_binary:
         endpoint: 0.0.0.0:6832
         # UDP缓冲区大小
         queue_size: 5000
         max_packet_size: 65000
-      
+
       thrift_compact:
         endpoint: 0.0.0.0:6831
         queue_size: 5000
@@ -433,16 +433,16 @@ receivers:
       - kafka1.example.com:9092
       - kafka2.example.com:9092
       - kafka3.example.com:9092
-    
+
     # 消费的topic
     topic: otlp-traces
-    
+
     # 协议（otlp/jaeger/zipkin）
     protocol_version: '2.0.0'
-    
+
     # 消费者组ID
     group_id: otel-collector
-    
+
     # 客户端ID
     client_id: otel-collector-1
 ```
@@ -459,7 +459,7 @@ receivers:
     topic: otlp-traces
     protocol_version: '2.0.0'
     group_id: otel-collector
-    
+
     # 认证配置
     auth:
       sasl:
@@ -469,17 +469,17 @@ receivers:
       tls:
         insecure: false
         ca_file: /path/to/ca.pem
-    
+
     # 元数据配置
     metadata:
       full: false
       retry:
         max: 3
         backoff: 250ms
-    
+
     # 消费者配置
     initial_offset: latest
-    
+
     # 解码配置
     encoding: otlp_proto
 ```
@@ -494,14 +494,14 @@ receivers:
     topic: otlp-traces
     encoding: otlp_proto
     group_id: otel-collector-traces
-  
+
   # Metrics
   kafka/metrics:
     brokers: [kafka.example.com:9092]
     topic: otlp-metrics
     encoding: otlp_proto
     group_id: otel-collector-metrics
-  
+
   # Logs
   kafka/logs:
     brokers: [kafka.example.com:9092]
@@ -525,14 +525,14 @@ receivers:
     include:
       - /var/log/app/*.log
       - /var/log/nginx/access.log
-    
+
     # 排除路径
     exclude:
       - /var/log/app/*.bak
-    
+
     # 起始位置（beginning/end）
     start_at: end
-    
+
     # 包含文件名属性
     include_file_name: true
     include_file_path: true
@@ -609,7 +609,7 @@ receivers:
   hostmetrics:
     # 采集间隔
     collection_interval: 30s
-    
+
     # 采集器配置
     scrapers:
       # CPU指标
@@ -617,37 +617,37 @@ receivers:
         metrics:
           system.cpu.utilization:
             enabled: true
-      
+
       # 磁盘指标
       disk:
         metrics:
           system.disk.io:
             enabled: true
-      
+
       # 文件系统指标
       filesystem:
         metrics:
           system.filesystem.usage:
             enabled: true
-      
+
       # 内存指标
       memory:
         metrics:
           system.memory.usage:
             enabled: true
-      
+
       # 网络指标
       network:
         metrics:
           system.network.io:
             enabled: true
-      
+
       # 负载指标
       load:
         metrics:
           system.cpu.load_average.1m:
             enabled: true
-      
+
       # 进程指标
       processes:
         metrics:
@@ -666,23 +666,23 @@ receivers:
   k8s_cluster:
     # 认证类型
     auth_type: serviceAccount
-    
+
     # 采集间隔
     collection_interval: 30s
-    
+
     # 节点条件报告
     node_conditions_to_report:
       - Ready
       - MemoryPressure
       - DiskPressure
-    
+
     # 分配资源类型
     allocatable_types_to_report:
       - cpu
       - memory
       - storage
       - ephemeral-storage
-    
+
     # 指标配置
     metrics:
       k8s.pod.phase:
@@ -710,7 +710,7 @@ receivers:
         endpoint: 0.0.0.0:4317
       http:
         endpoint: 0.0.0.0:4318
-  
+
   # Jaeger
   jaeger:
     protocols:
@@ -722,11 +722,11 @@ receivers:
         endpoint: 0.0.0.0:6831
       thrift_binary:
         endpoint: 0.0.0.0:6832
-  
+
   # Zipkin
   zipkin:
     endpoint: 0.0.0.0:9411
-  
+
   # Prometheus
   prometheus:
     config:
@@ -755,7 +755,7 @@ receivers:
         # 认证
         auth:
           authenticator: bearertokenauth
-      
+
       http:
         endpoint: 0.0.0.0:4318
         tls:
@@ -828,7 +828,7 @@ receivers:
         cors:
           allowed_origins:
             - https://*.example.com
-  
+
   # 2. Prometheus Receiver（指标拉取）
   prometheus:
     config:
@@ -844,7 +844,7 @@ receivers:
               action: replace
               target_label: __metrics_path__
               regex: (.+)
-  
+
   # 3. Jaeger Receiver（遗留系统）
   jaeger:
     protocols:
@@ -852,7 +852,7 @@ receivers:
         endpoint: 0.0.0.0:14250
       thrift_http:
         endpoint: 0.0.0.0:14268
-  
+
   # 4. Hostmetrics Receiver（系统指标）
   hostmetrics:
     collection_interval: 30s
@@ -862,7 +862,7 @@ receivers:
       disk:
       filesystem:
       network:
-  
+
   # 5. Filelog Receiver（应用日志）
   filelog:
     include:
@@ -900,12 +900,12 @@ service:
       receivers: [otlp, jaeger]
       processors: [memory_limiter, batch]
       exporters: [otlp]
-    
+
     metrics:
       receivers: [otlp, prometheus, hostmetrics]
       processors: [memory_limiter, batch]
       exporters: [otlp]
-    
+
     logs:
       receivers: [otlp, filelog]
       processors: [memory_limiter, batch]
@@ -923,7 +923,7 @@ receivers:
         endpoint: 0.0.0.0:4317
       http:
         endpoint: 0.0.0.0:4318
-  
+
   # Kubernetes集群指标
   k8s_cluster:
     auth_type: serviceAccount
@@ -936,7 +936,7 @@ receivers:
         enabled: true
       k8s.deployment.available:
         enabled: true
-  
+
   # Prometheus服务发现
   prometheus:
     config:
@@ -965,7 +965,7 @@ processors:
         - tag_name: app
           key: app
           from: pod
-  
+
   batch:
     timeout: 10s
 
@@ -979,7 +979,7 @@ service:
       receivers: [otlp]
       processors: [k8sattributes, batch]
       exporters: [otlp]
-    
+
     metrics:
       receivers: [otlp, prometheus, k8s_cluster]
       processors: [k8sattributes, batch]
@@ -1007,7 +1007,7 @@ service:
 
 ---
 
-**文档维护**: OTLP深度梳理项目组  
-**最后更新**: 2025年10月8日  
-**文档版本**: v1.0  
+**文档维护**: OTLP深度梳理项目组
+**最后更新**: 2025年10月8日
+**文档版本**: v1.0
 **质量等级**: ⭐⭐⭐⭐⭐

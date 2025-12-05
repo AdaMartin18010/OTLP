@@ -1,9 +1,9 @@
 # OTLP Arrow完整指南：高效压缩的新一代传输格式
 
-> **文档版本**: 1.0.0  
-> **创建日期**: 2025年10月17日  
-> **OTLP Arrow版本**: v0.23+ (Beta)  
-> **重要性**: ⭐⭐⭐⭐⭐ P0优先级  
+> **文档版本**: 1.0.0
+> **创建日期**: 2025年10月17日
+> **OTLP Arrow版本**: v0.23+ (Beta)
+> **重要性**: ⭐⭐⭐⭐⭐ P0优先级
 > **适用场景**: 高吞吐量、大规模遥测数据传输
 
 ---
@@ -527,24 +527,24 @@ receivers:
         endpoint: 0.0.0.0:4317
         arrow:
           enabled: true
-          
+
           # 批处理配置
           batch_size: 1000              # 每批span数量
           batch_timeout: 1s             # 批处理超时
-          
+
           # 内存配置
           buffer_size: 10485760         # 10 MB缓冲区
           max_buffer_size: 104857600    # 100 MB最大缓冲
-          
+
           # 压缩配置
           compression: zstd             # zstd | gzip | none
           compression_level: 3          # 1-9 (zstd)
-          
+
           # 字典编码配置
           dictionary_enabled: true
           dictionary_threshold: 0.7     # 重复率>70%启用字典
           dictionary_max_size: 65536    # 字典最大条目数
-          
+
           # 性能调优
           worker_count: 4               # 并行worker数量
           prefetch_size: 2              # 预取批次数
@@ -556,30 +556,30 @@ receivers:
 exporters:
   otlp/arrow:
     endpoint: backend:4317
-    
+
     arrow:
       enabled: true
-      
+
       # 流式传输配置
       streaming: true                 # 启用流式传输
       stream_timeout: 30s             # 流超时
       stream_max_age: 5m              # 流最大存活时间
-      
+
       # 批处理配置
       batch_size: 10000               # 发送批大小
       batch_timeout: 5s               # 批超时
-      
+
       # 压缩配置
       compression: zstd
       compression_level: 3
-      
+
       # 重试配置
       retry_on_failure:
         enabled: true
         initial_interval: 5s
         max_interval: 30s
         max_elapsed_time: 5m
-      
+
       # 限流配置
       sending_queue:
         enabled: true
@@ -596,7 +596,7 @@ processors:
     send_batch_size: 10000
     send_batch_max_size: 15000
     timeout: 10s
-    
+
   # Arrow压缩优化处理器
   arrow_compress:
     # 预压缩检测
@@ -628,7 +628,7 @@ import (
     semconv "go.opentelemetry.io/otel/semconv/v1.21.0"
     "google.golang.org/grpc"
     "google.golang.org/grpc/credentials/insecure"
-    
+
     // Arrow扩展
     "github.com/open-telemetry/opentelemetry-go-contrib/exporters/otlp/arrow"
 )
@@ -640,15 +640,15 @@ func main() {
     exporter, err := otlptracegrpc.New(ctx,
         otlptracegrpc.WithEndpoint("localhost:4317"),
         otlptracegrpc.WithInsecure(),
-        
+
         // 启用Arrow编码
         otlptracegrpc.WithDialOption(
             grpc.WithUnaryInterceptor(arrow.ClientInterceptor()),
         ),
-        
+
         // 启用压缩
         otlptracegrpc.WithCompressor("zstd"),
-        
+
         // Arrow特定选项
         arrow.WithBatchSize(1000),
         arrow.WithCompressionLevel(3),
@@ -725,12 +725,12 @@ def main():
 
     # 创建TracerProvider
     provider = TracerProvider(resource=resource)
-    
+
     # 配置Arrow exporter
     arrow_exporter = ArrowSpanExporter(
         endpoint="localhost:4317",
         insecure=True,
-        
+
         # Arrow配置
         arrow_enabled=True,
         arrow_batch_size=1000,
@@ -739,7 +739,7 @@ def main():
         arrow_dictionary_encoding=True,
         arrow_dictionary_threshold=0.7,
     )
-    
+
     # 添加批处理器
     provider.add_span_processor(
         BatchSpanProcessor(
@@ -749,10 +749,10 @@ def main():
             schedule_delay_millis=5000,
         )
     )
-    
+
     trace.set_tracer_provider(provider)
     tracer = trace.get_tracer(__name__)
-    
+
     # 创建spans
     for i in range(100000):
         with tracer.start_as_current_span("operation") as span:
@@ -760,7 +760,7 @@ def main():
             span.set_attribute("http.route", "/api/users")
             span.set_attribute("http.status_code", 200)
             time.sleep(0.01)
-    
+
     # 确保所有spans已发送
     provider.shutdown()
     print("发送了100,000个spans (使用Arrow编码)")
@@ -792,12 +792,12 @@ func monitorArrowPerformance(ctx context.Context) {
         "arrow.compression_ratio",
         metric.WithDescription("Arrow压缩比"),
     )
-    
+
     arrowSerializationTime, _ := meter.Float64Histogram(
         "arrow.serialization_duration_ms",
         metric.WithDescription("Arrow序列化耗时(ms)"),
     )
-    
+
     arrowBandwidthSaved, _ := meter.Int64Counter(
         "arrow.bandwidth_saved_bytes",
         metric.WithDescription("Arrow节省的带宽(bytes)"),
@@ -808,12 +808,12 @@ func monitorArrowPerformance(ctx context.Context) {
         func(ctx context.Context, observer metric.Observer) {
             // 从Arrow exporter获取统计信息
             stats := getArrowExporterStats()
-            
+
             observer.ObserveFloat64(
                 arrowCompressionRatio,
                 stats.CompressionRatio,
             )
-            
+
             fmt.Printf("Arrow性能统计:\n")
             fmt.Printf("  压缩比: %.2f%%\n", stats.CompressionRatio*100)
             fmt.Printf("  节省带宽: %.2f MB\n", float64(stats.BytesSaved)/1024/1024)
@@ -949,7 +949,7 @@ data:
       batch:
         send_batch_size: 10000
         timeout: 10s
-      
+
       memory_limiter:
         check_interval: 1s
         limit_mib: 3500
@@ -962,7 +962,7 @@ data:
           enabled: true
           streaming: true
           compression: zstd
-      
+
       prometheus:
         endpoint: 0.0.0.0:8888
 
@@ -1107,7 +1107,7 @@ arrow:
 # Prometheus查询示例
 
 # Arrow压缩率
-(otelcol_exporter_sent_bytes{exporter="otlp/arrow"} - otelcol_exporter_compressed_bytes{exporter="otlp/arrow"}) 
+(otelcol_exporter_sent_bytes{exporter="otlp/arrow"} - otelcol_exporter_compressed_bytes{exporter="otlp/arrow"})
   / otelcol_exporter_sent_bytes{exporter="otlp/arrow"}
 
 # Arrow序列化速度
@@ -1117,7 +1117,7 @@ rate(otelcol_exporter_sent_spans{exporter="otlp/arrow"}[1m])
 process_resident_memory_bytes{service="otel-collector-arrow"}
 
 # Arrow批处理延迟
-histogram_quantile(0.99, 
+histogram_quantile(0.99,
   rate(otelcol_exporter_send_duration_seconds_bucket{exporter="otlp/arrow"}[5m])
 )
 ```
@@ -1133,7 +1133,7 @@ service:
       development: true
     metrics:
       level: detailed
-      
+
 exporters:
   otlp/arrow:
     endpoint: backend:4317
@@ -1185,7 +1185,7 @@ processors:
   batch:
     send_batch_size: 10000
     timeout: 10s
-  
+
   memory_limiter:
     check_interval: 1s
     limit_mib: 1500
@@ -1376,9 +1376,9 @@ exporters:
 
 ---
 
-**文档版本**: 1.0.0  
-**最后更新**: 2025年10月17日  
-**维护者**: OTLP标准深度梳理项目团队  
+**文档版本**: 1.0.0
+**最后更新**: 2025年10月17日
+**维护者**: OTLP标准深度梳理项目团队
 **反馈**: 欢迎通过GitHub Issues提供反馈
 
 ---

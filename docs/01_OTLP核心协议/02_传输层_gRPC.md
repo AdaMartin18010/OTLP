@@ -1,16 +1,16 @@
 # OTLP传输层 - gRPC详解
 
-> **协议版本**: gRPC over HTTP/2  
-> **OTLP版本**: v1.0.0 (Stable)  
-> **默认端口**: 4317  
+> **协议版本**: gRPC over HTTP/2
+> **OTLP版本**: v1.0.0 (Stable)
+> **默认端口**: 4317
 > **最后更新**: 2025年10月8日
 
 ---
 
-## 目录
+## 📋 目录
 
 - [OTLP传输层 - gRPC详解](#otlp传输层---grpc详解)
-  - [目录](#目录)
+  - [📋 目录](#-目录)
   - [1. 概念定义](#1-概念定义)
     - [1.1 正式定义](#11-正式定义)
     - [1.2 gRPC核心特性](#12-grpc核心特性)
@@ -77,13 +77,13 @@ gRPC_OTLP = (S, M, T, E)
 其中:
 - S: Services = {TraceService, MetricsService, LogsService}
   服务集合
-  
+
 - M: Methods = {Export: Request → Response}
   方法定义（目前仅Export单向RPC）
-  
+
 - T: Transport = HTTP/2
   底层传输协议
-  
+
 - E: Encoding = Protocol Buffers v3
   消息编码格式
 
@@ -168,7 +168,7 @@ import "opentelemetry/proto/trace/v1/trace.proto";
 // TraceService服务定义
 service TraceService {
   // 导出追踪数据（单向RPC）
-  rpc Export(ExportTraceServiceRequest) 
+  rpc Export(ExportTraceServiceRequest)
     returns (ExportTraceServiceResponse) {}
 }
 
@@ -188,7 +188,7 @@ message ExportTraceServiceResponse {
 message ExportTracePartialSuccess {
   // 被拒绝的spans数量
   int64 rejected_spans = 1;
-  
+
   // 错误消息
   string error_message = 2;
 }
@@ -215,7 +215,7 @@ package opentelemetry.proto.collector.metrics.v1;
 import "opentelemetry/proto/metrics/v1/metrics.proto";
 
 service MetricsService {
-  rpc Export(ExportMetricsServiceRequest) 
+  rpc Export(ExportMetricsServiceRequest)
     returns (ExportMetricsServiceResponse) {}
 }
 
@@ -253,7 +253,7 @@ package opentelemetry.proto.collector.logs.v1;
 import "opentelemetry/proto/logs/v1/logs.proto";
 
 service LogsService {
-  rpc Export(ExportLogsServiceRequest) 
+  rpc Export(ExportLogsServiceRequest)
     returns (ExportLogsServiceResponse) {}
 }
 
@@ -515,10 +515,10 @@ gRPC Keep-Alive参数:
 Client-side:
 - keepalive_time: 30s (默认禁用)
   每30秒发送PING，如果连接空闲
-  
+
 - keepalive_timeout: 20s
   等待PING ACK的超时时间
-  
+
 - keepalive_permit_without_calls: false
   是否在无active RPC时发送PING
 
@@ -563,20 +563,20 @@ Server:
   格式: <value><unit>
   单位: H (hour), M (minute), S (second),
         m (millisecond), u (microsecond), n (nanosecond)
-  
+
 - grpc-encoding: gzip, deflate, snappy
   压缩算法
-  
+
 - grpc-accept-encoding: gzip, deflate
   客户端支持的压缩算法
 
 响应Trailer:
 - grpc-status: 0 (必需)
   gRPC状态码
-  
+
 - grpc-message: <error_message> (可选)
   错误描述
-  
+
 - grpc-status-details-bin: <base64> (可选)
   详细错误信息 (Protobuf编码)
 ```
@@ -597,7 +597,7 @@ Server:
 追踪上下文 (可选):
 - traceparent: 00-<trace-id>-<span-id>-<flags>
   W3C Trace Context
-  
+
 - tracestate: <key>=<value>[,...]
   W3C Trace State
 
@@ -717,10 +717,10 @@ func parseError(err error) {
     if !ok {
         return
     }
-    
+
     fmt.Printf("Code: %v\n", st.Code())
     fmt.Printf("Message: %s\n", st.Message())
-    
+
     for _, detail := range st.Details() {
         switch t := detail.(type) {
         case *errdetails.RetryInfo:
@@ -934,7 +934,7 @@ type TokenAuth struct {
     token string
 }
 
-func (t *TokenAuth) GetRequestMetadata(ctx context.Context, 
+func (t *TokenAuth) GetRequestMetadata(ctx context.Context,
     uri ...string) (map[string]string, error) {
     return map[string]string{
         "authorization": "Bearer " + t.token,
@@ -967,11 +967,11 @@ import (
     "context"
     "log"
     "time"
-    
+
     "google.golang.org/grpc"
     "google.golang.org/grpc/credentials"
     "google.golang.org/grpc/keepalive"
-    
+
     tracepb "go.opentelemetry.io/proto/otlp/collector/trace/v1"
 )
 
@@ -982,29 +982,29 @@ func main() {
     if err != nil {
         log.Fatal(err)
     }
-    
+
     // 连接配置
     conn, err := grpc.Dial(
         "localhost:4317",
         // 安全
         grpc.WithTransportCredentials(creds),
-        
+
         // Keep-Alive
         grpc.WithKeepaliveParams(keepalive.ClientParameters{
             Time:                30 * time.Second,
             Timeout:             10 * time.Second,
             PermitWithoutStream: true,
         }),
-        
+
         // 压缩
         grpc.WithDefaultCallOptions(
             grpc.UseCompressor("gzip"),
         ),
-        
+
         // 流量控制
         grpc.WithInitialWindowSize(1 << 20),
         grpc.WithInitialConnWindowSize(10 << 20),
-        
+
         // 超时
         grpc.WithBlock(),
         grpc.WithTimeout(5*time.Second),
@@ -1013,25 +1013,25 @@ func main() {
         log.Fatal(err)
     }
     defer conn.Close()
-    
+
     // 创建客户端
     client := tracepb.NewTraceServiceClient(conn)
-    
+
     // 导出数据
-    ctx, cancel := context.WithTimeout(context.Background(), 
+    ctx, cancel := context.WithTimeout(context.Background(),
         10*time.Second)
     defer cancel()
-    
+
     req := &tracepb.ExportTraceServiceRequest{
         // ... 填充数据
     }
-    
+
     resp, err := client.Export(ctx, req)
     if err != nil {
         log.Printf("Export failed: %v", err)
         return
     }
-    
+
     // 检查部分成功
     if ps := resp.GetPartialSuccess(); ps != nil {
         if ps.RejectedSpans > 0 {
@@ -1039,7 +1039,7 @@ func main() {
                 ps.RejectedSpans, ps.ErrorMessage)
         }
     }
-    
+
     log.Println("Export successful")
 }
 ```
@@ -1056,11 +1056,11 @@ import (
     "log"
     "net"
     "time"
-    
+
     "google.golang.org/grpc"
     "google.golang.org/grpc/credentials"
     "google.golang.org/grpc/keepalive"
-    
+
     tracepb "go.opentelemetry.io/proto/otlp/collector/trace/v1"
 )
 
@@ -1068,10 +1068,10 @@ type traceServer struct {
     tracepb.UnimplementedTraceServiceServer
 }
 
-func (s *traceServer) Export(ctx context.Context, 
+func (s *traceServer) Export(ctx context.Context,
     req *tracepb.ExportTraceServiceRequest) (
     *tracepb.ExportTraceServiceResponse, error) {
-    
+
     // 处理spans
     totalSpans := 0
     for _, rs := range req.ResourceSpans {
@@ -1083,9 +1083,9 @@ func (s *traceServer) Export(ctx context.Context,
             }
         }
     }
-    
+
     log.Printf("Received %d spans", totalSpans)
-    
+
     // 返回成功
     return &tracepb.ExportTraceServiceResponse{}, nil
 }
@@ -1097,12 +1097,12 @@ func main() {
     if err != nil {
         log.Fatal(err)
     }
-    
+
     // 创建服务器
     server := grpc.NewServer(
         // 安全
         grpc.Creds(cert),
-        
+
         // Keep-Alive
         grpc.KeepaliveParams(keepalive.ServerParameters{
             Time:    1 * time.Hour,
@@ -1112,24 +1112,24 @@ func main() {
             MinTime:             5 * time.Second,
             PermitWithoutStream: true,
         }),
-        
+
         // 流量控制
         grpc.InitialWindowSize(1 << 20),
         grpc.InitialConnWindowSize(10 << 20),
-        
+
         // 最大消息大小
         grpc.MaxRecvMsgSize(4 << 20), // 4MB
     )
-    
+
     // 注册服务
     tracepb.RegisterTraceServiceServer(server, &traceServer{})
-    
+
     // 监听
     lis, err := net.Listen("tcp", ":4317")
     if err != nil {
         log.Fatal(err)
     }
-    
+
     log.Println("Server listening on :4317")
     if err := server.Serve(lis); err != nil {
         log.Fatal(err)
@@ -1267,7 +1267,7 @@ type Backoff struct {
     max    time.Duration
     factor float64
     jitter bool
-    
+
     attempt int
 }
 
@@ -1276,16 +1276,16 @@ func (b *Backoff) Next() time.Duration {
         b.attempt = 1
         return b.min
     }
-    
+
     delay := float64(b.min) * math.Pow(b.factor, float64(b.attempt))
     if delay > float64(b.max) {
         delay = float64(b.max)
     }
-    
+
     if b.jitter {
         delay = delay/2 + rand.Float64()*delay/2
     }
-    
+
     b.attempt++
     return time.Duration(delay)
 }
@@ -1303,7 +1303,7 @@ for {
     if err == nil {
         break
     }
-    
+
     delay := backoff.Next()
     log.Printf("Reconnect after %v", delay)
     time.Sleep(delay)
@@ -1317,7 +1317,7 @@ for {
 ```text
 1. RPC超时 (每个请求)
    context.WithTimeout(ctx, 10*time.Second)
-   
+
    合理范围:
    - 本地: 1-5s
    - 同区域: 5-10s
@@ -1325,19 +1325,19 @@ for {
 
 2. 连接超时
    grpc.WithTimeout(5*time.Second)
-   
+
    合理范围: 3-10s
 
 3. Keep-Alive超时
    keepalive.ClientParameters{
        Timeout: 10*time.Second,
    }
-   
+
    合理范围: 10-30s
 
 4. 整体超时 (业务层)
    context.WithDeadline(ctx, deadline)
-   
+
    考虑重试次数和延迟
 ```
 
@@ -1349,7 +1349,7 @@ for {
 type CircuitBreaker struct {
     maxFailures int
     resetTimeout time.Duration
-    
+
     failures int
     lastFailTime time.Time
     state string // "closed", "open", "half-open"
@@ -1359,7 +1359,7 @@ type CircuitBreaker struct {
 func (cb *CircuitBreaker) Call(fn func() error) error {
     cb.mu.Lock()
     defer cb.mu.Unlock()
-    
+
     switch cb.state {
     case "open":
         if time.Since(cb.lastFailTime) > cb.resetTimeout {
@@ -1369,18 +1369,18 @@ func (cb *CircuitBreaker) Call(fn func() error) error {
             return errors.New("circuit breaker open")
         }
     }
-    
+
     err := fn()
     if err != nil {
         cb.failures++
         cb.lastFailTime = time.Now()
-        
+
         if cb.failures >= cb.maxFailures {
             cb.state = "open"
         }
         return err
     }
-    
+
     cb.failures = 0
     cb.state = "closed"
     return nil
@@ -1399,13 +1399,13 @@ func (cb *CircuitBreaker) Call(fn func() error) error {
 客户端指标:
 - grpc_client_started_total
   RPC启动总数
-  
+
 - grpc_client_handled_total{code}
   按状态码分类的完成总数
-  
+
 - grpc_client_msg_received_total
   接收消息总数
-  
+
 - grpc_client_msg_sent_total
   发送消息总数
 
@@ -1418,7 +1418,7 @@ func (cb *CircuitBreaker) Call(fn func() error) error {
 延迟指标:
 - grpc_client_handling_seconds
   客户端请求耗时
-  
+
 - grpc_server_handling_seconds
   服务器处理耗时
 ```
@@ -1536,6 +1536,6 @@ ERROR:
 
 ---
 
-**文档状态**: ✅ 完成  
-**审核状态**: 待审核  
+**文档状态**: ✅ 完成
+**审核状态**: 待审核
 **下一步**: [03_传输层_HTTP.md](./03_传输层_HTTP.md)

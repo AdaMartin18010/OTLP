@@ -1,6 +1,6 @@
 # Cassandra语义约定详解
 
-> **分布式列式数据库**: Apache Cassandra Tracing与Metrics完整规范  
+> **分布式列式数据库**: Apache Cassandra Tracing与Metrics完整规范
 > **最后更新**: 2025年10月8日
 
 ---
@@ -277,7 +277,7 @@ DELETE (删除):
     span.SetAttributes(
         attribute.String("db.cassandra.cluster.name", "my-cluster"),
         attribute.String("db.cassandra.local_dc", "us-east-1"),
-        attribute.StringSlice("db.cassandra.contact_points", 
+        attribute.StringSlice("db.cassandra.contact_points",
             []string{"node1", "node2", "node3"}),
     )
     ```
@@ -338,7 +338,7 @@ package main
 
 import (
     "context"
-    
+
     "github.com/gocql/gocql"
     "go.opentelemetry.io/otel"
     "go.opentelemetry.io/otel/attribute"
@@ -359,7 +359,7 @@ func InsertUserWithTracing(
     user *User,
 ) error {
     tracer := otel.Tracer("cassandra-client")
-    
+
     // 创建Span
     ctx, span := tracer.Start(ctx, "cassandra.insert",
         trace.WithSpanKind(trace.SpanKindClient),
@@ -372,19 +372,19 @@ func InsertUserWithTracing(
         ),
     )
     defer span.End()
-    
+
     // 执行INSERT
     query := session.Query(
         `INSERT INTO users (id, name, email) VALUES (?, ?, ?)`,
         user.ID, user.Name, user.Email,
     ).WithContext(ctx).Consistency(gocql.Quorum)
-    
+
     if err := query.Exec(); err != nil {
         span.RecordError(err)
         span.SetStatus(codes.Error, "insert failed")
         return err
     }
-    
+
     span.SetStatus(codes.Ok, "inserted")
     return nil
 }
@@ -395,7 +395,7 @@ func SelectUserWithTracing(
     id gocql.UUID,
 ) (*User, error) {
     tracer := otel.Tracer("cassandra-client")
-    
+
     ctx, span := tracer.Start(ctx, "cassandra.select",
         trace.WithSpanKind(trace.SpanKindClient),
         trace.WithAttributes(
@@ -407,13 +407,13 @@ func SelectUserWithTracing(
         ),
     )
     defer span.End()
-    
+
     // 执行SELECT
     query := session.Query(
         `SELECT id, name, email FROM users WHERE id = ?`,
         id,
     ).WithContext(ctx).Consistency(gocql.Quorum)
-    
+
     var user User
     if err := query.Scan(&user.ID, &user.Name, &user.Email); err != nil {
         if err == gocql.ErrNotFound {
@@ -424,12 +424,12 @@ func SelectUserWithTracing(
         span.SetStatus(codes.Error, "select failed")
         return nil, err
     }
-    
+
     span.SetAttributes(
         attribute.Int("db.response.returned_rows", 1),
     )
     span.SetStatus(codes.Ok, "selected")
-    
+
     return &user, nil
 }
 
@@ -440,7 +440,7 @@ func UpdateUserWithTracing(
     email string,
 ) error {
     tracer := otel.Tracer("cassandra-client")
-    
+
     ctx, span := tracer.Start(ctx, "cassandra.update",
         trace.WithSpanKind(trace.SpanKindClient),
         trace.WithAttributes(
@@ -451,19 +451,19 @@ func UpdateUserWithTracing(
         ),
     )
     defer span.End()
-    
+
     // 执行UPDATE
     query := session.Query(
         `UPDATE users SET email = ? WHERE id = ?`,
         email, id,
     ).WithContext(ctx)
-    
+
     if err := query.Exec(); err != nil {
         span.RecordError(err)
         span.SetStatus(codes.Error, "update failed")
         return err
     }
-    
+
     span.SetStatus(codes.Ok, "updated")
     return nil
 }
@@ -474,7 +474,7 @@ func DeleteUserWithTracing(
     id gocql.UUID,
 ) error {
     tracer := otel.Tracer("cassandra-client")
-    
+
     ctx, span := tracer.Start(ctx, "cassandra.delete",
         trace.WithSpanKind(trace.SpanKindClient),
         trace.WithAttributes(
@@ -485,19 +485,19 @@ func DeleteUserWithTracing(
         ),
     )
     defer span.End()
-    
+
     // 执行DELETE
     query := session.Query(
         `DELETE FROM users WHERE id = ?`,
         id,
     ).WithContext(ctx)
-    
+
     if err := query.Exec(); err != nil {
         span.RecordError(err)
         span.SetStatus(codes.Error, "delete failed")
         return err
     }
-    
+
     span.SetStatus(codes.Ok, "deleted")
     return nil
 }
@@ -512,7 +512,7 @@ func BatchInsertWithTracing(
     users []*User,
 ) error {
     tracer := otel.Tracer("cassandra-client")
-    
+
     ctx, span := tracer.Start(ctx, "cassandra.batch",
         trace.WithSpanKind(trace.SpanKindClient),
         trace.WithAttributes(
@@ -524,24 +524,24 @@ func BatchInsertWithTracing(
         ),
     )
     defer span.End()
-    
+
     // 创建批量操作
     batch := session.NewBatch(gocql.LoggedBatch).WithContext(ctx)
-    
+
     for _, user := range users {
         batch.Query(
             `INSERT INTO users (id, name, email) VALUES (?, ?, ?)`,
             user.ID, user.Name, user.Email,
         )
     }
-    
+
     // 执行批量操作
     if err := session.ExecuteBatch(batch); err != nil {
         span.RecordError(err)
         span.SetStatus(codes.Error, "batch failed")
         return err
     }
-    
+
     span.SetStatus(codes.Ok, "batch completed")
     return nil
 }
@@ -555,7 +555,7 @@ func PreparedStatementWithTracing(
     session *gocql.Session,
 ) error {
     tracer := otel.Tracer("cassandra-client")
-    
+
     // 准备语句 (只需一次)
     stmt, err := session.Prepare(
         `INSERT INTO users (id, name, email) VALUES (?, ?, ?)`,
@@ -563,7 +563,7 @@ func PreparedStatementWithTracing(
     if err != nil {
         return err
     }
-    
+
     // 使用预处理语句
     for i := 0; i < 100; i++ {
         ctx, span := tracer.Start(ctx, "cassandra.prepared_insert",
@@ -574,13 +574,13 @@ func PreparedStatementWithTracing(
                 attribute.Bool("db.cassandra.prepared_statement", true),
             ),
         )
-        
+
         user := &User{
             ID:    gocql.TimeUUID(),
             Name:  fmt.Sprintf("user-%d", i),
             Email: fmt.Sprintf("user%d@example.com", i),
         }
-        
+
         if err := session.Query(stmt, user.ID, user.Name, user.Email).
             WithContext(ctx).Exec(); err != nil {
             span.RecordError(err)
@@ -588,11 +588,11 @@ func PreparedStatementWithTracing(
             span.End()
             return err
         }
-        
+
         span.SetStatus(codes.Ok, "inserted")
         span.End()
     }
-    
+
     return nil
 }
 ```
@@ -630,10 +630,10 @@ def insert_user_with_tracing(session, user_id, name, email):
                 "INSERT INTO users (id, name, email) VALUES (%s, %s, %s)",
                 consistency_level=ConsistencyLevel.QUORUM
             )
-            
+
             session.execute(query, (user_id, name, email))
             span.set_status(Status(StatusCode.OK))
-            
+
         except Exception as e:
             span.record_exception(e)
             span.set_status(Status(StatusCode.ERROR))
@@ -655,15 +655,15 @@ def select_user_with_tracing(session, user_id):
             query = SimpleStatement(
                 "SELECT * FROM users WHERE id = %s"
             )
-            
+
             rows = session.execute(query, (user_id,))
             result = list(rows)
-            
+
             span.set_attribute("db.response.returned_rows", len(result))
             span.set_status(Status(StatusCode.OK))
-            
+
             return result
-            
+
         except Exception as e:
             span.record_exception(e)
             span.set_status(Status(StatusCode.ERROR))
@@ -683,7 +683,7 @@ def batch_insert_with_tracing(session, users):
     ) as span:
         try:
             batch = BatchStatement()
-            
+
             for user in users:
                 batch.add(
                     SimpleStatement(
@@ -691,10 +691,10 @@ def batch_insert_with_tracing(session, users):
                     ),
                     (user['id'], user['name'], user['email'])
                 )
-            
+
             session.execute(batch)
             span.set_status(Status(StatusCode.OK))
-            
+
         except Exception as e:
             span.record_exception(e)
             span.set_status(Status(StatusCode.ERROR))
@@ -716,15 +716,15 @@ async def async_select_with_tracing(session, user_id):
         try:
             query = "SELECT * FROM users WHERE id = %s"
             future = session.execute_async(query, (user_id,))
-            
+
             # 等待结果
             rows = await future.result_async()
-            
+
             span.set_attribute("db.response.returned_rows", len(rows))
             span.set_status(Status(StatusCode.OK))
-            
+
             return rows
-            
+
         except Exception as e:
             span.record_exception(e)
             span.set_status(Status(StatusCode.ERROR))
@@ -743,10 +743,10 @@ import com.datastax.oss.driver.api.core.cql.*;
 import io.opentelemetry.api.trace.*;
 
 public class CassandraTracing {
-    
-    private static final Tracer tracer = 
+
+    private static final Tracer tracer =
         openTelemetry.getTracer("cassandra-client");
-    
+
     public void insertUserWithTracing(
         CqlSession session,
         UUID id,
@@ -760,18 +760,18 @@ public class CassandraTracing {
             .setAttribute("db.name", "myapp")
             .setAttribute("db.cassandra.table", "users")
             .startSpan();
-        
+
         try (Scope scope = span.makeCurrent()) {
             PreparedStatement prepared = session.prepare(
                 "INSERT INTO users (id, name, email) VALUES (?, ?, ?)"
             );
-            
+
             BoundStatement bound = prepared.bind(id, name, email)
                 .setConsistencyLevel(DefaultConsistencyLevel.QUORUM);
-            
+
             session.execute(bound);
             span.setStatus(StatusCode.OK);
-            
+
         } catch (Exception e) {
             span.recordException(e);
             span.setStatus(StatusCode.ERROR);
@@ -780,7 +780,7 @@ public class CassandraTracing {
             span.end();
         }
     }
-    
+
     public ResultSet selectUserWithTracing(
         CqlSession session,
         UUID id
@@ -792,7 +792,7 @@ public class CassandraTracing {
             .setAttribute("db.name", "myapp")
             .setAttribute("db.cassandra.table", "users")
             .startSpan();
-        
+
         try (Scope scope = span.makeCurrent()) {
             SimpleStatement statement = SimpleStatement.builder(
                 "SELECT * FROM users WHERE id = ?"
@@ -800,19 +800,19 @@ public class CassandraTracing {
             .addPositionalValue(id)
             .setConsistencyLevel(DefaultConsistencyLevel.QUORUM)
             .build();
-            
+
             ResultSet rs = session.execute(statement);
-            
+
             int rowCount = 0;
             for (Row row : rs) {
                 rowCount++;
             }
-            
+
             span.setAttribute("db.response.returned_rows", rowCount);
             span.setStatus(StatusCode.OK);
-            
+
             return rs;
-            
+
         } catch (Exception e) {
             span.recordException(e);
             span.setStatus(StatusCode.ERROR);
@@ -973,8 +973,8 @@ public class CassandraTracing {
 
 ---
 
-**文档状态**: ✅ 完成  
-**Cassandra版本**: 3.11+  
+**文档状态**: ✅ 完成
+**Cassandra版本**: 3.11+
 **适用场景**: 时序数据、高写入负载、多数据中心、大规模存储
 
 **关键特性**:

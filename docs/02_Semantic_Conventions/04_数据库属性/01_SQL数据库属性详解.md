@@ -1,8 +1,8 @@
 # SQL数据库语义约定详解
 
-> **Semantic Conventions版本**: v1.27.0  
-> **稳定性**: Stable  
-> **适用范围**: 所有SQL数据库（PostgreSQL, MySQL, SQL Server, Oracle等）  
+> **Semantic Conventions版本**: v1.27.0
+> **稳定性**: Stable
+> **适用范围**: 所有SQL数据库（PostgreSQL, MySQL, SQL Server, Oracle等）
 > **最后更新**: 2025年10月8日
 
 ---
@@ -131,7 +131,7 @@ SELECT * FROM users WHERE email=? AND password=?
 
 ### 3.1 PostgreSQL
 
-**db.system**: `postgresql`  
+**db.system**: `postgresql`
 **默认端口**: `5432`
 
 **特定属性**：
@@ -164,7 +164,7 @@ attributes := []attribute.KeyValue{
 
 ### 3.2 MySQL/MariaDB
 
-**db.system**: `mysql` (MySQL) 或 `mariadb` (MariaDB)  
+**db.system**: `mysql` (MySQL) 或 `mariadb` (MariaDB)
 **默认端口**: `3306`
 
 **特定属性**：
@@ -197,7 +197,7 @@ attributes := []attribute.KeyValue{
 
 ### 3.3 SQL Server
 
-**db.system**: `mssql`  
+**db.system**: `mssql`
 **默认端口**: `1433`
 
 **特定属性**：
@@ -230,7 +230,7 @@ attributes := []attribute.KeyValue{
 
 ### 3.4 Oracle Database
 
-**db.system**: `oracle`  
+**db.system**: `oracle`
 **默认端口**: `1521`
 
 **特定属性**：
@@ -263,7 +263,7 @@ attributes := []attribute.KeyValue{
 
 ### 3.5 SQLite
 
-**db.system**: `sqlite`  
+**db.system**: `sqlite`
 **无网络连接**
 
 **特定属性**：
@@ -340,7 +340,7 @@ func detectSQLInjection(query string) bool {
         `(?i)(;.*delete\b)`,
         `(?i)(;.*insert\b)`,
     }
-    
+
     for _, pattern := range patterns {
         matched, _ := regexp.MatchString(pattern, query)
         if matched {
@@ -375,13 +375,13 @@ func getUserByEmail(ctx context.Context, email string) (*User, error) {
         ),
     )
     defer span.End()
-    
+
     var user User
-    err := db.QueryRowContext(ctx, 
-        "SELECT * FROM users WHERE email = $1", 
+    err := db.QueryRowContext(ctx,
+        "SELECT * FROM users WHERE email = $1",
         email,
     ).Scan(&user.ID, &user.Name, &user.Email)
-    
+
     return &user, err
 }
 
@@ -420,19 +420,19 @@ var (
         "db.client.connections.active",
         metric.WithDescription("Active database connections"),
     )
-    
+
     // 空闲连接数
     dbConnectionsIdle, _ = meter.Int64ObservableGauge(
         "db.client.connections.idle",
         metric.WithDescription("Idle database connections"),
     )
-    
+
     // 最大连接数
     dbConnectionsMax, _ = meter.Int64ObservableGauge(
         "db.client.connections.max",
         metric.WithDescription("Maximum allowed connections"),
     )
-    
+
     // 连接超时次数
     dbConnectionTimeouts, _ = meter.Int64Counter(
         "db.client.connections.timeouts",
@@ -443,14 +443,14 @@ var (
 // 定期采集连接池状态
 func collectPoolStats(pool *sql.DB) {
     stats := pool.Stats()
-    
+
     dbConnectionsActive.Observe(ctx, int64(stats.InUse),
         metric.WithAttributes(
             semconv.DBSystemPostgreSQL,
             attribute.String("pool.name", "main"),
         ),
     )
-    
+
     dbConnectionsIdle.Observe(ctx, int64(stats.Idle),
         metric.WithAttributes(
             semconv.DBSystemPostgreSQL,
@@ -496,7 +496,7 @@ func performTransaction(ctx context.Context, db *sql.DB) error {
         ),
     )
     defer txSpan.End()
-    
+
     // 开始数据库事务
     tx, err := db.BeginTx(ctx, &sql.TxOptions{
         Isolation: sql.LevelReadCommitted,
@@ -506,7 +506,7 @@ func performTransaction(ctx context.Context, db *sql.DB) error {
         return err
     }
     defer tx.Rollback()
-    
+
     // 执行操作1
     ctx, op1Span := tracer.Start(ctx, "db.transaction.operation1",
         trace.WithAttributes(
@@ -519,7 +519,7 @@ func performTransaction(ctx context.Context, db *sql.DB) error {
     if err != nil {
         return err
     }
-    
+
     // 执行操作2
     ctx, op2Span := tracer.Start(ctx, "db.transaction.operation2",
         trace.WithAttributes(
@@ -532,14 +532,14 @@ func performTransaction(ctx context.Context, db *sql.DB) error {
     if err != nil {
         return err
     }
-    
+
     // 提交事务
     if err := tx.Commit(); err != nil {
         txSpan.RecordError(err)
         txSpan.SetStatus(codes.Error, "Transaction commit failed")
         return err
     }
-    
+
     txSpan.SetAttributes(attribute.String("db.transaction.status", "committed"))
     return nil
 }
@@ -558,7 +558,7 @@ import (
     "context"
     "database/sql"
     "fmt"
-    
+
     _ "github.com/lib/pq"
     "go.opentelemetry.io/otel"
     "go.opentelemetry.io/otel/attribute"
@@ -587,11 +587,11 @@ func NewPostgresDB(dsn string) (*PostgresDB, error) {
     if err != nil {
         return nil, err
     }
-    
+
     // 配置连接池
     db.SetMaxOpenConns(25)
     db.SetMaxIdleConns(5)
-    
+
     return &PostgresDB{db: db}, nil
 }
 
@@ -610,27 +610,27 @@ func (p *PostgresDB) GetUser(ctx context.Context, userID int) (*User, error) {
         ),
     )
     defer span.End()
-    
+
     var user User
     query := "SELECT id, name, email FROM users WHERE id = $1"
-    
+
     err := p.db.QueryRowContext(ctx, query, userID).Scan(
         &user.ID,
         &user.Name,
         &user.Email,
     )
-    
+
     if err != nil {
         span.RecordError(err)
         span.SetStatus(codes.Error, err.Error())
         return nil, err
     }
-    
+
     span.SetAttributes(
         attribute.Int("db.result.rows", 1),
         attribute.String("db.user.id", fmt.Sprintf("%d", user.ID)),
     )
-    
+
     return &user, nil
 }
 
@@ -648,22 +648,22 @@ func (p *PostgresDB) CreateUser(ctx context.Context, name, email string) (int, e
         ),
     )
     defer span.End()
-    
+
     var userID int
     query := "INSERT INTO users (name, email) VALUES ($1, $2) RETURNING id"
-    
+
     err := p.db.QueryRowContext(ctx, query, name, email).Scan(&userID)
     if err != nil {
         span.RecordError(err)
         span.SetStatus(codes.Error, err.Error())
         return 0, err
     }
-    
+
     span.SetAttributes(
         attribute.Int("db.user.created_id", userID),
         attribute.String("db.operation.status", "success"),
     )
-    
+
     return userID, nil
 }
 
@@ -681,23 +681,23 @@ func (p *PostgresDB) UpdateUser(ctx context.Context, userID int, name string) er
         ),
     )
     defer span.End()
-    
-    result, err := p.db.ExecContext(ctx, 
-        "UPDATE users SET name = $1 WHERE id = $2", 
+
+    result, err := p.db.ExecContext(ctx,
+        "UPDATE users SET name = $1 WHERE id = $2",
         name, userID,
     )
-    
+
     if err != nil {
         span.RecordError(err)
         span.SetStatus(codes.Error, err.Error())
         return err
     }
-    
+
     rowsAffected, _ := result.RowsAffected()
     span.SetAttributes(
         attribute.Int64("db.result.rows_affected", rowsAffected),
     )
-    
+
     return nil
 }
 
@@ -709,9 +709,9 @@ func (p *PostgresDB) GetPoolStats(ctx context.Context) sql.DBStats {
         ),
     )
     defer span.End()
-    
+
     stats := p.db.Stats()
-    
+
     span.SetAttributes(
         attribute.Int("db.connections.open", stats.OpenConnections),
         attribute.Int("db.connections.in_use", stats.InUse),
@@ -719,7 +719,7 @@ func (p *PostgresDB) GetPoolStats(ctx context.Context) sql.DBStats {
         attribute.Int64("db.connections.wait_count", stats.WaitCount),
         attribute.String("db.connections.wait_duration", stats.WaitDuration.String()),
     )
-    
+
     return stats
 }
 ```
@@ -732,7 +732,7 @@ package main
 import (
     "context"
     "database/sql"
-    
+
     _ "github.com/go-sql-driver/mysql"
     "go.opentelemetry.io/otel"
     "go.opentelemetry.io/otel/attribute"
@@ -763,11 +763,11 @@ func NewMySQLDB(dsn string) (*MySQLDB, error) {
     if err != nil {
         return nil, err
     }
-    
+
     // 配置连接池
     db.SetMaxOpenConns(50)
     db.SetMaxIdleConns(10)
-    
+
     return &MySQLDB{db: db}, nil
 }
 
@@ -786,23 +786,23 @@ func (m *MySQLDB) CreateOrder(ctx context.Context, userID int, total float64) (i
         ),
     )
     defer span.End()
-    
+
     result, err := m.db.ExecContext(ctx,
         "INSERT INTO orders (user_id, total, status) VALUES (?, ?, ?)",
         userID, total, "pending",
     )
-    
+
     if err != nil {
         span.RecordError(err)
         span.SetStatus(codes.Error, err.Error())
         return 0, err
     }
-    
+
     orderID, _ := result.LastInsertId()
     span.SetAttributes(
         attribute.Int64("db.order.created_id", orderID),
     )
-    
+
     return orderID, nil
 }
 
@@ -820,7 +820,7 @@ func (m *MySQLDB) GetOrdersByUser(ctx context.Context, userID int) ([]Order, err
         ),
     )
     defer span.End()
-    
+
     rows, err := m.db.QueryContext(ctx,
         "SELECT id, user_id, total, status FROM orders WHERE user_id = ?",
         userID,
@@ -831,7 +831,7 @@ func (m *MySQLDB) GetOrdersByUser(ctx context.Context, userID int) ([]Order, err
         return nil, err
     }
     defer rows.Close()
-    
+
     var orders []Order
     for rows.Next() {
         var order Order
@@ -841,11 +841,11 @@ func (m *MySQLDB) GetOrdersByUser(ctx context.Context, userID int) ([]Order, err
         }
         orders = append(orders, order)
     }
-    
+
     span.SetAttributes(
         attribute.Int("db.result.rows", len(orders)),
     )
-    
+
     return orders, nil
 }
 ```
@@ -858,7 +858,7 @@ package main
 import (
     "context"
     "database/sql"
-    
+
     _ "github.com/denisenkom/go-mssqldb"
     "go.opentelemetry.io/otel"
     "go.opentelemetry.io/otel/attribute"
@@ -881,7 +881,7 @@ func NewSQLServerDB(dsn string) (*SQLServerDB, error) {
     if err != nil {
         return nil, err
     }
-    
+
     return &SQLServerDB{db: db}, nil
 }
 
@@ -900,19 +900,19 @@ func (s *SQLServerDB) GetCustomer(ctx context.Context, customerID int) error {
         ),
     )
     defer span.End()
-    
+
     // SQL Server使用命名参数
-    _, err := s.db.ExecContext(ctx, 
-        "SELECT * FROM Customers WHERE Id = @p1", 
+    _, err := s.db.ExecContext(ctx,
+        "SELECT * FROM Customers WHERE Id = @p1",
         sql.Named("p1", customerID),
     )
-    
+
     if err != nil {
         span.RecordError(err)
         span.SetStatus(codes.Error, err.Error())
         return err
     }
-    
+
     return nil
 }
 ```
@@ -1007,7 +1007,7 @@ public class PostgreSQLExample {
     private final Tracer tracer;
     private final Connection connection;
 
-    public PostgreSQLExample(Tracer tracer, String url, String user, String password) 
+    public PostgreSQLExample(Tracer tracer, String url, String user, String password)
             throws SQLException {
         this.tracer = tracer;
         this.connection = DriverManager.getConnection(url, user, password);
@@ -1018,7 +1018,7 @@ public class PostgreSQLExample {
             .setAttribute(SemanticAttributes.DB_SYSTEM, "postgresql")
             .setAttribute(SemanticAttributes.DB_NAME, "users_db")
             .setAttribute(SemanticAttributes.DB_OPERATION, "SELECT")
-            .setAttribute(SemanticAttributes.DB_STATEMENT, 
+            .setAttribute(SemanticAttributes.DB_STATEMENT,
                 "SELECT id, name, email FROM users WHERE id = ?")
             .setAttribute(SemanticAttributes.SERVER_ADDRESS, "db.example.com")
             .setAttribute(SemanticAttributes.SERVER_PORT, 5432)
@@ -1028,7 +1028,7 @@ public class PostgreSQLExample {
             String query = "SELECT id, name, email FROM users WHERE id = ?";
             PreparedStatement stmt = connection.prepareStatement(query);
             stmt.setInt(1, userId);
-            
+
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
                 User user = new User(
@@ -1039,10 +1039,10 @@ public class PostgreSQLExample {
                 span.setAttribute("db.result.rows", 1);
                 return user;
             }
-            
+
             span.setAttribute("db.result.rows", 0);
             return null;
-            
+
         } catch (SQLException e) {
             span.recordException(e);
             span.setStatus(StatusCode.ERROR, e.getMessage());
@@ -1057,7 +1057,7 @@ public class PostgreSQLExample {
             .setAttribute(SemanticAttributes.DB_SYSTEM, "postgresql")
             .setAttribute(SemanticAttributes.DB_NAME, "users_db")
             .setAttribute(SemanticAttributes.DB_OPERATION, "INSERT")
-            .setAttribute(SemanticAttributes.DB_STATEMENT, 
+            .setAttribute(SemanticAttributes.DB_STATEMENT,
                 "INSERT INTO users (name, email) VALUES (?, ?) RETURNING id")
             .setAttribute(SemanticAttributes.SERVER_ADDRESS, "db.example.com")
             .setAttribute(SemanticAttributes.SERVER_PORT, 5432)
@@ -1068,16 +1068,16 @@ public class PostgreSQLExample {
             PreparedStatement stmt = connection.prepareStatement(query);
             stmt.setString(1, name);
             stmt.setString(2, email);
-            
+
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
                 int userId = rs.getInt("id");
                 span.setAttribute("db.user.created_id", userId);
                 return userId;
             }
-            
+
             throw new SQLException("Failed to create user");
-            
+
         } catch (SQLException e) {
             span.recordException(e);
             span.setStatus(StatusCode.ERROR, e.getMessage());
@@ -1098,7 +1098,7 @@ class User {
         this.name = name;
         this.email = email;
     }
-    
+
     // Getters and setters...
 }
 ```
@@ -1118,7 +1118,7 @@ const slowQueryThreshold = 100 * time.Millisecond
 
 func (p *PostgresDB) QueryWithSlowDetection(ctx context.Context, query string, args ...interface{}) error {
     start := time.Now()
-    
+
     ctx, span := tracer.Start(ctx, "db.query",
         trace.WithAttributes(
             semconv.DBSystemPostgreSQL,
@@ -1126,14 +1126,14 @@ func (p *PostgresDB) QueryWithSlowDetection(ctx context.Context, query string, a
         ),
     )
     defer span.End()
-    
+
     _, err := p.db.ExecContext(ctx, query, args...)
-    
+
     duration := time.Since(start)
     span.SetAttributes(
         attribute.Int64("db.query.duration_ms", duration.Milliseconds()),
     )
-    
+
     // 标记慢查询
     if duration > slowQueryThreshold {
         span.SetAttributes(
@@ -1143,7 +1143,7 @@ func (p *PostgresDB) QueryWithSlowDetection(ctx context.Context, query string, a
         // 可以触发告警
         fmt.Printf("SLOW QUERY DETECTED: %s (duration: %v)\n", query, duration)
     }
-    
+
     return err
 }
 ```
@@ -1162,20 +1162,20 @@ func (p *PostgresDB) ExplainQuery(ctx context.Context, query string, args ...int
         ),
     )
     defer span.End()
-    
+
     explainQuery := "EXPLAIN (FORMAT JSON, ANALYZE) " + query
-    
+
     var planJSON string
     err := p.db.QueryRowContext(ctx, explainQuery, args...).Scan(&planJSON)
     if err != nil {
         span.RecordError(err)
         return "", err
     }
-    
+
     span.SetAttributes(
         attribute.String("db.query.plan", planJSON),
     )
-    
+
     return planJSON, nil
 }
 ```
@@ -1308,6 +1308,6 @@ defer rows.Close()  // ✅ 确保关闭
 
 ---
 
-**文档版本**: v1.0  
-**最后更新**: 2025年10月8日  
+**文档版本**: v1.0
+**最后更新**: 2025年10月8日
 **维护者**: OTLP深度梳理项目组

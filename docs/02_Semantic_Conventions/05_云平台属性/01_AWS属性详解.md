@@ -1,6 +1,6 @@
 # AWS云平台属性详解
 
-> **规范版本**: v1.30.0  
+> **规范版本**: v1.30.0
 > **最后更新**: 2025年10月8日
 
 ---
@@ -29,10 +29,10 @@
 AWS平台属性用途:
 1. 识别AWS服务
    - EC2, ECS, EKS, Lambda等
-   
+
 2. 资源定位
    - 账户、区域、可用区
-   
+
 3. 成本归因
    - 按服务/环境分配
 
@@ -101,52 +101,52 @@ func getInstanceMetadata(path string) (string, error) {
         return "", err
     }
     defer resp.Body.Close()
-    
+
     data, err := io.ReadAll(resp.Body)
     if err != nil {
         return "", err
     }
-    
+
     return string(data), nil
 }
 
 // 获取基础AWS属性
 func getAWSAttributes() map[string]string {
     attrs := make(map[string]string)
-    
+
     // 账户ID (从IMDSv2)
     token, _ := getIMDSv2Token()
     accountID, _ := getInstanceIdentity(token)
     attrs["cloud.account.id"] = accountID
-    
+
     // 区域
     if region, err := getInstanceMetadata("placement/region"); err == nil {
         attrs["cloud.region"] = region
     }
-    
+
     // 可用区
     if az, err := getInstanceMetadata("placement/availability-zone"); err == nil {
         attrs["cloud.availability_zone"] = az
     }
-    
+
     attrs["cloud.provider"] = "aws"
-    
+
     return attrs
 }
 
 // IMDSv2 Token
 func getIMDSv2Token() (string, error) {
     client := &http.Client{}
-    req, _ := http.NewRequest("PUT", 
+    req, _ := http.NewRequest("PUT",
         "http://169.254.169.254/latest/api/token", nil)
     req.Header.Set("X-aws-ec2-metadata-token-ttl-seconds", "21600")
-    
+
     resp, err := client.Do(req)
     if err != nil {
         return "", err
     }
     defer resp.Body.Close()
-    
+
     token, err := io.ReadAll(resp.Body)
     return string(token), err
 }
@@ -157,21 +157,21 @@ func getInstanceIdentity(token string) (string, error) {
     req, _ := http.NewRequest("GET",
         "http://169.254.169.254/latest/dynamic/instance-identity/document", nil)
     req.Header.Set("X-aws-ec2-metadata-token", token)
-    
+
     resp, err := client.Do(req)
     if err != nil {
         return "", err
     }
     defer resp.Body.Close()
-    
+
     var doc struct {
         AccountID string `json:"accountId"`
     }
-    
+
     if err := json.NewDecoder(resp.Body).Decode(&doc); err != nil {
         return "", err
     }
-    
+
     return doc.AccountID, nil
 }
 ```
@@ -208,27 +208,27 @@ EC2特定属性:
 func getEC2Attributes() map[string]string {
     attrs := getAWSAttributes()
     attrs["cloud.platform"] = "aws_ec2"
-    
+
     // 实例ID
     if instanceID, err := getInstanceMetadata("instance-id"); err == nil {
         attrs["host.id"] = instanceID
     }
-    
+
     // 实例类型
     if instanceType, err := getInstanceMetadata("instance-type"); err == nil {
         attrs["host.type"] = instanceType
     }
-    
+
     // AMI ID
     if amiID, err := getInstanceMetadata("ami-id"); err == nil {
         attrs["host.image.id"] = amiID
     }
-    
+
     // 主机名
     if hostname, err := getInstanceMetadata("hostname"); err == nil {
         attrs["host.name"] = hostname
     }
-    
+
     return attrs
 }
 ```
@@ -275,22 +275,22 @@ aws.ecs.launchtype标准值:
 func getECSAttributes() map[string]string {
     attrs := getAWSAttributes()
     attrs["cloud.platform"] = "aws_ecs"
-    
+
     // ECS元数据
     if taskARN := os.Getenv("ECS_CONTAINER_METADATA_URI_V4"); taskARN != "" {
         metadata := getECSMetadata(taskARN)
-        
+
         attrs["aws.ecs.task.arn"] = metadata.TaskARN
         attrs["aws.ecs.task.family"] = metadata.Family
         attrs["aws.ecs.task.revision"] = metadata.Revision
         attrs["aws.ecs.cluster.arn"] = metadata.ClusterARN
         attrs["aws.ecs.container.arn"] = metadata.ContainerARN
         attrs["aws.ecs.launchtype"] = metadata.LaunchType
-        
+
         attrs["container.id"] = metadata.ContainerID
         attrs["container.name"] = metadata.ContainerName
     }
-    
+
     return attrs
 }
 
@@ -308,10 +308,10 @@ type ECSMetadata struct {
 func getECSMetadata(uri string) ECSMetadata {
     resp, _ := http.Get(uri + "/task")
     defer resp.Body.Close()
-    
+
     var metadata ECSMetadata
     json.NewDecoder(resp.Body).Decode(&metadata)
-    
+
     return metadata
 }
 ```
@@ -358,13 +358,13 @@ AWS属性:
 获取EKS属性:
 func getEKSAttributes() map[string]string {
     attrs := make(map[string]string)
-    
+
     // AWS属性
     attrs["cloud.provider"] = "aws"
     attrs["cloud.platform"] = "aws_eks"
     attrs["cloud.account.id"] = os.Getenv("AWS_ACCOUNT_ID")
     attrs["cloud.region"] = os.Getenv("AWS_REGION")
-    
+
     // K8s属性 (从环境变量)
     attrs["k8s.cluster.name"] = os.Getenv("CLUSTER_NAME")
     attrs["k8s.namespace.name"] = os.Getenv("POD_NAMESPACE")
@@ -372,7 +372,7 @@ func getEKSAttributes() map[string]string {
     attrs["k8s.pod.uid"] = os.Getenv("POD_UID")
     attrs["k8s.node.name"] = os.Getenv("NODE_NAME")
     attrs["k8s.container.name"] = os.Getenv("CONTAINER_NAME")
-    
+
     return attrs
 }
 
@@ -448,22 +448,22 @@ faas.trigger标准值:
 从环境变量获取:
 func getLambdaAttributes() map[string]string {
     attrs := make(map[string]string)
-    
+
     attrs["cloud.provider"] = "aws"
     attrs["cloud.platform"] = "aws_lambda"
     attrs["cloud.region"] = os.Getenv("AWS_REGION")
-    
+
     // Lambda特定
     attrs["faas.name"] = os.Getenv("AWS_LAMBDA_FUNCTION_NAME")
     attrs["faas.version"] = os.Getenv("AWS_LAMBDA_FUNCTION_VERSION")
     attrs["faas.max_memory"] = os.Getenv("AWS_LAMBDA_FUNCTION_MEMORY_SIZE")
-    
+
     // 从Context获取
     if lambdaCtx, ok := lambdacontext.FromContext(ctx); ok {
         attrs["faas.instance"] = lambdaCtx.LogStreamName
         attrs["aws.lambda.invoked_arn"] = lambdaCtx.InvokedFunctionArn
     }
-    
+
     return attrs
 }
 
@@ -473,25 +473,25 @@ func handler(ctx context.Context, event events.APIGatewayProxyRequest) error {
     res, _ := resource.New(ctx,
         resource.WithAttributes(getLambdaResourceAttributes()...),
     )
-    
+
     tp := sdktrace.NewTracerProvider(
         sdktrace.WithResource(res),
         sdktrace.WithBatcher(exporter),
     )
     otel.SetTracerProvider(tp)
-    
+
     // Handler逻辑
     tracer := otel.Tracer("lambda")
     ctx, span := tracer.Start(ctx, "handler")
     defer span.End()
-    
+
     // 记录触发类型
     span.SetAttributes(
         attribute.String("faas.trigger", "http"),
         attribute.String("http.method", event.HTTPMethod),
         attribute.String("http.route", event.Path),
     )
-    
+
     // 业务逻辑
     return nil
 }
@@ -515,16 +515,16 @@ Elastic Beanstalk特定属性:
 func getElasticBeanstalkAttributes() map[string]string {
     attrs := getEC2Attributes()
     attrs["cloud.platform"] = "aws_elastic_beanstalk"
-    
+
     // 从配置文件读取
     if envName, err := readEBConfig("/opt/elasticbeanstalk/deployment/env"); err == nil {
         attrs["aws.elasticbeanstalk.env.name"] = envName
     }
-    
+
     if deployment, err := readEBConfig("/opt/elasticbeanstalk/deployment/version"); err == nil {
         attrs["aws.elasticbeanstalk.deployment"] = deployment
     }
-    
+
     return attrs
 }
 ```
@@ -541,7 +541,7 @@ package awsdetector
 import (
     "context"
     "os"
-    
+
     "go.opentelemetry.io/otel/attribute"
     "go.opentelemetry.io/otel/sdk/resource"
     semconv "go.opentelemetry.io/otel/semconv/v1.24.0"
@@ -554,9 +554,9 @@ func (d *AWSDetector) Detect(ctx context.Context) (*resource.Resource, error) {
     if !isAWS() {
         return resource.Empty(), nil
     }
-    
+
     var attrs []attribute.KeyValue
-    
+
     // 基础AWS属性
     attrs = append(attrs,
         semconv.CloudProviderAWS,
@@ -564,7 +564,7 @@ func (d *AWSDetector) Detect(ctx context.Context) (*resource.Resource, error) {
         semconv.CloudRegionKey.String(getRegion()),
         semconv.CloudAvailabilityZoneKey.String(getAvailabilityZone()),
     )
-    
+
     // 检测平台
     switch {
     case isLambda():
@@ -578,7 +578,7 @@ func (d *AWSDetector) Detect(ctx context.Context) (*resource.Resource, error) {
     case isEC2():
         attrs = append(attrs, getEC2Attributes()...)
     }
-    
+
     return resource.NewWithAttributes(semconv.SchemaURL, attrs...), nil
 }
 
@@ -587,14 +587,14 @@ func isAWS() bool {
     if os.Getenv("AWS_REGION") != "" {
         return true
     }
-    
+
     // 尝试访问实例元数据
     resp, err := http.Get("http://169.254.169.254/latest/meta-data/")
     if err != nil {
         return false
     }
     defer resp.Body.Close()
-    
+
     return resp.StatusCode == 200
 }
 
@@ -648,20 +648,20 @@ func main() {
             semconv.ServiceVersionKey.String("1.2.0"),
         ),
     )
-    
+
     // 创建Exporter
     exporter, _ := otlptracegrpc.New(context.Background(),
         otlptracegrpc.WithEndpoint("collector.example.com:4317"),
         otlptracegrpc.WithInsecure(),
     )
-    
+
     // 创建TracerProvider
     tp := sdktrace.NewTracerProvider(
         sdktrace.WithBatcher(exporter),
         sdktrace.WithResource(res),
     )
     otel.SetTracerProvider(tp)
-    
+
     // 应用逻辑
     // ...
 }
@@ -710,14 +710,14 @@ import (
 
 func handler(ctx context.Context, event MyEvent) (string, error) {
     // OpenTelemetry自动初始化 (通过Lambda Layer)
-    
+
     tracer := otel.Tracer("lambda")
     ctx, span := tracer.Start(ctx, "handler")
     defer span.End()
-    
+
     // 业务逻辑
     result := processEvent(ctx, event)
-    
+
     return result, nil
 }
 
@@ -756,7 +756,7 @@ func main() {
 ❌ DON'T (避免)
 1. 不要硬编码
    - 使用环境变量或元数据
-   
+
 2. 不要遗漏region
    - 多区域部署必需
 
@@ -773,19 +773,19 @@ func main() {
   "cloud.platform": "aws_ecs",
   "cloud.account.id": "123456789012",
   "cloud.region": "us-west-2",
-  
+
   // 服务识别
   "service.name": "checkout-service",
   "service.version": "1.2.0",
   "service.namespace": "ecommerce",
-  
+
   // 部署环境
   "deployment.environment": "production",
-  
+
   // 成本归因
   "team": "platform",
   "cost_center": "engineering",
-  
+
   // ECS特定
   "aws.ecs.cluster.arn": "...",
   "aws.ecs.task.family": "checkout-service"
@@ -803,6 +803,6 @@ func main() {
 
 ---
 
-**文档状态**: ✅ 完成  
-**审核状态**: 待审核  
+**文档状态**: ✅ 完成
+**审核状态**: 待审核
 **相关文档**: [通用资源属性](01_通用资源属性.md), [AWS集成指南](../../10_云平台集成/01_AWS集成指南.md)

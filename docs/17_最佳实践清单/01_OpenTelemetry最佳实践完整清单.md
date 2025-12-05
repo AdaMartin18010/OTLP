@@ -1,14 +1,14 @@
 # OpenTelemetry最佳实践完整清单
 
-> **实践指南**: 生产级OpenTelemetry部署与运维  
+> **实践指南**: 生产级OpenTelemetry部署与运维
 > **最后更新**: 2025年10月8日
 
 ---
 
-## 目录
+## 📋 目录
 
 - [OpenTelemetry最佳实践完整清单](#opentelemetry最佳实践完整清单)
-  - [目录](#目录)
+  - [📋 目录](#-目录)
   - [1. SDK最佳实践](#1-sdk最佳实践)
     - [1.1 初始化配置](#11-初始化配置)
     - [1.3 错误处理](#13-错误处理)
@@ -66,7 +66,7 @@
     func init() {
         // ❌ 避免在init中初始化
     }
-    
+
     func main() {
         // ✅ 在main中初始化
         tp := initTracer()
@@ -77,7 +77,7 @@
 3. 资源检测 ⭐⭐⭐⭐⭐
     ```go
     import "go.opentelemetry.io/contrib/detectors/aws/ec2"
-    
+
     detector := resource.New(
         context.Background(),
         resource.WithDetectors(
@@ -101,16 +101,16 @@
     // 监听信号
     sigChan := make(chan os.Signal, 1)
     signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
-    
+
     <-sigChan
-    
+
     // 超时上下文
     ctx, cancel := context.WithTimeout(
-        context.Background(), 
+        context.Background(),
         10*time.Second,
     )
     defer cancel()
-    
+
     // 关闭TracerProvider
     tp.Shutdown(ctx)
     ```
@@ -165,7 +165,7 @@
        _, span := tracer.Start(ctx, "loop-span")
        span.End()
    }
-   
+
    // ✅ 推荐
    _, span := tracer.Start(ctx, "batch-operation")
    defer span.End()
@@ -204,7 +204,7 @@
     ```go
     // ❌ 避免
     span.SetStatus(codes.Error, "password invalid: "+password)
-    
+
     // ✅ 推荐
     span.SetStatus(codes.Error, "authentication failed")
     ```
@@ -240,20 +240,20 @@
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 1. 命名模式 ⭐⭐⭐⭐⭐
-   
+
    HTTP:
    ✅ GET /api/users
    ✅ POST /api/orders
    ❌ /api/users?id=123
-   
+
    gRPC:
    ✅ UserService.GetUser
    ✅ OrderService.CreateOrder
-   
+
    Database:
    ✅ SELECT users
    ✅ INSERT INTO orders
-   
+
    Message Queue:
    ✅ kafka.produce order-topic
    ✅ kafka.consume payment-topic
@@ -262,16 +262,16 @@
     ```go
     // HTTP Server
     trace.WithSpanKind(trace.SpanKindServer)
-    
+
     // HTTP Client
     trace.WithSpanKind(trace.SpanKindClient)
-    
+
     // Message Producer
     trace.WithSpanKind(trace.SpanKindProducer)
-    
+
     // Message Consumer
     trace.WithSpanKind(trace.SpanKindConsumer)
-    
+
     // Internal
     trace.WithSpanKind(trace.SpanKindInternal)
     ```
@@ -280,7 +280,7 @@
     ```go
     // ❌ 避免
     tracer.Start(ctx, "get-user-"+userID)
-    
+
     // ✅ 推荐
     _, span := tracer.Start(ctx, "get-user")
     span.SetAttributes(attribute.String("user.id", userID))
@@ -312,7 +312,7 @@
         semconv.HTTPURLKey.String(url),
         semconv.HTTPStatusCodeKey.Int(200),
     )
-    
+
     // Database
     span.SetAttributes(
         semconv.DBSystemKey.String("postgresql"),
@@ -343,7 +343,7 @@
         attribute.String("credit_card", "4111111111111111"),
         attribute.String("password", "secret123"),
     )
-    
+
     // ✅ 推荐
     span.SetAttributes(
         attribute.String("credit_card", "****1111"),
@@ -374,9 +374,9 @@
     ```go
     // Client
     req, _ := http.NewRequestWithContext(ctx, "GET", url, nil)
-    otel.GetTextMapPropagator().Inject(ctx, 
+    otel.GetTextMapPropagator().Inject(ctx,
         propagation.HeaderCarrier(req.Header))
-    
+
     // Server
     ctx := otel.GetTextMapPropagator().Extract(
         r.Context(),
@@ -396,14 +396,14 @@
     // Kafka Producer
     carrier := propagation.MapCarrier{}
     otel.GetTextMapPropagator().Inject(ctx, carrier)
-    
+
     headers := []kafka.Header{}
     for k, v := range carrier {
         headers = append(headers, kafka.Header{
             Key: k, Value: []byte(v),
         })
     }
-    
+
     // Kafka Consumer
     carrier := propagation.MapCarrier{}
     for _, h := range message.Headers {
@@ -420,7 +420,7 @@
         // ✅ 传递父Context
         ctx, span := tracer.Start(parentCtx, "async-task")
         defer span.End()
-        
+
         // 业务逻辑
     }()
     ```
@@ -432,7 +432,7 @@
         baggage.String("user.id", userID),
         baggage.String("tenant.id", tenantID),
     )
-    
+
     // 读取
     userID := baggage.Value(ctx, "user.id").AsString()
     ```
@@ -451,9 +451,9 @@
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 1. Agent模式 ⭐⭐⭐⭐⭐
-   
+
    场景: 节点级数据收集
-   
+
    ┌─────────────────────────────────────┐
    │ Node 1                              │
    │  ┌───────┐  ┌───────┐  ┌────────┐   │
@@ -471,21 +471,21 @@
               │   Gateway     │
               │   Collector   │
               └───────────────┘
-   
+
    优点:
    - 低延迟
    - 本地缓存
    - 资源隔离
-   
+
    配置:
    - CPU: 100-200m
    - Memory: 128-256Mi
    - Replicas: 每节点1个
 
 2. Gateway模式 ⭐⭐⭐⭐⭐
-   
+
    场景: 集中处理
-   
+
    ┌─────────┐  ┌─────────┐   ┌─────────┐
    │ App 1   │  │ App 2   │   │ App 3   │
    └────┬────┘  └────┬────┘   └────┬────┘
@@ -500,21 +500,21 @@
           │   Backends          │
           │ Jaeger/Prometheus   │
           └─────────────────────┘
-   
+
    优点:
    - 集中管理
    - 高级处理
    - 降低Backend压力
-   
+
    配置:
    - CPU: 1-2 cores
    - Memory: 2-4Gi
    - Replicas: 3+
 
 3. 混合模式 ⭐⭐⭐⭐⭐ (推荐)
-   
+
    Agent + Gateway
-   
+
    优点:
    - 结合两者优势
    - 灵活扩展
@@ -538,7 +538,7 @@
         protocols:
             grpc:
             http:
-    
+
     # production.yaml
     extends: base-config.yaml
     processors:
@@ -589,7 +589,7 @@
         check_interval: 1s
         limit_mib: 512
         spike_limit_mib: 128
-    
+
     # 配置顺序: memory_limiter必须第一个
     service:
         pipelines:
@@ -659,7 +659,7 @@
     // SDK配置
     trace.WithSampler(trace.TraceIDRatioBased(0.1)) // 10%
     ```
-    
+
     适用场景:
     - 高流量服务
     - 均匀采样需求
@@ -671,7 +671,7 @@
         trace.TraceIDRatioBased(0.1),
     ))
     ```
-    
+
     优点:
     - 保持Trace完整性
     - 跨服务一致性
@@ -712,20 +712,20 @@
             type: status_code
             status_code:
                 status_codes: [ERROR]
-            
+
             # 保留慢请求 (>1s)
             - name: slow-requests
             type: latency
             latency:
                 threshold_ms: 1000
-            
+
             # 保留特定服务
             - name: critical-service
             type: string_attribute
             string_attribute:
                 key: service.name
                 values: [payment-service]
-            
+
             # 随机采样10%
             - name: random-10
             type: probabilistic
@@ -736,7 +736,7 @@
 2. 组合策略 ⭐⭐⭐⭐
    - OR逻辑: 满足任一条件保留
    - AND逻辑: 满足所有条件保留
-   
+
     ```yaml
     policies:
         - name: error-or-slow
@@ -765,7 +765,7 @@
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 1. 自适应采样 ⭐⭐⭐⭐⭐
-   
+
    动态调整采样率:
    - 低流量: 100%
    - 中流量: 10%
@@ -985,7 +985,7 @@
     ```yaml
     - alert: QueueFull
         expr: |
-        otelcol_exporter_queue_size / 
+        otelcol_exporter_queue_size /
         otelcol_exporter_queue_capacity > 0.9
         for: 5m
         severity: warning
@@ -1408,6 +1408,6 @@
 
 ---
 
-**文档状态**: ✅ 完成  
-**适用场景**: 企业级OpenTelemetry生产部署  
+**文档状态**: ✅ 完成
+**适用场景**: 企业级OpenTelemetry生产部署
 **持续更新**: 根据最新最佳实践持续迭代

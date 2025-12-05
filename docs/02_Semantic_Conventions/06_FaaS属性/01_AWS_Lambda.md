@@ -1,6 +1,6 @@
 # AWS Lambda语义约定详解
 
-> **Serverless计算**: AWS Lambda完整Tracing与Metrics规范  
+> **Serverless计算**: AWS Lambda完整Tracing与Metrics规范
 > **最后更新**: 2025年10月8日
 
 ---
@@ -385,7 +385,7 @@ package main
 
 import (
     "context"
-    
+
     "github.com/aws/aws-lambda-go/lambda"
     "github.com/aws/aws-lambda-go/lambdacontext"
     "go.opentelemetry.io/otel"
@@ -403,7 +403,7 @@ var (
 func handler(ctx context.Context, event map[string]interface{}) (map[string]interface{}, error) {
     // 获取Lambda Context
     lc, _ := lambdacontext.FromContext(ctx)
-    
+
     // 创建Span
     ctx, span := tracer.Start(ctx, "lambda.handler",
         trace.WithSpanKind(trace.SpanKindServer),
@@ -418,10 +418,10 @@ func handler(ctx context.Context, event map[string]interface{}) (map[string]inte
         ),
     )
     defer span.End()
-    
+
     // 标记冷启动完成
     isColdStart = false
-    
+
     // 业务逻辑
     result, err := processEvent(ctx, event)
     if err != nil {
@@ -429,7 +429,7 @@ func handler(ctx context.Context, event map[string]interface{}) (map[string]inte
         span.SetStatus(codes.Error, "handler failed")
         return nil, err
     }
-    
+
     span.SetStatus(codes.Ok, "handler completed")
     return result, nil
 }
@@ -457,7 +457,7 @@ import (
 
 func apiGatewayHandler(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
     lc, _ := lambdacontext.FromContext(ctx)
-    
+
     ctx, span := tracer.Start(ctx, "lambda.api_gateway",
         trace.WithSpanKind(trace.SpanKindServer),
         trace.WithAttributes(
@@ -465,7 +465,7 @@ func apiGatewayHandler(ctx context.Context, request events.APIGatewayProxyReques
             attribute.String("faas.invocation_id", lc.RequestID),
             attribute.String("faas.trigger", "http"),
             attribute.Bool("faas.coldstart", isColdStart),
-            
+
             // HTTP属性
             semconv.HTTPMethodKey.String(request.HTTPMethod),
             semconv.HTTPRouteKey.String(request.Resource),
@@ -474,12 +474,12 @@ func apiGatewayHandler(ctx context.Context, request events.APIGatewayProxyReques
         ),
     )
     defer span.End()
-    
+
     isColdStart = false
-    
+
     // 提取Trace Context (从API Gateway Headers)
     // propagator.Extract(ctx, &request.Headers)
-    
+
     // 处理请求
     body, err := handleRequest(ctx, request)
     if err != nil {
@@ -490,7 +490,7 @@ func apiGatewayHandler(ctx context.Context, request events.APIGatewayProxyReques
             Body:       "Internal Server Error",
         }, nil
     }
-    
+
     response := events.APIGatewayProxyResponse{
         StatusCode: 200,
         Body:       body,
@@ -498,12 +498,12 @@ func apiGatewayHandler(ctx context.Context, request events.APIGatewayProxyReques
             "Content-Type": "application/json",
         },
     }
-    
+
     span.SetAttributes(
         semconv.HTTPStatusCodeKey.Int(response.StatusCode),
     )
     span.SetStatus(codes.Ok, "request completed")
-    
+
     return response, nil
 }
 
@@ -518,23 +518,23 @@ func handleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (
 ```go
 func sqsHandler(ctx context.Context, event events.SQSEvent) error {
     lc, _ := lambdacontext.FromContext(ctx)
-    
+
     ctx, span := tracer.Start(ctx, "lambda.sqs_batch",
         trace.WithSpanKind(trace.SpanKindConsumer),
         trace.WithAttributes(
             attribute.String("faas.invocation_id", lc.RequestID),
             attribute.String("faas.trigger", "pubsub"),
             attribute.Bool("faas.coldstart", isColdStart),
-            
+
             // SQS属性
             attribute.String("messaging.system", "aws_sqs"),
             attribute.Int("aws.lambda.batch_size", len(event.Records)),
         ),
     )
     defer span.End()
-    
+
     isColdStart = false
-    
+
     // 处理每条消息
     for _, record := range event.Records {
         if err := processMessage(ctx, record); err != nil {
@@ -543,7 +543,7 @@ func sqsHandler(ctx context.Context, event events.SQSEvent) error {
             return err
         }
     }
-    
+
     span.SetStatus(codes.Ok, "batch processed")
     return nil
 }
@@ -555,18 +555,18 @@ func processMessage(ctx context.Context, record events.SQSMessage) error {
         trace.WithAttributes(
             attribute.String("messaging.system", "aws_sqs"),
             attribute.String("messaging.message_id", record.MessageId),
-            attribute.String("messaging.destination.name", 
+            attribute.String("messaging.destination.name",
                 extractQueueName(record.EventSourceARN)),
         ),
     )
     defer span.End()
-    
+
     // 提取Trace Context (从SQS消息属性)
     // propagator.Extract(ctx, record.MessageAttributes)
-    
+
     // 处理消息
     // ...
-    
+
     span.SetStatus(codes.Ok, "message processed")
     return nil
 }
@@ -596,7 +596,7 @@ is_cold_start = True
 def lambda_handler(event, context):
     """Lambda处理函数with tracing"""
     global is_cold_start
-    
+
     with tracer.start_as_current_span(
         "lambda.handler",
         kind=SpanKind.SERVER,
@@ -611,7 +611,7 @@ def lambda_handler(event, context):
         }
     ) as span:
         is_cold_start = False
-        
+
         try:
             # 业务逻辑
             result = process_event(event, context)
@@ -641,7 +641,7 @@ def traced_lambda_handler(trigger_type="other"):
         @wraps(func)
         def wrapper(event, context):
             global is_cold_start
-            
+
             with tracer.start_as_current_span(
                 f"lambda.{func.__name__}",
                 kind=SpanKind.SERVER,
@@ -653,7 +653,7 @@ def traced_lambda_handler(trigger_type="other"):
                 }
             ) as span:
                 is_cold_start = False
-                
+
                 try:
                     result = func(event, context)
                     span.set_status(Status(StatusCode.OK))
@@ -662,7 +662,7 @@ def traced_lambda_handler(trigger_type="other"):
                     span.record_exception(e)
                     span.set_status(Status(StatusCode.ERROR))
                     raise
-        
+
         return wrapper
     return decorator
 
@@ -717,7 +717,7 @@ func emitMetric(ctx context.Context, metricName string, value float64) {
         },
         "FunctionName": "%s",
         "%s": %.2f
-    }`, time.Now().Unix()*1000, metricName, 
+    }`, time.Now().Unix()*1000, metricName,
         os.Getenv("AWS_LAMBDA_FUNCTION_NAME"), metricName, value)
 }
 ```
@@ -812,8 +812,8 @@ Lambda成本优化:
 
 ---
 
-**文档状态**: ✅ 完成  
-**AWS Lambda Runtime**: All  
+**文档状态**: ✅ 完成
+**AWS Lambda Runtime**: All
 **适用场景**: Serverless应用、事件驱动架构、API后端
 
 **关键特性**:

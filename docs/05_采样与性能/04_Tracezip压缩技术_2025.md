@@ -1,9 +1,9 @@
 # Tracezip：下一代追踪压缩技术（2025年2月最新）
 
-> **论文来源**: arXiv:2502.06318  
-> **发表时间**: 2025年2月  
-> **研究机构**: [待补充]  
-> **技术成熟度**: 研究阶段  
+> **论文来源**: arXiv:2502.06318
+> **发表时间**: 2025年2月
+> **研究机构**: [待补充]
+> **技术成熟度**: 研究阶段
 > **重要性**: ⭐⭐⭐⭐ 高
 
 ---
@@ -240,52 +240,52 @@ class TracezipCompressor:
     def __init__(self):
         self.global_dictionary = {}  # 全局字典
         self.next_code = 0
-    
+
     def compress_trace(self, spans: List[Span]) -> bytes:
         """压缩单个trace的所有spans"""
         if not spans:
             return b''
-        
+
         # 1. 构建SRT（Span Retrieval Tree）
         root, tree = self._build_srt(spans)
-        
+
         # 2. 建立trace级字典
         trace_dict = self._build_trace_dictionary(spans)
-        
+
         # 3. 编码树结构
         compressed = self._encode_tree(root, tree, trace_dict)
-        
+
         return compressed
-    
+
     def _build_srt(self, spans: List[Span]):
         """构建Span Retrieval Tree"""
         # 找到根span（没有parent的span）
         span_map = {s.span_id: s for s in spans}
         children_map = {}
-        
+
         for span in spans:
             if span.parent_span_id:
                 if span.parent_span_id not in children_map:
                     children_map[span.parent_span_id] = []
                 children_map[span.parent_span_id].append(span.span_id)
-        
+
         # 找根节点
         roots = [s for s in spans if not s.parent_span_id]
         root = roots[0] if roots else spans[0]
-        
+
         return root, children_map
-    
+
     def _build_trace_dictionary(self, spans: List[Span]) -> Dict[str, int]:
         """为trace构建字典"""
         dictionary = {}
-        
+
         # 收集所有唯一的字符串
         strings = set()
         for span in spans:
             strings.add(span.name)
             strings.update(span.attributes.keys())
             strings.update(span.attributes.values())
-        
+
         # 分配编码（按频率排序）
         from collections import Counter
         all_strings = []
@@ -293,21 +293,21 @@ class TracezipCompressor:
             all_strings.append(span.name)
             all_strings.extend(span.attributes.keys())
             all_strings.extend(span.attributes.values())
-        
+
         freq = Counter(all_strings)
         for string, _ in freq.most_common():
             if string not in self.global_dictionary:
                 dictionary[string] = self.next_code
                 self.global_dictionary[string] = self.next_code
                 self.next_code += 1
-        
+
         return dictionary
-    
-    def _encode_tree(self, root: Span, children_map: Dict, 
+
+    def _encode_tree(self, root: Span, children_map: Dict,
                      trace_dict: Dict[str, int]) -> bytes:
         """使用DFS编码树结构"""
         buffer = bytearray()
-        
+
         # 编码根节点（完整数据）
         buffer.extend(root.trace_id)  # 16字节
         buffer.extend(root.span_id)   # 8字节
@@ -315,48 +315,48 @@ class TracezipCompressor:
         buffer.extend(struct.pack('<Q', root.start_time))  # 8字节
         buffer.extend(struct.pack('<Q', root.end_time))    # 8字节
         buffer.extend(self._encode_attributes(root.attributes, trace_dict))
-        
+
         # 编码子节点（增量数据）
         def encode_children(parent_span: Span, depth: int):
             span_id = parent_span.span_id
             if span_id not in children_map:
                 return
-            
+
             for child_id in children_map[span_id]:
                 child = span_map.get(child_id)
                 if child:
                     # 只编码与父节点的差异
                     buffer.extend(child.span_id)  # 8字节
-                    
+
                     # 时间偏移（相对父节点）
                     time_offset = child.start_time - parent_span.start_time
                     buffer.extend(struct.pack('<i', time_offset))  # 4字节（int32）
-                    
+
                     duration = child.end_time - child.start_time
                     buffer.extend(struct.pack('<i', duration))     # 4字节
-                    
+
                     # 名称（如果不同）
                     if child.name != parent_span.name:
                         buffer.extend(self._encode_string(child.name, trace_dict))
                     else:
                         buffer.extend(b'\x00')  # 标记：与父节点相同
-                    
+
                     # 属性（只编码差异）
                     diff_attrs = self._compute_attribute_diff(
-                        parent_span.attributes, 
+                        parent_span.attributes,
                         child.attributes
                     )
                     buffer.extend(self._encode_attributes(diff_attrs, trace_dict))
-                    
+
                     # 递归处理子节点
                     encode_children(child, depth + 1)
-        
+
         span_map = {root.span_id: root}
         # 需要重新构建span_map...
         encode_children(root, 1)
-        
+
         return bytes(buffer)
-    
+
     def _encode_string(self, s: str, dictionary: Dict[str, int]) -> bytes:
         """编码字符串（使用字典）"""
         if s in dictionary:
@@ -369,20 +369,20 @@ class TracezipCompressor:
             # 字符串太长或不在字典，直接存储
             encoded = s.encode('utf-8')
             return struct.pack('<H', len(encoded)) + encoded
-    
-    def _encode_attributes(self, attrs: Dict[str, str], 
+
+    def _encode_attributes(self, attrs: Dict[str, str],
                           dictionary: Dict[str, int]) -> bytes:
         """编码属性字典"""
         buffer = bytearray()
         buffer.extend(struct.pack('<H', len(attrs)))  # 属性数量
-        
+
         for key, value in attrs.items():
             buffer.extend(self._encode_string(key, dictionary))
             buffer.extend(self._encode_string(value, dictionary))
-        
+
         return bytes(buffer)
-    
-    def _compute_attribute_diff(self, parent_attrs: Dict[str, str], 
+
+    def _compute_attribute_diff(self, parent_attrs: Dict[str, str],
                                 child_attrs: Dict[str, str]) -> Dict[str, str]:
         """计算属性差异"""
         diff = {}
@@ -558,7 +558,7 @@ ENGINE = MergeTree()
 ORDER BY (start_time, trace_id);
 
 -- 查询时自动解压
-SELECT * FROM traces_compressed 
+SELECT * FROM traces_compressed
 WHERE trace_id = unhex('trace123456789ab');
 ```
 
@@ -639,9 +639,9 @@ WHERE trace_id = unhex('trace123456789ab');
 
 ---
 
-**文档版本**: v1.0  
-**最后更新**: 2025-10-18  
-**状态**: 研究阶段，生产使用需等待成熟实现  
+**文档版本**: v1.0
+**最后更新**: 2025-10-18
+**状态**: 研究阶段，生产使用需等待成熟实现
 **反馈**: [GitHub Issues待添加]
 
 ---

@@ -1,6 +1,6 @@
 # AWS SQS/SNS语义约定详解
 
-> **云原生消息服务**: AWS SQS与SNS Tracing与Metrics完整规范  
+> **云原生消息服务**: AWS SQS与SNS Tracing与Metrics完整规范
 > **最后更新**: 2025年10月8日
 
 ---
@@ -364,7 +364,7 @@ package main
 
 import (
     "context"
-    
+
     "github.com/aws/aws-sdk-go-v2/aws"
     "github.com/aws/aws-sdk-go-v2/service/sqs"
     "github.com/aws/aws-sdk-go-v2/service/sqs/types"
@@ -382,7 +382,7 @@ func SendMessageWithTracing(
     message string,
 ) error {
     tracer := otel.Tracer("sqs-producer")
-    
+
     // 创建Producer Span
     ctx, span := tracer.Start(ctx, "sqs.publish",
         trace.WithSpanKind(trace.SpanKindProducer),
@@ -396,33 +396,33 @@ func SendMessageWithTracing(
         ),
     )
     defer span.End()
-    
+
     // 创建消息属性
     messageAttributes := make(map[string]types.MessageAttributeValue)
-    
+
     // 注入Trace Context
     carrier := NewSQSAttributeCarrier(messageAttributes)
     otel.GetTextMapPropagator().Inject(ctx, carrier)
-    
+
     // 发送消息
     output, err := sqsClient.SendMessage(ctx, &sqs.SendMessageInput{
         QueueUrl:          aws.String(queueURL),
         MessageBody:       aws.String(message),
         MessageAttributes: messageAttributes,
     })
-    
+
     if err != nil {
         span.RecordError(err)
         span.SetStatus(codes.Error, "send failed")
         return err
     }
-    
+
     // 记录消息ID
     span.SetAttributes(
-        attribute.String("messaging.aws.sqs.message_id", 
+        attribute.String("messaging.aws.sqs.message_id",
             *output.MessageId),
     )
-    
+
     span.SetStatus(codes.Ok, "sent")
     return nil
 }
@@ -470,7 +470,7 @@ func SendMessageBatchWithTracing(
     messages []string,
 ) error {
     tracer := otel.Tracer("sqs-producer")
-    
+
     ctx, span := tracer.Start(ctx, "sqs.publish_batch",
         trace.WithSpanKind(trace.SpanKindProducer),
         trace.WithAttributes(
@@ -480,42 +480,42 @@ func SendMessageBatchWithTracing(
         ),
     )
     defer span.End()
-    
+
     // 构建批量消息
     entries := make([]types.SendMessageBatchRequestEntry, len(messages))
     for i, msg := range messages {
         messageAttributes := make(map[string]types.MessageAttributeValue)
         carrier := NewSQSAttributeCarrier(messageAttributes)
         otel.GetTextMapPropagator().Inject(ctx, carrier)
-        
+
         entries[i] = types.SendMessageBatchRequestEntry{
             Id:                aws.String(fmt.Sprintf("msg-%d", i)),
             MessageBody:       aws.String(msg),
             MessageAttributes: messageAttributes,
         }
     }
-    
+
     // 批量发送
-    output, err := sqsClient.SendMessageBatch(ctx, 
+    output, err := sqsClient.SendMessageBatch(ctx,
         &sqs.SendMessageBatchInput{
             QueueUrl: aws.String(queueURL),
             Entries:  entries,
         })
-    
+
     if err != nil {
         span.RecordError(err)
         span.SetStatus(codes.Error, "batch send failed")
         return err
     }
-    
+
     // 记录成功/失败数量
     span.SetAttributes(
-        attribute.Int("messaging.aws.sqs.batch.success_count", 
+        attribute.Int("messaging.aws.sqs.batch.success_count",
             len(output.Successful)),
-        attribute.Int("messaging.aws.sqs.batch.failed_count", 
+        attribute.Int("messaging.aws.sqs.batch.failed_count",
             len(output.Failed)),
     )
-    
+
     span.SetStatus(codes.Ok, "sent")
     return nil
 }
@@ -531,10 +531,10 @@ func ReceiveMessageWithTracing(
     handler func(context.Context, string) error,
 ) error {
     tracer := otel.Tracer("sqs-consumer")
-    
+
     for {
         // 接收消息 (长轮询)
-        output, err := sqsClient.ReceiveMessage(ctx, 
+        output, err := sqsClient.ReceiveMessage(ctx,
             &sqs.ReceiveMessageInput{
                 QueueUrl:            aws.String(queueURL),
                 MaxNumberOfMessages: 10,
@@ -542,17 +542,17 @@ func ReceiveMessageWithTracing(
                 VisibilityTimeout:   30,
                 MessageAttributeNames: []string{"All"},
             })
-        
+
         if err != nil {
             return err
         }
-        
+
         // 处理每条消息
         for _, msg := range output.Messages {
             // 提取Trace Context
             carrier := NewSQSAttributeCarrier(msg.MessageAttributes)
             msgCtx := otel.GetTextMapPropagator().Extract(ctx, carrier)
-            
+
             // 创建Consumer Span
             msgCtx, span := tracer.Start(msgCtx, "sqs.receive",
                 trace.WithSpanKind(trace.SpanKindConsumer),
@@ -561,39 +561,39 @@ func ReceiveMessageWithTracing(
                     semconv.MessagingDestinationNameKey.String(
                         getQueueName(queueURL)),
                     semconv.MessagingOperationKey.String("receive"),
-                    attribute.String("messaging.aws.sqs.message_id", 
+                    attribute.String("messaging.aws.sqs.message_id",
                         *msg.MessageId),
-                    attribute.String("messaging.aws.sqs.receipt_handle", 
+                    attribute.String("messaging.aws.sqs.receipt_handle",
                         *msg.ReceiptHandle),
-                    attribute.Int("messaging.message.body.size", 
+                    attribute.Int("messaging.message.body.size",
                         len(*msg.Body)),
                 ),
             )
-            
+
             // 处理消息
             err := handler(msgCtx, *msg.Body)
-            
+
             if err != nil {
                 span.RecordError(err)
                 span.SetStatus(codes.Error, "handler failed")
-                
+
                 // 可以选择删除消息或让它重新可见
                 // (这里选择让它自动重新可见)
             } else {
                 span.SetStatus(codes.Ok, "processed")
-                
+
                 // 删除消息
-                _, delErr := sqsClient.DeleteMessage(msgCtx, 
+                _, delErr := sqsClient.DeleteMessage(msgCtx,
                     &sqs.DeleteMessageInput{
                         QueueUrl:      aws.String(queueURL),
                         ReceiptHandle: msg.ReceiptHandle,
                     })
-                
+
                 if delErr != nil {
                     span.RecordError(delErr)
                 }
             }
-            
+
             span.End()
         }
     }
@@ -610,7 +610,7 @@ func PublishWithTracing(
     message string,
 ) error {
     tracer := otel.Tracer("sns-publisher")
-    
+
     // 创建Publisher Span
     ctx, span := tracer.Start(ctx, "sns.publish",
         trace.WithSpanKind(trace.SpanKindProducer),
@@ -624,33 +624,33 @@ func PublishWithTracing(
         ),
     )
     defer span.End()
-    
+
     // 创建消息属性
     messageAttributes := make(map[string]types.MessageAttributeValue)
-    
+
     // 注入Trace Context
     carrier := NewSNSAttributeCarrier(messageAttributes)
     otel.GetTextMapPropagator().Inject(ctx, carrier)
-    
+
     // 发布消息
     output, err := snsClient.Publish(ctx, &sns.PublishInput{
         TopicArn:          aws.String(topicARN),
         Message:           aws.String(message),
         MessageAttributes: messageAttributes,
     })
-    
+
     if err != nil {
         span.RecordError(err)
         span.SetStatus(codes.Error, "publish failed")
         return err
     }
-    
+
     // 记录消息ID
     span.SetAttributes(
-        attribute.String("messaging.aws.sns.message_id", 
+        attribute.String("messaging.aws.sns.message_id",
             *output.MessageId),
     )
-    
+
     span.SetStatus(codes.Ok, "published")
     return nil
 }
@@ -693,11 +693,11 @@ def send_message_with_tracing(queue_url: str, message: str):
     ) as span:
         # 注入trace context
         message_attributes = {}
-        propagate.inject(message_attributes, 
+        propagate.inject(message_attributes,
                         setter=lambda d, k, v: d.update({
                             k: {'StringValue': v, 'DataType': 'String'}
                         }))
-        
+
         try:
             # 发送消息
             response = sqs.send_message(
@@ -705,12 +705,12 @@ def send_message_with_tracing(queue_url: str, message: str):
                 MessageBody=message,
                 MessageAttributes=message_attributes
             )
-            
+
             # 记录消息ID
-            span.set_attribute("messaging.aws.sqs.message_id", 
+            span.set_attribute("messaging.aws.sqs.message_id",
                              response['MessageId'])
             span.set_status(Status(StatusCode.OK))
-            
+
         except Exception as e:
             span.record_exception(e)
             span.set_status(Status(StatusCode.ERROR))
@@ -726,13 +726,13 @@ def receive_message_with_tracing(queue_url: str, handler):
             WaitTimeSeconds=20,
             MessageAttributeNames=['All']
         )
-        
+
         for msg in response.get('Messages', []):
             # 提取trace context
             message_attributes = msg.get('MessageAttributes', {})
             ctx = propagate.extract(message_attributes,
                                    getter=lambda d, k: d.get(k, {}).get('StringValue', ''))
-            
+
             # 创建span
             with tracer.start_as_current_span(
                 "sqs.receive",
@@ -749,14 +749,14 @@ def receive_message_with_tracing(queue_url: str, handler):
                 try:
                     # 处理消息
                     handler(msg['Body'])
-                    
+
                     # 删除消息
                     sqs.delete_message(
                         QueueUrl=queue_url,
                         ReceiptHandle=msg['ReceiptHandle']
                     )
                     span.set_status(Status(StatusCode.OK))
-                    
+
                 except Exception as e:
                     span.record_exception(e)
                     span.set_status(Status(StatusCode.ERROR))
@@ -785,7 +785,7 @@ def publish_with_tracing(topic_arn: str, message: str):
                         setter=lambda d, k, v: d.update({
                             k: {'StringValue': v, 'DataType': 'String'}
                         }))
-        
+
         try:
             # 发布消息
             response = sns.publish(
@@ -793,11 +793,11 @@ def publish_with_tracing(topic_arn: str, message: str):
                 Message=message,
                 MessageAttributes=message_attributes
             )
-            
-            span.set_attribute("messaging.aws.sns.message_id", 
+
+            span.set_attribute("messaging.aws.sns.message_id",
                              response['MessageId'])
             span.set_status(Status(StatusCode.OK))
-            
+
         except Exception as e:
             span.record_exception(e)
             span.set_status(Status(StatusCode.ERROR))
@@ -1011,8 +1011,8 @@ SNS:
 
 ---
 
-**文档状态**: ✅ 完成  
-**AWS SDK版本**: v2 (Go) / boto3 (Python)  
+**文档状态**: ✅ 完成
+**AWS SDK版本**: v2 (Go) / boto3 (Python)
 **适用场景**: AWS云原生架构、微服务解耦、事件驱动
 
 **关键特性**:

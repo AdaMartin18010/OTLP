@@ -1,7 +1,7 @@
 # OpenTelemetry Collector 生产环境完整配置示例
 
-> **适用版本**: OpenTelemetry Collector v0.90.0+  
-> **配置类型**: 生产级高可用部署  
+> **适用版本**: OpenTelemetry Collector v0.90.0+
+> **配置类型**: 生产级高可用部署
 > **最后更新**: 2025年10月8日
 
 ---
@@ -107,7 +107,7 @@ receivers:
           key_file: /etc/otelcol/certs/server.key
           client_ca_file: /etc/otelcol/certs/ca.crt
           min_version: "1.3"
-      
+
       http:
         endpoint: 0.0.0.0:4318
         max_request_body_size: 4194304  # 4MB
@@ -859,7 +859,7 @@ data:
             endpoint: 0.0.0.0:4317
           http:
             endpoint: 0.0.0.0:4318
-    
+
     processors:
       batch:
         timeout: 1s
@@ -877,13 +877,13 @@ data:
             - k8s.pod.name
             - k8s.deployment.name
             - k8s.namespace.name
-    
+
     exporters:
       otlp:
         endpoint: backend.example.com:4317
       logging:
         verbosity: normal
-    
+
     service:
       pipelines:
         traces:
@@ -1328,7 +1328,7 @@ service:
     metrics:
       level: detailed
       address: 0.0.0.0:8888
-    
+
     logs:
       level: info
       encoding: json
@@ -1478,6 +1478,6 @@ extensions:
 
 ---
 
-**文档版本**: v1.0  
-**最后更新**: 2025年10月8日  
+**文档版本**: v1.0
+**最后更新**: 2025年10月8日
 **维护者**: OTLP深度梳理项目组

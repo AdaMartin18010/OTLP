@@ -1,6 +1,6 @@
 # OpenTelemetry GCP 集成指南
 
-> **最后更新**: 2025年10月8日  
+> **最后更新**: 2025年10月8日
 > **目标读者**: GCP架构师、DevOps工程师
 
 ---
@@ -122,11 +122,11 @@ processors:
   batch:
     timeout: 10s
     send_batch_size: 256
-  
+
   memory_limiter:
     limit_mib: 512
     spike_limit_mib: 128
-  
+
   # Resource检测
   resourcedetection/gcp:
     detectors: [gcp]
@@ -138,19 +138,19 @@ exporters:
     project: "my-gcp-project"
     # 使用应用默认凭证
     use_insecure: false
-    
+
     # Trace配置
     trace:
       endpoint: "cloudtrace.googleapis.com:443"
-    
-    # Metric配置  
+
+    # Metric配置
     metric:
       endpoint: "monitoring.googleapis.com:443"
       # 资源映射
       resource_filters:
         - prefix: "k8s."
         - prefix: "cloud."
-  
+
   # 备用后端
   otlp/jaeger:
     endpoint: jaeger:4317
@@ -163,7 +163,7 @@ service:
       receivers: [otlp]
       processors: [memory_limiter, resourcedetection/gcp, batch]
       exporters: [googlecloud, otlp/jaeger]
-    
+
     metrics:
       receivers: [otlp]
       processors: [memory_limiter, resourcedetection/gcp, batch]
@@ -180,7 +180,7 @@ package main
 import (
     "context"
     "log"
-    
+
     texporter "github.com/GoogleCloudPlatform/opentelemetry-operations-go/exporter/trace"
     "go.opentelemetry.io/otel"
     "go.opentelemetry.io/otel/sdk/resource"
@@ -190,7 +190,7 @@ import (
 
 func initTracer() (*sdktrace.TracerProvider, error) {
     ctx := context.Background()
-    
+
     // 创建Cloud Trace exporter
     exporter, err := texporter.New(
         texporter.WithProjectID("my-gcp-project"),
@@ -202,7 +202,7 @@ func initTracer() (*sdktrace.TracerProvider, error) {
     if err != nil {
         return nil, err
     }
-    
+
     // 创建Resource
     res, err := resource.New(ctx,
         resource.WithAttributes(
@@ -216,16 +216,16 @@ func initTracer() (*sdktrace.TracerProvider, error) {
     if err != nil {
         return nil, err
     }
-    
+
     // 创建TracerProvider
     tp := sdktrace.NewTracerProvider(
         sdktrace.WithBatcher(exporter),
         sdktrace.WithResource(res),
         sdktrace.WithSampler(sdktrace.TraceIDRatioBased(0.1)), // 10%采样
     )
-    
+
     otel.SetTracerProvider(tp)
-    
+
     return tp, nil
 }
 
@@ -235,12 +235,12 @@ func main() {
         log.Fatal(err)
     }
     defer tp.Shutdown(context.Background())
-    
+
     // 使用tracer
     tracer := otel.Tracer("my-app")
     ctx, span := tracer.Start(context.Background(), "main")
     defer span.End()
-    
+
     // 业务逻辑
     // ...
 }
@@ -270,21 +270,21 @@ data:
             endpoint: 0.0.0.0:4317
           http:
             endpoint: 0.0.0.0:4318
-    
+
     processors:
       batch:
         timeout: 10s
         send_batch_size: 256
-      
+
       memory_limiter:
         limit_mib: 512
         spike_limit_mib: 128
-      
+
       # GCP资源检测
       resourcedetection:
         detectors: [gcp, env]
         timeout: 2s
-      
+
       # K8s属性
       k8sattributes:
         auth_type: "serviceAccount"
@@ -300,15 +300,15 @@ data:
             - tag_name: app
               key: app
               from: pod
-    
+
     exporters:
       googlecloud:
         project: "my-gcp-project"
         use_insecure: false
-      
+
       logging:
         loglevel: info
-    
+
     service:
       pipelines:
         traces:
@@ -488,7 +488,7 @@ services:
       - GOOGLE_CLOUD_PROJECT=my-gcp-project
     depends_on:
       - otel-collector
-  
+
   otel-collector:
     image: otel/opentelemetry-collector-contrib:0.90.0
     command: ["--config=/etc/otel/config.yaml"]
@@ -549,29 +549,29 @@ gcloud run deploy order-service \
 resource "google_cloud_run_service" "order_service" {
   name     = "order-service"
   location = "us-central1"
-  
+
   template {
     spec {
       service_account_name = google_service_account.otel_collector.email
-      
+
       containers {
         image = "gcr.io/my-gcp-project/order-service:v1.2.3"
-        
+
         env {
           name  = "OTEL_EXPORTER_OTLP_ENDPOINT"
           value = "http://localhost:4317"
         }
-        
+
         env {
           name  = "OTEL_SERVICE_NAME"
           value = "order-service"
         }
-        
+
         env {
           name  = "GOOGLE_CLOUD_PROJECT"
           value = var.project_id
         }
-        
+
         resources {
           limits = {
             cpu    = "2"
@@ -580,7 +580,7 @@ resource "google_cloud_run_service" "order_service" {
         }
       }
     }
-    
+
     metadata {
       annotations = {
         "autoscaling.knative.dev/maxScale" = "100"
@@ -588,7 +588,7 @@ resource "google_cloud_run_service" "order_service" {
       }
     }
   }
-  
+
   traffic {
     percent         = 100
     latest_revision = true
@@ -619,7 +619,7 @@ package function
 import (
     "context"
     "net/http"
-    
+
     "github.com/GoogleCloudPlatform/functions-framework-go/functions"
     texporter "github.com/GoogleCloudPlatform/opentelemetry-operations-go/exporter/trace"
     "go.opentelemetry.io/otel"
@@ -632,32 +632,32 @@ func init() {
     // 初始化追踪
     ctx := context.Background()
     exporter, _ := texporter.New(texporter.WithProjectID("my-gcp-project"))
-    
+
     tp := trace.NewTracerProvider(
         trace.WithBatcher(exporter),
         trace.WithSampler(trace.TraceIDRatioBased(0.1)),
     )
-    
+
     otel.SetTracerProvider(tp)
-    
+
     // 注册HTTP函数
     functions.HTTP("ProcessOrder", processOrder)
 }
 
 func processOrder(w http.ResponseWriter, r *http.Request) {
     ctx := r.Context()
-    
+
     // 创建Span
     ctx, span := tracer.Start(ctx, "ProcessOrder")
     defer span.End()
-    
+
     // 业务逻辑
     orderID := r.URL.Query().Get("order_id")
     span.SetAttributes(attribute.String("order.id", orderID))
-    
+
     // 处理订单
     result := handleOrder(ctx, orderID)
-    
+
     w.WriteHeader(http.StatusOK)
     w.Write([]byte(result))
 }
@@ -665,7 +665,7 @@ func processOrder(w http.ResponseWriter, r *http.Request) {
 func handleOrder(ctx context.Context, orderID string) string {
     _, span := tracer.Start(ctx, "HandleOrder")
     defer span.End()
-    
+
     // 处理逻辑
     return "Order processed"
 }
@@ -761,7 +761,7 @@ receivers:
 
 processors:
   batch:
-  
+
   # 资源转换
   resource:
     attributes:
@@ -772,18 +772,18 @@ processors:
 exporters:
   googlecloud:
     project: "my-gcp-project"
-    
+
     metric:
       endpoint: "monitoring.googleapis.com:443"
-      
+
       # 指标前缀
       prefix: "custom.googleapis.com"
-      
+
       # 资源映射
       resource_filters:
         - prefix: "k8s."
         - prefix: "cloud."
-      
+
       # 使用Cloud Monitoring resource types
       use_insecure: false
 
@@ -816,7 +816,7 @@ func createFirestoreClient(ctx context.Context) (*firestore.Client, error) {
             grpc.WithStreamInterceptor(otelgrpc.StreamClientInterceptor()),
         ),
     )
-    
+
     return client, err
 }
 
@@ -826,7 +826,7 @@ func saveDocument(ctx context.Context, client *firestore.Client) error {
         "amount": 99.99,
         "status": "pending",
     })
-    
+
     return err
 }
 ```
@@ -846,12 +846,12 @@ func uploadFile(ctx context.Context) error {
         ),
     )
     defer client.Close()
-    
+
     // 自动追踪上传操作
     wc := client.Bucket("my-bucket").Object("file.txt").NewWriter(ctx)
     _, err := wc.Write([]byte("content"))
     wc.Close()
-    
+
     return err
 }
 ```
@@ -868,24 +868,24 @@ import (
 func publishMessage(ctx context.Context) error {
     client, _ := pubsub.NewClient(ctx, "my-gcp-project")
     defer client.Close()
-    
+
     topic := client.Topic("orders")
-    
+
     // 创建Span
     tracer := otel.Tracer("pubsub-publisher")
     ctx, span := tracer.Start(ctx, "Publish to orders")
     defer span.End()
-    
+
     // 注入TraceContext到消息属性
     carrier := make(map[string]string)
     otel.GetTextMapPropagator().Inject(ctx, propagation.MapCarrier(carrier))
-    
+
     // 发布消息
     result := topic.Publish(ctx, &pubsub.Message{
         Data: []byte("order data"),
         Attributes: carrier,
     })
-    
+
     _, err := result.Get(ctx)
     return err
 }
@@ -893,22 +893,22 @@ func publishMessage(ctx context.Context) error {
 func consumeMessage(ctx context.Context) error {
     client, _ := pubsub.NewClient(ctx, "my-gcp-project")
     defer client.Close()
-    
+
     sub := client.Subscription("orders-sub")
-    
+
     return sub.Receive(ctx, func(ctx context.Context, msg *pubsub.Message) {
         // 提取TraceContext
-        ctx = otel.GetTextMapPropagator().Extract(ctx, 
+        ctx = otel.GetTextMapPropagator().Extract(ctx,
             propagation.MapCarrier(msg.Attributes))
-        
+
         // 创建Consumer Span
         tracer := otel.Tracer("pubsub-consumer")
         ctx, span := tracer.Start(ctx, "Process orders message")
         defer span.End()
-        
+
         // 处理消息
         processMessage(ctx, msg.Data)
-        
+
         msg.Ack()
     })
 }
@@ -961,18 +961,18 @@ processors:
 1. Cloud Trace定价
    - $0.20 / 百万span ingested
    - 前2.5百万 span/月免费
-   
+
    优化策略:
    # 10%采样
    sampler: parentbased_traceidratio
    sampling_percentage: 10
-   
+
    节省: 90% ($18/百万 vs $180/百万)
 
 2. Cloud Monitoring定价
    - $0.2580 / MB for metrics
    - 前150 MB/月免费
-   
+
    优化策略:
    # 减少指标基数
    processors:
@@ -1069,6 +1069,6 @@ processors:
 
 ---
 
-**文档状态**: ✅ 完成  
-**审核状态**: 待审核  
+**文档状态**: ✅ 完成
+**审核状态**: 待审核
 **相关文档**: [AWS集成指南](01_AWS集成指南.md), [Collector架构](../04_核心组件/02_Collector架构.md)

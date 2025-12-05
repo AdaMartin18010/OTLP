@@ -1,6 +1,6 @@
 # OpenTelemetry Logs 数据模型详解
 
-> **规范版本**: v1.30.0  
+> **规范版本**: v1.30.0
 > **最后更新**: 2025年10月8日
 
 ---
@@ -125,31 +125,31 @@ Logs的独特价值:
 message LogRecord {
   // 时间戳 (纳秒)
   fixed64 time_unix_nano = 1;
-  
+
   // 观测时间戳 (可选)
   fixed64 observed_time_unix_nano = 11;
-  
+
   // 严重性级别
   SeverityNumber severity_number = 2;
-  
+
   // 严重性文本
   string severity_text = 3;
-  
+
   // 日志内容 (核心)
   AnyValue body = 5;
-  
+
   // 属性
   repeated KeyValue attributes = 6;
-  
+
   // 已删除属性数量
   uint32 dropped_attributes_count = 7;
-  
+
   // Flags (包含TraceFlags)
   fixed32 flags = 8;
-  
+
   // TraceId (关联Trace)
   bytes trace_id = 9;  // 16字节
-  
+
   // SpanId (关联Span)
   bytes span_id = 10;  // 8字节
 }
@@ -402,16 +402,16 @@ func main() {
     if err != nil {
         panic(err)
     }
-    
+
     // 2. 创建LoggerProvider
     provider := log.NewLoggerProvider(
         log.WithProcessor(log.NewBatchProcessor(exporter)),
     )
     defer provider.Shutdown(context.Background())
-    
+
     // 3. 获取Logger
     logger := provider.Logger("my-service")
-    
+
     // 4. 基础日志
     logger.Emit(context.Background(), api.Record{
         Timestamp:         time.Now(),
@@ -424,12 +424,12 @@ func main() {
             api.String("user.email", "user@example.com"),
         },
     })
-    
+
     // 5. 关联Trace的日志
     ctx := context.Background()
     span := trace.SpanFromContext(ctx)
     spanContext := span.SpanContext()
-    
+
     logger.Emit(ctx, api.Record{
         Timestamp:    time.Now(),
         Severity:     api.SeverityError,
@@ -532,15 +532,15 @@ public class LoggingExample {
         OtlpGrpcLogRecordExporter exporter = OtlpGrpcLogRecordExporter.builder()
             .setEndpoint("http://localhost:4317")
             .build();
-        
+
         // 2. 创建LoggerProvider
         SdkLoggerProvider loggerProvider = SdkLoggerProvider.builder()
             .addLogRecordProcessor(BatchLogRecordProcessor.builder(exporter).build())
             .build();
-        
+
         // 3. 获取Logger
         Logger logger = loggerProvider.get("my-service");
-        
+
         // 4. 基础日志
         logger.logRecordBuilder()
             .setSeverity(Severity.INFO)
@@ -551,7 +551,7 @@ public class LoggingExample {
                 .put("user.email", "user@example.com")
                 .build())
             .emit();
-        
+
         // 5. 关联Trace的日志
         Span span = Span.current();
         logger.logRecordBuilder()
@@ -585,17 +585,17 @@ import (
 func main() {
     // 1. 创建logrus logger
     logger := logrus.New()
-    
+
     // 2. 添加OpenTelemetry Hook
     hook := otellogrus.NewHook()
     logger.AddHook(hook)
-    
+
     // 3. 正常使用logrus
     logger.WithFields(logrus.Fields{
         "user.id": "user-123",
         "order.id": "ORD-12345",
     }).Info("Order created")
-    
+
     // 日志自动发送到OTLP
 }
 ```
@@ -611,10 +611,10 @@ import (
 func main() {
     // 1. 创建zap logger
     zapLogger, _ := zap.NewProduction()
-    
+
     // 2. 包装为OTEL logger
     logger := otelzap.New(zapLogger)
-    
+
     // 3. 正常使用
     logger.Info("Order created",
         zap.String("user.id", "user-123"),
@@ -636,11 +636,11 @@ receivers:
       # 解析JSON日志
       - type: json_parser
         parse_from: body
-      
+
       # 提取严重性
       - type: severity_parser
         parse_from: attributes.level
-      
+
       # 提取时间戳
       - type: time_parser
         parse_from: attributes.timestamp
@@ -847,6 +847,6 @@ logger.Emit(context.Background(), api.Record{
 
 ---
 
-**文档状态**: ✅ 完成  
-**审核状态**: 待审核  
+**文档状态**: ✅ 完成
+**审核状态**: 待审核
 **相关文档**: [Span结构](../01_Traces数据模型/01_Span结构.md), [Metrics概述](../02_Metrics数据模型/01_Metrics概述.md)

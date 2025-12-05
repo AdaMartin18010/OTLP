@@ -1,7 +1,7 @@
 # RPC 语义约定
 
-> **标准版本**: v1.27.0  
-> **状态**: Stable  
+> **标准版本**: v1.27.0
+> **状态**: Stable
 > **最后更新**: 2025年10月8日
 
 ---
@@ -152,7 +152,7 @@ import (
 
 func CallRPCMethod(ctx context.Context, service, method, host string, port int) error {
     tracer := otel.Tracer("rpc-client")
-    
+
     // 创建客户端Span
     ctx, span := tracer.Start(ctx, service+"/"+method,
         trace.WithSpanKind(trace.SpanKindClient),
@@ -161,7 +161,7 @@ func CallRPCMethod(ctx context.Context, service, method, host string, port int) 
             attribute.String("rpc.system", "grpc"),
             attribute.String("rpc.service", service),
             attribute.String("rpc.method", method),
-            
+
             // 网络属性
             attribute.String("net.peer.name", host),
             attribute.Int("net.peer.port", port),
@@ -169,16 +169,16 @@ func CallRPCMethod(ctx context.Context, service, method, host string, port int) 
         ),
     )
     defer span.End()
-    
+
     // 执行RPC调用
     err := performRPCCall(ctx, service, method, host, port)
-    
+
     if err != nil {
         span.SetStatus(codes.Error, err.Error())
         span.RecordError(err)
         return err
     }
-    
+
     span.SetStatus(codes.Ok, "RPC call successful")
     return nil
 }
@@ -243,7 +243,7 @@ func (s *RPCServer) HandleRPCRequest(ctx context.Context, service, method string
             attribute.String("rpc.system", "grpc"),
             attribute.String("rpc.service", service),
             attribute.String("rpc.method", method),
-            
+
             // 服务器网络属性
             attribute.String("net.host.name", "api.example.com"),
             attribute.Int("net.host.port", 8080),
@@ -251,16 +251,16 @@ func (s *RPCServer) HandleRPCRequest(ctx context.Context, service, method string
         ),
     )
     defer span.End()
-    
+
     // 处理RPC请求
     err := processRequest(ctx, service, method)
-    
+
     if err != nil {
         span.SetStatus(codes.Error, err.Error())
         span.RecordError(err)
         return err
     }
-    
+
     span.SetStatus(codes.Ok, "Request processed successfully")
     return nil
 }
@@ -317,7 +317,7 @@ func HandleRPCError(ctx context.Context, span trace.Span, err error) {
         span.SetStatus(codes.Ok, "Success")
         return
     }
-    
+
     // 获取gRPC status
     st, ok := status.FromError(err)
     if !ok {
@@ -325,11 +325,11 @@ func HandleRPCError(ctx context.Context, span trace.Span, err error) {
         span.RecordError(err)
         return
     }
-    
+
     // 设置Span状态
     span.SetStatus(codes.Error, st.Message())
     span.RecordError(err)
-    
+
     // 记录错误码
     span.SetAttributes(
         attribute.String("rpc.grpc.status_code", st.Code().String()),
@@ -476,19 +476,19 @@ func ClientInterceptor() grpc.UnaryClientInterceptor {
     ) error {
         // 获取propagator
         propagator := otel.GetTextMapPropagator()
-        
+
         // 创建metadata
         md, ok := metadata.FromOutgoingContext(ctx)
         if !ok {
             md = metadata.New(nil)
         }
-        
+
         // 注入trace context
         propagator.Inject(ctx, &metadataCarrier{md: md})
-        
+
         // 设置metadata到context
         ctx = metadata.NewOutgoingContext(ctx, md)
-        
+
         // 调用RPC
         return invoker(ctx, method, req, reply, cc, opts...)
     }
@@ -542,13 +542,13 @@ func ServerInterceptor() grpc.UnaryServerInterceptor {
     ) (interface{}, error) {
         // 获取propagator
         propagator := otel.GetTextMapPropagator()
-        
+
         // 从metadata提取trace context
         md, ok := metadata.FromIncomingContext(ctx)
         if ok {
             ctx = propagator.Extract(ctx, &metadataCarrier{md: md})
         }
-        
+
         // 处理请求
         return handler(ctx, req)
     }
@@ -651,10 +651,10 @@ import (
     "context"
     "log"
     "time"
-    
+
     "google.golang.org/grpc"
     "google.golang.org/grpc/credentials/insecure"
-    
+
     "go.opentelemetry.io/otel"
     "go.opentelemetry.io/otel/attribute"
     "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
@@ -666,7 +666,7 @@ import (
 
 func initTracer() func() {
     ctx := context.Background()
-    
+
     exporter, err := otlptracegrpc.New(ctx,
         otlptracegrpc.WithEndpoint("localhost:4317"),
         otlptracegrpc.WithInsecure(),
@@ -674,7 +674,7 @@ func initTracer() func() {
     if err != nil {
         log.Fatal(err)
     }
-    
+
     res, err := resource.New(ctx,
         resource.WithAttributes(
             semconv.ServiceName("rpc-client"),
@@ -684,13 +684,13 @@ func initTracer() func() {
     if err != nil {
         log.Fatal(err)
     }
-    
+
     tp := sdktrace.NewTracerProvider(
         sdktrace.WithBatcher(exporter),
         sdktrace.WithResource(res),
     )
     otel.SetTracerProvider(tp)
-    
+
     return func() {
         ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
         defer cancel()
@@ -713,7 +713,7 @@ func NewGreeterClient(target string) (*GreeterClient, error) {
     if err != nil {
         return nil, err
     }
-    
+
     return &GreeterClient{
         conn:   conn,
         tracer: otel.Tracer("grpc-client"),
@@ -734,10 +734,10 @@ func (c *GreeterClient) SayHello(ctx context.Context, name string) error {
         ),
     )
     defer span.End()
-    
+
     // 模拟RPC调用
     time.Sleep(100 * time.Millisecond)
-    
+
     span.SetStatus(trace.StatusCodeOk, "Success")
     return nil
 }
@@ -745,18 +745,18 @@ func (c *GreeterClient) SayHello(ctx context.Context, name string) error {
 func main() {
     shutdown := initTracer()
     defer shutdown()
-    
+
     client, err := NewGreeterClient("localhost:50051")
     if err != nil {
         log.Fatal(err)
     }
     defer client.conn.Close()
-    
+
     ctx := context.Background()
     if err := client.SayHello(ctx, "World"); err != nil {
         log.Fatal(err)
     }
-    
+
     log.Println("RPC call successful")
 }
 ```
@@ -779,20 +779,20 @@ def init_tracer():
         ResourceAttributes.SERVICE_NAME: "rpc-server",
         ResourceAttributes.SERVICE_VERSION: "1.0.0",
     })
-    
+
     provider = TracerProvider(resource=resource)
     processor = BatchSpanProcessor(
         OTLPSpanExporter(endpoint="localhost:4317", insecure=True)
     )
     provider.add_span_processor(processor)
     trace.set_tracer_provider(provider)
-    
+
     return trace.get_tracer(__name__)
 
 class GreeterServicer:
     def __init__(self):
         self.tracer = init_tracer()
-    
+
     def SayHello(self, request, context):
         # 创建服务器Span
         with self.tracer.start_as_current_span(
@@ -810,10 +810,10 @@ class GreeterServicer:
             try:
                 # 处理请求
                 response = f"Hello, {request.name}!"
-                
+
                 span.set_status(Status(StatusCode.OK))
                 return response
-                
+
             except Exception as e:
                 span.set_status(Status(StatusCode.ERROR, str(e)))
                 span.record_exception(e)
@@ -843,11 +843,11 @@ import io.opentelemetry.api.common.AttributeKey;
 
 public class DubboConsumerExample {
     private final Tracer tracer;
-    
+
     public DubboConsumerExample(OpenTelemetry openTelemetry) {
         this.tracer = openTelemetry.getTracer("dubbo-consumer");
     }
-    
+
     public String callDubboService(String serviceName, String methodName) {
         // 创建客户端Span
         Span span = tracer.spanBuilder(serviceName + "/" + methodName)
@@ -859,24 +859,24 @@ public class DubboConsumerExample {
             .setAttribute(AttributeKey.intKey("net.peer.port"), 20880)
             .setAttribute(AttributeKey.stringKey("rpc.dubbo.version"), "2.7.0")
             .startSpan();
-        
+
         try (Scope scope = span.makeCurrent()) {
             // 执行Dubbo调用
             String result = invokeDubboService(serviceName, methodName);
-            
+
             span.setStatus(io.opentelemetry.api.trace.StatusCode.OK);
             return result;
-            
+
         } catch (Exception e) {
             span.setStatus(io.opentelemetry.api.trace.StatusCode.ERROR, e.getMessage());
             span.recordException(e);
             throw e;
-            
+
         } finally {
             span.end();
         }
     }
-    
+
     private String invokeDubboService(String serviceName, String methodName) {
         // 实际Dubbo调用逻辑
         return "result";
@@ -909,7 +909,7 @@ public class DubboConsumerExample {
 
 ---
 
-**文档维护**: OTLP深度梳理项目组  
-**最后更新**: 2025年10月8日  
-**文档版本**: v1.0  
+**文档维护**: OTLP深度梳理项目组
+**最后更新**: 2025年10月8日
+**文档版本**: v1.0
 **质量等级**: ⭐⭐⭐⭐⭐

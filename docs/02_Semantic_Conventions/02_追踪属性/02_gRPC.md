@@ -1,7 +1,7 @@
 # gRPC语义约定详解
 
-> **Semantic Conventions版本**: v1.27.0  
-> **稳定性**: Stable  
+> **Semantic Conventions版本**: v1.27.0
+> **稳定性**: Stable
 > **最后更新**: 2025年10月8日
 
 ---
@@ -216,7 +216,7 @@ func (s *userService) GetUser(ctx context.Context, req *pb.GetUserRequest) (*pb.
     // - rpc.service: "myapp.UserService"
     // - rpc.method: "GetUser"
     // - span.kind: SERVER
-    
+
     // 业务逻辑...
 }
 ```
@@ -284,7 +284,7 @@ func setSpanStatus(span trace.Span, grpcStatus codes.Code) {
     span.SetAttributes(
         semconv.RPCGRPCStatusCodeKey.Int(int(grpcStatus)),
     )
-    
+
     if grpcStatus == codes.OK {
         span.SetStatus(codes.Ok, "")
     } else {
@@ -436,11 +436,11 @@ rpc ListUsers(ListUsersRequest) returns (stream User) {}
 1. 单个span (推荐):
    - 整个流用一个span
    - 记录消息数量为属性
-   
+
 2. Span + Events:
    - 一个span
    - 每个消息一个event
-   
+
 3. 多span (不推荐):
    - 一个父span
    - 每个消息一个子span
@@ -603,7 +603,7 @@ package main
 
 import (
     "context"
-    
+
     "google.golang.org/grpc"
     "go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
     "go.opentelemetry.io/otel"
@@ -621,13 +621,13 @@ func main() {
         panic(err)
     }
     defer conn.Close()
-    
+
     client := pb.NewUserServiceClient(conn)
-    
+
     // 调用会自动创建span
     ctx := context.Background()
     user, err := client.GetUser(ctx, &pb.GetUserRequest{Id: 123})
-    
+
     // Span自动包含:
     // - rpc.system: "grpc"
     // - rpc.service: "myapp.UserService"
@@ -654,10 +654,10 @@ func CallGetUser(ctx context.Context, client pb.UserServiceClient, userID int64)
         ),
     )
     defer span.End()
-    
+
     // 调用gRPC
     user, err := client.GetUser(ctx, &pb.GetUserRequest{Id: userID})
-    
+
     if err != nil {
         // 提取gRPC状态码
         st, ok := status.FromError(err)
@@ -671,13 +671,13 @@ func CallGetUser(ctx context.Context, client pb.UserServiceClient, userID int64)
         }
         return nil, err
     }
-    
+
     // 成功
     span.SetAttributes(
         semconv.RPCGRPCStatusCodeKey.Int(int(codes.OK)),
     )
     span.SetStatus(codes.Ok, "")
-    
+
     return user, nil
 }
 ```
@@ -692,7 +692,7 @@ package main
 import (
     "context"
     "net"
-    
+
     "google.golang.org/grpc"
     "go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 )
@@ -703,21 +703,21 @@ type userServiceServer struct {
 
 func (s *userServiceServer) GetUser(ctx context.Context, req *pb.GetUserRequest) (*pb.User, error) {
     // ctx已包含SERVER span (通过拦截器创建)
-    
+
     // 可以获取当前span
     span := trace.SpanFromContext(ctx)
-    
+
     // 添加自定义属性
     span.SetAttributes(
         attribute.Int64("user.id", req.Id),
     )
-    
+
     // 业务逻辑
     user := &pb.User{
         Id:   req.Id,
         Name: "Alice",
     }
-    
+
     return user, nil
 }
 
@@ -726,16 +726,16 @@ func main() {
     if err != nil {
         panic(err)
     }
-    
+
     // 创建gRPC服务器,使用OTel拦截器
     server := grpc.NewServer(
         // 自动创建SERVER span
         grpc.UnaryInterceptor(otelgrpc.UnaryServerInterceptor()),
         grpc.StreamInterceptor(otelgrpc.StreamServerInterceptor()),
     )
-    
+
     pb.RegisterUserServiceServer(server, &userServiceServer{})
-    
+
     server.Serve(lis)
 }
 ```
@@ -747,18 +747,18 @@ func (s *userServiceServer) ListUsers(req *pb.ListUsersRequest, stream pb.UserSe
     // stream.Context()包含SERVER span
     ctx := stream.Context()
     span := trace.SpanFromContext(ctx)
-    
+
     messageCount := 0
-    
+
     // 发送多个响应
     for _, user := range getAllUsers() {
         if err := stream.Send(&user); err != nil {
             span.RecordError(err)
             return err
         }
-        
+
         messageCount++
-        
+
         // 记录消息发送事件 (可选)
         span.AddEvent("message.send",
             trace.WithAttributes(
@@ -766,12 +766,12 @@ func (s *userServiceServer) ListUsers(req *pb.ListUsersRequest, stream pb.UserSe
             ),
         )
     }
-    
+
     // 记录总消息数
     span.SetAttributes(
         attribute.Int("rpc.grpc.response.message_count", messageCount),
     )
-    
+
     return nil
 }
 ```
@@ -833,6 +833,6 @@ func (s *userServiceServer) ListUsers(req *pb.ListUsersRequest, stream pb.UserSe
 
 ---
 
-**文档状态**: ✅ 完成  
-**审核状态**: 待审核  
+**文档状态**: ✅ 完成
+**审核状态**: 待审核
 **下一步**: [04_消息队列.md](./04_消息队列.md)

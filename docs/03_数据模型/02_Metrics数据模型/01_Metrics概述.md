@@ -1,6 +1,6 @@
 # Metrics数据模型概述
 
-> **OTLP版本**: v1.0.0 (Stable)  
+> **OTLP版本**: v1.0.0 (Stable)
 > **最后更新**: 2025年10月8日
 
 ---
@@ -126,7 +126,7 @@ Counter: 单调递增的累计值
 示例:
 http.server.request.count
   value: 1000 (累计1000个请求)
-  
+
 database.queries.total
   value: 5000 (累计5000次查询)
 ```
@@ -194,7 +194,7 @@ UpDownCounter: 可增可减的累计值
 示例:
 http.server.active_requests
   value: 50 (当前50个活跃请求)
-  
+
 database.connection_pool.active
   value: 10 (当前10个活跃连接)
 ```
@@ -342,7 +342,7 @@ Gauge: 瞬时值 (最后观测值)
 示例:
 system.cpu.utilization
   value: 0.65 (CPU使用率65%)
-  
+
 process.runtime.memory.heap.used
   value: 524288000 (约500MB)
 ```
@@ -488,7 +488,7 @@ message Metric {
   string name = 1;
   string description = 2;
   string unit = 3;
-  
+
   oneof data {
     Sum sum = 5;
     Gauge gauge = 7;
@@ -520,12 +520,12 @@ message NumberDataPoint {
   repeated KeyValue attributes = 7;
   fixed64 start_time_unix_nano = 2;
   fixed64 time_unix_nano = 3;
-  
+
   oneof value {
     double as_double = 4;
     sfixed64 as_int = 6;
   }
-  
+
   repeated Exemplar exemplars = 5;
   uint32 flags = 8;
 }
@@ -555,12 +555,12 @@ message HistogramDataPoint {
   repeated KeyValue attributes = 9;
   fixed64 start_time_unix_nano = 2;
   fixed64 time_unix_nano = 3;
-  
+
   uint64 count = 4;
   double sum = 5;        // optional
   repeated double explicit_bounds = 6;
   repeated uint64 bucket_counts = 7;
-  
+
   repeated Exemplar exemplars = 8;
   uint32 flags = 10;
   double min = 11;       // optional
@@ -598,15 +598,15 @@ message ExponentialHistogramDataPoint {
   repeated KeyValue attributes = 1;
   fixed64 start_time_unix_nano = 2;
   fixed64 time_unix_nano = 3;
-  
+
   uint64 count = 4;
   double sum = 5;
   sint32 scale = 6;
   uint64 zero_count = 7;
-  
+
   Buckets positive = 8;
   Buckets negative = 9;
-  
+
   uint32 flags = 10;
   double min = 11;
   double max = 12;
@@ -797,7 +797,7 @@ package main
 
 import (
     "context"
-    
+
     "go.opentelemetry.io/otel"
     "go.opentelemetry.io/otel/attribute"
     "go.opentelemetry.io/otel/metric"
@@ -806,7 +806,7 @@ import (
 func main() {
     // 获取Meter
     meter := otel.Meter("myapp")
-    
+
     // 创建Counter
     requestCounter, err := meter.Int64Counter(
         "http.server.requests",
@@ -816,7 +816,7 @@ func main() {
     if err != nil {
         panic(err)
     }
-    
+
     // 在HTTP handler中使用
     http.HandleFunc("/api/users", func(w http.ResponseWriter, r *http.Request) {
         // 增加计数
@@ -826,10 +826,10 @@ func main() {
                 attribute.String("http.route", "/api/users"),
             ),
         )
-        
+
         // 处理请求...
         w.WriteHeader(http.StatusOK)
-        
+
         // 记录状态码
         requestCounter.Add(r.Context(), 0,  // 不增加,仅更新attributes
             metric.WithAttributes(
@@ -847,7 +847,7 @@ func main() {
 ```go
 func main() {
     meter := otel.Meter("myapp")
-    
+
     // 创建Histogram
     durationHistogram, err := meter.Float64Histogram(
         "http.server.duration",
@@ -857,13 +857,13 @@ func main() {
     if err != nil {
         panic(err)
     }
-    
+
     http.HandleFunc("/api/users", func(w http.ResponseWriter, r *http.Request) {
         start := time.Now()
-        
+
         // 处理请求...
         processRequest(r)
-        
+
         // 记录duration
         duration := time.Since(start).Seconds()
         durationHistogram.Record(r.Context(), duration,
@@ -873,7 +873,7 @@ func main() {
                 attribute.Int("http.status_code", 200),
             ),
         )
-        
+
         w.WriteHeader(http.StatusOK)
     })
 }
@@ -930,6 +930,6 @@ func main() {
 
 ---
 
-**文档状态**: ✅ 完成  
-**审核状态**: 待审核  
+**文档状态**: ✅ 完成
+**审核状态**: 待审核
 **下一步**: [02_Counter详解.md](./02_Counter详解.md)

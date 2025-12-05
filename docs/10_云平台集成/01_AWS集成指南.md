@@ -1,6 +1,6 @@
 # OpenTelemetry AWS 集成指南
 
-> **最后更新**: 2025年10月8日  
+> **最后更新**: 2025年10月8日
 > **目标读者**: AWS架构师、DevOps工程师
 
 ---
@@ -225,7 +225,7 @@ processors:
   batch:
     timeout: 10s
     send_batch_size: 50
-  
+
   memory_limiter:
     limit_mib: 100
     spike_limit_mib: 30
@@ -233,7 +233,7 @@ processors:
 exporters:
   awsxray:
     region: us-west-2
-    
+
   logging:
     loglevel: info
 
@@ -448,11 +448,11 @@ metadata:
 spec:
   mode: deployment
   replicas: 3
-  
+
   image: public.ecr.aws/aws-observability/aws-otel-collector:v0.35.0
-  
+
   serviceAccount: adot-collector
-  
+
   resources:
     requests:
       cpu: 200m
@@ -460,7 +460,7 @@ spec:
     limits:
       cpu: 1000m
       memory: 1Gi
-  
+
   config: |
     receivers:
       otlp:
@@ -469,16 +469,16 @@ spec:
             endpoint: 0.0.0.0:4317
           http:
             endpoint: 0.0.0.0:4318
-    
+
     processors:
       batch:
         timeout: 10s
         send_batch_size: 1024
-      
+
       memory_limiter:
         limit_mib: 768
         spike_limit_mib: 256
-      
+
       k8sattributes:
         auth_type: "serviceAccount"
         passthrough: false
@@ -493,26 +493,26 @@ spec:
             - tag_name: app.label
               key: app
               from: pod
-    
+
     exporters:
       awsxray:
         region: us-west-2
-      
+
       awsemf:
         region: us-west-2
         namespace: EKS/Observability
         log_group_name: /aws/eks/observability
-      
+
       logging:
         loglevel: info
-    
+
     service:
       pipelines:
         traces:
           receivers: [otlp]
           processors: [memory_limiter, k8sattributes, batch]
           exporters: [awsxray, logging]
-        
+
         metrics:
           receivers: [otlp]
           processors: [memory_limiter, k8sattributes, batch]
@@ -614,16 +614,16 @@ tracer = Tracer()
 def lambda_handler(event, context):
     # 自动追踪
     order_id = event.get('order_id')
-    
+
     # 自定义Span
     with tracer.provider.tracer.start_as_current_span("process_order") as span:
         span.set_attribute("order.id", order_id)
-        
+
         # 业务逻辑
         result = process_order(order_id)
-        
+
         span.set_attribute("order.status", result['status'])
-    
+
     return {
         'statusCode': 200,
         'body': json.dumps(result)
@@ -643,15 +643,15 @@ resource "aws_lambda_function" "order_processor" {
   runtime       = "python3.11"
   handler       = "lambda_function.lambda_handler"
   role          = aws_iam_role.lambda_role.arn
-  
+
   filename         = "function.zip"
   source_code_hash = filebase64sha256("function.zip")
-  
+
   # ADOT Lambda Layer
   layers = [
     "arn:aws:lambda:us-west-2:901920570463:layer:aws-otel-python-amd64-ver-1-20-0:2"
   ]
-  
+
   environment {
     variables = {
       AWS_LAMBDA_EXEC_WRAPPER = "/opt/otel-instrument"
@@ -661,7 +661,7 @@ resource "aws_lambda_function" "order_processor" {
       OTEL_PYTHON_CONFIGURATOR = "aws_configurator"
     }
   }
-  
+
   tracing_config {
     mode = "Active"
   }
@@ -669,7 +669,7 @@ resource "aws_lambda_function" "order_processor" {
 
 resource "aws_iam_role" "lambda_role" {
   name = "order-processor-role"
-  
+
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
@@ -709,18 +709,18 @@ type OrderEvent struct {
 
 func HandleRequest(ctx context.Context, event OrderEvent) (string, error) {
     tracer := otel.Tracer("order-processor")
-    
+
     ctx, span := tracer.Start(ctx, "process_order")
     defer span.End()
-    
+
     span.SetAttributes(
         attribute.String("order.id", event.OrderID),
         attribute.Float64("order.amount", event.Amount),
     )
-    
+
     // 处理订单
     // ...
-    
+
     return "Order processed", nil
 }
 
@@ -774,7 +774,7 @@ service:
 exporters:
   awsxray:
     region: us-west-2
-  
+
   otlp/jaeger:
     endpoint: jaeger:4317
     tls:
@@ -842,13 +842,13 @@ import (
 func main() {
     // 加载配置
     cfg, _ := config.LoadDefaultConfig(context.Background())
-    
+
     // 添加OpenTelemetry instrumentation
     otelaws.AppendMiddlewares(&cfg.APIOptions)
-    
+
     // 创建DynamoDB客户端
     client := dynamodb.NewFromConfig(cfg)
-    
+
     // 所有DynamoDB调用自动追踪
     _, err := client.GetItem(ctx, &dynamodb.GetItemInput{
         TableName: aws.String("Orders"),
@@ -870,16 +870,16 @@ import (
 func uploadFile(ctx context.Context) error {
     cfg, _ := config.LoadDefaultConfig(ctx)
     otelaws.AppendMiddlewares(&cfg.APIOptions)
-    
+
     client := s3.NewFromConfig(cfg)
-    
+
     // S3 PutObject自动追踪
     _, err := client.PutObject(ctx, &s3.PutObjectInput{
         Bucket: aws.String("my-bucket"),
         Key:    aws.String("file.txt"),
         Body:   bytes.NewReader([]byte("content")),
     })
-    
+
     return err
 }
 ```
@@ -896,13 +896,13 @@ import (
 func sendMessage(ctx context.Context) error {
     cfg, _ := config.LoadDefaultConfig(ctx)
     otelaws.AppendMiddlewares(&cfg.APIOptions)
-    
+
     client := sqs.NewFromConfig(cfg)
-    
+
     // 注入TraceContext到消息属性
     carrier := make(map[string]string)
     otel.GetTextMapPropagator().Inject(ctx, propagation.MapCarrier(carrier))
-    
+
     messageAttributes := make(map[string]types.MessageAttributeValue)
     for k, v := range carrier {
         messageAttributes[k] = types.MessageAttributeValue{
@@ -910,13 +910,13 @@ func sendMessage(ctx context.Context) error {
             StringValue: aws.String(v),
         }
     }
-    
+
     _, err := client.SendMessage(ctx, &sqs.SendMessageInput{
         QueueUrl:          aws.String("https://sqs.us-west-2.amazonaws.com/123456789012/my-queue"),
         MessageBody:       aws.String("message body"),
         MessageAttributes: messageAttributes,
     })
-    
+
     return err
 }
 ```
@@ -995,7 +995,7 @@ processors:
 5. 数据保留
    # X-Ray: 30天免费
    # S3长期存储: $0.023/GB/月
-   
+
    exporters:
      awss3:
        region: us-west-2
@@ -1057,6 +1057,6 @@ processors:
 
 ---
 
-**文档状态**: ✅ 完成  
-**审核状态**: 待审核  
+**文档状态**: ✅ 完成
+**审核状态**: 待审核
 **相关文档**: [Collector架构](../04_核心组件/02_Collector架构.md), [Resource模型](../03_数据模型/04_Resource/01_Resource模型.md)

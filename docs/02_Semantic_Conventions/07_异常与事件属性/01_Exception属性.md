@@ -1,7 +1,7 @@
 # Exception 异常属性
 
-> **标准版本**: v1.27.0  
-> **状态**: Stable  
+> **标准版本**: v1.27.0
+> **状态**: Stable
 > **最后更新**: 2025年10月8日
 
 ---
@@ -132,7 +132,7 @@ func ProcessRequest(ctx context.Context) (err error) {
         }
         span.End()
     }()
-    
+
     return doSomething() // 可能返回错误
 }
 ```
@@ -158,18 +158,18 @@ func ProcessWithException(ctx context.Context) error {
     tracer := otel.Tracer("example")
     ctx, span := tracer.Start(ctx, "process")
     defer span.End()
-    
+
     err := doSomething()
     if err != nil {
         // 记录异常
         span.RecordException(err)
-        
+
         // 设置Span状态
         span.SetStatus(codes.Error, err.Error())
-        
+
         return err
     }
-    
+
     span.SetStatus(codes.Ok, "Success")
     return nil
 }
@@ -187,7 +187,7 @@ from opentelemetry.trace import Status, StatusCode
 
 def process_with_exception():
     tracer = trace.get_tracer(__name__)
-    
+
     with tracer.start_as_current_span("process") as span:
         try:
             result = risky_operation()
@@ -196,10 +196,10 @@ def process_with_exception():
         except Exception as e:
             # 记录异常（自动捕获type、message、stacktrace）
             span.record_exception(e)
-            
+
             # 设置Span状态
             span.set_status(Status(StatusCode.ERROR, str(e)))
-            
+
             # 重新抛出或处理
             raise
 
@@ -215,20 +215,20 @@ import io.opentelemetry.api.trace.StatusCode;
 
 public void processWithException() {
     Span span = tracer.spanBuilder("process").startSpan();
-    
+
     try (Scope scope = span.makeCurrent()) {
         riskyOperation();
         span.setStatus(StatusCode.OK);
-        
+
     } catch (Exception e) {
         // 记录异常
         span.recordException(e);
-        
+
         // 设置Span状态
         span.setStatus(StatusCode.ERROR, e.getMessage());
-        
+
         throw e;
-        
+
     } finally {
         span.end();
     }
@@ -243,24 +243,24 @@ const { trace, SpanStatusCode } = require('@opentelemetry/api');
 async function processWithException() {
     const tracer = trace.getTracer('example');
     const span = tracer.startSpan('process');
-    
+
     try {
         const result = await riskyOperation();
         span.setStatus({ code: SpanStatusCode.OK });
         return result;
-        
+
     } catch (error) {
         // 记录异常
         span.recordException(error);
-        
+
         // 设置Span状态
         span.setStatus({
             code: SpanStatusCode.ERROR,
             message: error.message
         });
-        
+
         throw error;
-        
+
     } finally {
         span.end();
     }
@@ -286,7 +286,7 @@ async function processWithException() {
 ```go
 func CompleteExceptionHandling(ctx context.Context) (err error) {
     ctx, span := tracer.Start(ctx, "operation")
-    
+
     // defer确保Span总是被结束
     defer func() {
         // 处理panic
@@ -300,7 +300,7 @@ func CompleteExceptionHandling(ctx context.Context) (err error) {
             )
             span.SetStatus(codes.Error, err.Error())
         }
-        
+
         // 处理返回的error
         if err != nil && !span.IsRecording() {
             span.RecordException(err,
@@ -310,10 +310,10 @@ func CompleteExceptionHandling(ctx context.Context) (err error) {
             )
             span.SetStatus(codes.Error, err.Error())
         }
-        
+
         span.End()
     }()
-    
+
     // 业务逻辑
     return businessLogic(ctx)
 }
@@ -382,7 +382,7 @@ for item in items:
             "item_id": item.id,
             "error": str(e)
         })
-        
+
 span.end()
 ```
 
@@ -427,7 +427,7 @@ import (
     "fmt"
     "net/http"
     "time"
-    
+
     "go.opentelemetry.io/otel"
     "go.opentelemetry.io/otel/attribute"
     "go.opentelemetry.io/otel/codes"
@@ -436,7 +436,7 @@ import (
 
 func HTTPGetWithExceptionHandling(ctx context.Context, url string) (*http.Response, error) {
     tracer := otel.Tracer("http-client")
-    
+
     ctx, span := tracer.Start(ctx, "HTTP GET",
         trace.WithAttributes(
             attribute.String("http.url", url),
@@ -444,7 +444,7 @@ func HTTPGetWithExceptionHandling(ctx context.Context, url string) (*http.Respon
         ),
     )
     defer span.End()
-    
+
     // 创建请求
     req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
     if err != nil {
@@ -457,7 +457,7 @@ func HTTPGetWithExceptionHandling(ctx context.Context, url string) (*http.Respon
         span.SetStatus(codes.Error, "Failed to create request")
         return nil, fmt.Errorf("create request: %w", err)
     }
-    
+
     // 执行请求（带超时）
     client := &http.Client{Timeout: 10 * time.Second}
     resp, err := client.Do(req)
@@ -471,12 +471,12 @@ func HTTPGetWithExceptionHandling(ctx context.Context, url string) (*http.Respon
         span.SetStatus(codes.Error, "HTTP request failed")
         return nil, fmt.Errorf("execute request: %w", err)
     }
-    
+
     // 检查HTTP状态码
     span.SetAttributes(
         attribute.Int("http.status_code", resp.StatusCode),
     )
-    
+
     if resp.StatusCode >= 500 {
         // HTTP错误，但不是Go exception
         span.SetStatus(codes.Error, fmt.Sprintf("HTTP %d", resp.StatusCode))
@@ -487,7 +487,7 @@ func HTTPGetWithExceptionHandling(ctx context.Context, url string) (*http.Respon
     } else {
         span.SetStatus(codes.Ok, "Success")
     }
-    
+
     return resp, nil
 }
 ```
@@ -501,7 +501,7 @@ import pymysql
 
 def database_query_with_exception_handling(query):
     tracer = trace.get_tracer(__name__)
-    
+
     with tracer.start_as_current_span(
         "db.query",
         attributes={
@@ -518,30 +518,30 @@ def database_query_with_exception_handling(query):
                 database='mydb',
                 connect_timeout=5
             )
-            
+
             with connection.cursor() as cursor:
                 cursor.execute(query)
                 results = cursor.fetchall()
-                
+
                 span.set_attribute("db.rows_returned", len(results))
                 span.set_status(Status(StatusCode.OK))
-                
+
                 return results
-                
+
         except pymysql.err.OperationalError as e:
             # 连接/操作错误
             span.record_exception(e)
             span.set_attribute("exception.escaped", True)
             span.set_status(Status(StatusCode.ERROR, "Database connection failed"))
             raise
-            
+
         except pymysql.err.ProgrammingError as e:
             # SQL语法错误
             span.record_exception(e)
             span.set_attribute("exception.escaped", True)
             span.set_status(Status(StatusCode.ERROR, "Invalid SQL"))
             raise
-            
+
         except Exception as e:
             # 其他未预期的异常
             span.record_exception(e)
@@ -549,7 +549,7 @@ def database_query_with_exception_handling(query):
             span.set_attribute("exception.unexpected", True)
             span.set_status(Status(StatusCode.ERROR, "Unexpected error"))
             raise
-            
+
         finally:
             if connection:
                 connection.close()
@@ -564,25 +564,25 @@ import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 
 public class BatchProcessor {
-    
+
     public void processBatch(List<Item> items) {
         Span span = tracer.spanBuilder("batch.process")
             .setAttribute("batch.size", items.size())
             .startSpan();
-        
+
         int successCount = 0;
         int failureCount = 0;
-        
+
         try (Scope scope = span.makeCurrent()) {
             for (int i = 0; i < items.size(); i++) {
                 Item item = items.get(i);
                 try {
                     processItem(item);
                     successCount++;
-                    
+
                 } catch (Exception e) {
                     failureCount++;
-                    
+
                     // 记录每个失败的异常
                     span.recordException(e,
                         Attributes.of(
@@ -591,7 +591,7 @@ public class BatchProcessor {
                             AttributeKey.booleanKey("exception.escaped"), false
                         )
                     );
-                    
+
                     // 记录失败事件
                     span.addEvent("item.failed",
                         Attributes.of(
@@ -601,27 +601,27 @@ public class BatchProcessor {
                     );
                 }
             }
-            
+
             // 设置统计信息
             span.setAttribute("batch.success_count", successCount);
             span.setAttribute("batch.failure_count", failureCount);
-            
+
             // 设置Span状态
             if (failureCount == 0) {
                 span.setStatus(StatusCode.OK);
             } else if (failureCount < items.size()) {
-                span.setStatus(StatusCode.ERROR, 
-                    String.format("Partial failure: %d/%d items failed", 
+                span.setStatus(StatusCode.ERROR,
+                    String.format("Partial failure: %d/%d items failed",
                                   failureCount, items.size()));
             } else {
                 span.setStatus(StatusCode.ERROR, "All items failed");
             }
-            
+
         } finally {
             span.end();
         }
     }
-    
+
     private void processItem(Item item) throws Exception {
         // 处理单个项目
         if (item.isInvalid()) {
@@ -649,7 +649,7 @@ public class BatchProcessor {
 
 ---
 
-**文档维护**: OTLP深度梳理项目组  
-**最后更新**: 2025年10月8日  
-**文档版本**: v1.0  
+**文档维护**: OTLP深度梳理项目组
+**最后更新**: 2025年10月8日
+**文档版本**: v1.0
 **质量等级**: ⭐⭐⭐⭐⭐
