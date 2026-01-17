@@ -1,7 +1,7 @@
 # 🐳 OTLP Docker部署完整指南
 
-> **目标**: 帮助用户使用Docker快速部署OTLP环境  
-> **适用场景**: 开发、测试、小规模生产环境  
+> **目标**: 帮助用户使用Docker快速部署OTLP环境
+> **适用场景**: 开发、测试、小规模生产环境
 > **更新时间**: 2025年10月20日
 
 ---
@@ -171,7 +171,7 @@ processors:
   batch:
     timeout: 1s
     send_batch_size: 512
-  
+
   memory_limiter:
     check_interval: 1s
     limit_mib: 512
@@ -181,7 +181,7 @@ exporters:
     endpoint: jaeger:14250
     tls:
       insecure: true
-  
+
   logging:
     loglevel: info
 
@@ -378,7 +378,7 @@ scrape_configs:
       - targets: ['otel-collector:8888']
         labels:
           service: 'otel-collector'
-  
+
   # Prometheus自身指标
   - job_name: 'prometheus'
     static_configs:
@@ -399,7 +399,7 @@ receivers:
         max_concurrent_streams: 100
       http:
         endpoint: 0.0.0.0:4318
-  
+
   # Prometheus指标接收
   prometheus:
     config:
@@ -415,18 +415,18 @@ processors:
     check_interval: 1s
     limit_mib: 1024
     spike_limit_mib: 256
-  
+
   # 批处理
   batch:
     timeout: 1s
     send_batch_size: 512
     send_batch_max_size: 1024
-  
+
   # Resource检测
   resourcedetection:
     detectors: [env, system, docker]
     timeout: 5s
-  
+
   # 属性处理
   attributes:
     actions:
@@ -435,7 +435,7 @@ processors:
         action: insert
       - key: http.request.header.authorization
         action: delete
-  
+
   # 智能采样
   tail_sampling:
     decision_wait: 10s
@@ -460,17 +460,17 @@ exporters:
     endpoint: jaeger:14250
     tls:
       insecure: true
-  
+
   # Prometheus
   prometheus:
     endpoint: 0.0.0.0:8889
-  
+
   # Elasticsearch
   elasticsearch:
     endpoints: [http://elasticsearch:9200]
     traces_index: traces
     logs_index: logs
-  
+
   # 日志输出
   logging:
     loglevel: info
@@ -480,32 +480,32 @@ exporters:
 extensions:
   health_check:
     endpoint: 0.0.0.0:13133
-  
+
   pprof:
     endpoint: 0.0.0.0:1777
-  
+
   zpages:
     endpoint: 0.0.0.0:55679
 
 service:
   extensions: [health_check, pprof, zpages]
-  
+
   pipelines:
     traces:
       receivers: [otlp]
       processors: [memory_limiter, resourcedetection, attributes, tail_sampling, batch]
       exporters: [jaeger, elasticsearch, logging]
-    
+
     metrics:
       receivers: [otlp, prometheus]
       processors: [memory_limiter, batch]
       exporters: [prometheus, logging]
-    
+
     logs:
       receivers: [otlp]
       processors: [memory_limiter, batch]
       exporters: [elasticsearch, logging]
-  
+
   telemetry:
     logs:
       level: info
@@ -757,7 +757,7 @@ services:
     mem_limit: 2g
     mem_reservation: 1g
     cpus: 1.5
-    
+
     deploy:
       resources:
         limits:
@@ -806,7 +806,7 @@ services:
     networks:
       - frontend
       - backend
-  
+
   jaeger:
     networks:
       - backend  # 仅内部访问
@@ -819,14 +819,14 @@ services:
   otel-collector:
     # 不以root运行
     user: "1000:1000"
-    
+
     # 只读根文件系统
     read_only: true
-    
+
     # 安全选项
     security_opt:
       - no-new-privileges:true
-    
+
     # 临时文件系统
     tmpfs:
       - /tmp
@@ -843,8 +843,8 @@ services:
 
 ---
 
-**更新时间**: 2025年10月20日  
-**版本**: v1.0.0  
+**更新时间**: 2025年10月20日
+**版本**: v1.0.0
 **维护者**: OTLP项目团队
 
 ---
