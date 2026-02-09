@@ -1,9 +1,9 @@
 # 🔄 工作流自动化完整指南 - Temporal.io 与可观测性集成
 
-> **文档版本**: v1.0  
-> **创建日期**: 2025年10月9日  
-> **文档类型**: P1 优先级 - 工作流编排深度指南  
-> **预估篇幅**: 2,000+ 行  
+> **文档版本**: v1.0
+> **创建日期**: 2025年10月9日
+> **文档类型**: P1 优先级 - 工作流编排深度指南
+> **预估篇幅**: 2,000+ 行
 > **目标**: 掌握 Temporal.io 工作流编排与 OTLP 集成
 
 ---
@@ -718,7 +718,7 @@ func (a *ActivityInboundInterceptor) Init(outbound interceptor.ActivityOutboundI
 func (a *ActivityInboundInterceptor) ExecuteActivity(ctx context.Context, in *interceptor.ExecuteActivityInput) (interface{}, error) {
     // 提取 Workflow 的 Trace Context
     activityInfo := activity.GetInfo(ctx)
-    
+
     // 创建 Activity Span
     ctx, span := a.tracer.Start(
         ctx,
@@ -755,14 +755,14 @@ package main
 import (
     "context"
     "log"
-    
+
     "go.opentelemetry.io/otel"
     "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
     "go.opentelemetry.io/otel/sdk/trace"
     "go.temporal.io/sdk/client"
     "go.temporal.io/sdk/worker"
     "go.temporal.io/sdk/interceptor"
-    
+
     "your-project/order"
     "your-project/telemetry"
 )
@@ -770,7 +770,7 @@ import (
 func main() {
     // 初始化 OpenTelemetry
     ctx := context.Background()
-    
+
     // OTLP Exporter
     exporter, err := otlptracegrpc.New(ctx,
         otlptracegrpc.WithEndpoint("otel-collector:4317"),
@@ -883,14 +883,14 @@ import (
 func PropagateTraceContext(ctx workflow.Context) map[string]string {
     // 从 Workflow Context 中获取 Trace Context
     traceCtx := ctx.Value("trace_context").(context.Context)
-    
+
     // 创建 Header
     headers := make(map[string]string)
-    
+
     // 使用 W3C Trace Context 传播器
     propagator := propagation.TraceContext{}
     propagator.Inject(traceCtx, propagation.MapCarrier(headers))
-    
+
     return headers
 }
 
@@ -916,12 +916,12 @@ import (
 
 type TemporalMetricsHandler struct {
     meter metric.Meter
-    
+
     workflowStartCounter   metric.Int64Counter
     workflowCompleteCounter metric.Int64Counter
     workflowFailedCounter   metric.Int64Counter
     workflowDuration        metric.Int64Histogram
-    
+
     activityStartCounter    metric.Int64Counter
     activityCompleteCounter metric.Int64Counter
     activityFailedCounter   metric.Int64Counter
@@ -930,12 +930,12 @@ type TemporalMetricsHandler struct {
 
 func NewTemporalMetricsHandler() (*TemporalMetricsHandler, error) {
     meter := otel.Meter("temporal")
-    
+
     handler := &TemporalMetricsHandler{meter: meter}
-    
+
     // 初始化 Metrics
     var err error
-    
+
     handler.workflowStartCounter, err = meter.Int64Counter(
         "temporal.workflow.started",
         metric.WithDescription("Number of workflows started"),
@@ -943,7 +943,7 @@ func NewTemporalMetricsHandler() (*TemporalMetricsHandler, error) {
     if err != nil {
         return nil, err
     }
-    
+
     handler.workflowCompleteCounter, err = meter.Int64Counter(
         "temporal.workflow.completed",
         metric.WithDescription("Number of workflows completed successfully"),
@@ -951,7 +951,7 @@ func NewTemporalMetricsHandler() (*TemporalMetricsHandler, error) {
     if err != nil {
         return nil, err
     }
-    
+
     handler.workflowFailedCounter, err = meter.Int64Counter(
         "temporal.workflow.failed",
         metric.WithDescription("Number of workflows failed"),
@@ -959,7 +959,7 @@ func NewTemporalMetricsHandler() (*TemporalMetricsHandler, error) {
     if err != nil {
         return nil, err
     }
-    
+
     handler.workflowDuration, err = meter.Int64Histogram(
         "temporal.workflow.duration",
         metric.WithDescription("Workflow execution duration in milliseconds"),
@@ -968,23 +968,23 @@ func NewTemporalMetricsHandler() (*TemporalMetricsHandler, error) {
     if err != nil {
         return nil, err
     }
-    
+
     // Activity Metrics (类似)
     handler.activityStartCounter, err = meter.Int64Counter("temporal.activity.started")
     if err != nil {
         return nil, err
     }
-    
+
     handler.activityCompleteCounter, err = meter.Int64Counter("temporal.activity.completed")
     if err != nil {
         return nil, err
     }
-    
+
     handler.activityFailedCounter, err = meter.Int64Counter("temporal.activity.failed")
     if err != nil {
         return nil, err
     }
-    
+
     handler.activityDuration, err = meter.Int64Histogram(
         "temporal.activity.duration",
         metric.WithUnit("ms"),
@@ -992,7 +992,7 @@ func NewTemporalMetricsHandler() (*TemporalMetricsHandler, error) {
     if err != nil {
         return nil, err
     }
-    
+
     return handler, nil
 }
 
@@ -1331,14 +1331,14 @@ func DataPipelineWorkflow(ctx workflow.Context, pipelineConfig PipelineConfig) e
                 WorkflowID: "alert-" + anomaly.ID,
             }
             childCtx := workflow.WithChildOptions(ctx, childWorkflowOptions)
-            
+
             alert := Alert{
                 ID:       anomaly.ID,
                 Severity: anomaly.Severity,
                 Service:  anomaly.ServiceName,
                 Message:  anomaly.Description,
             }
-            
+
             err = workflow.ExecuteChildWorkflow(childCtx, AlertHandlingWorkflow, alert).Get(ctx, nil)
             if err != nil {
                 logger.Error("Failed to start alert workflow", "Error", err)
@@ -1380,13 +1380,13 @@ import (
 // SagaWorkflow Saga 模式: 分布式事务
 func SagaWorkflow(ctx workflow.Context, orderData OrderData) error {
     logger := workflow.GetLogger(ctx)
-    
+
     // Saga 状态
     completed := []string{}
-    
+
     // 定义补偿操作
     compensations := map[string]func() error{}
-    
+
     // Step 1: 预留库存
     err := workflow.ExecuteActivity(ctx, ReserveInventoryActivity, orderData).Get(ctx, nil)
     if err != nil {
@@ -1396,7 +1396,7 @@ func SagaWorkflow(ctx workflow.Context, orderData OrderData) error {
     compensations["inventory"] = func() error {
         return workflow.ExecuteActivity(ctx, ReleaseInventoryActivity, orderData).Get(ctx, nil)
     }
-    
+
     // Step 2: 预授权支付
     err = workflow.ExecuteActivity(ctx, AuthorizePaymentActivity, orderData).Get(ctx, nil)
     if err != nil {
@@ -1409,7 +1409,7 @@ func SagaWorkflow(ctx workflow.Context, orderData OrderData) error {
     compensations["payment"] = func() error {
         return workflow.ExecuteActivity(ctx, CancelPaymentActivity, orderData).Get(ctx, nil)
     }
-    
+
     // Step 3: 创建订单
     err = workflow.ExecuteActivity(ctx, CreateOrderActivity, orderData).Get(ctx, nil)
     if err != nil {
@@ -1420,7 +1420,7 @@ func SagaWorkflow(ctx workflow.Context, orderData OrderData) error {
         return err
     }
     completed = append(completed, "order")
-    
+
     // Step 4: 确认支付
     err = workflow.ExecuteActivity(ctx, CapturePaymentActivity, orderData).Get(ctx, nil)
     if err != nil {
@@ -1431,7 +1431,7 @@ func SagaWorkflow(ctx workflow.Context, orderData OrderData) error {
         compensations["inventory"]()
         return err
     }
-    
+
     // Step 5: 确认库存扣减
     err = workflow.ExecuteActivity(ctx, CommitInventoryActivity, orderData).Get(ctx, nil)
     if err != nil {
@@ -1442,7 +1442,7 @@ func SagaWorkflow(ctx workflow.Context, orderData OrderData) error {
         compensations["inventory"]()
         return err
     }
-    
+
     logger.Info("Saga completed successfully")
     return nil
 }
@@ -1462,43 +1462,43 @@ import (
 // ApprovalWorkflow 需要人工审批的工作流 (可能运行数天/数周)
 func ApprovalWorkflow(ctx workflow.Context, request ApprovalRequest) error {
     logger := workflow.GetLogger(ctx)
-    
+
     // 1. 创建审批请求
     err := workflow.ExecuteActivity(ctx, CreateApprovalRequestActivity, request).Get(ctx, nil)
     if err != nil {
         return err
     }
-    
+
     // 2. 等待审批 (使用 Signal)
     var approved bool
     var rejectionReason string
-    
+
     selector := workflow.NewSelector(ctx)
-    
+
     // 注册 Approve Signal
     approveChannel := workflow.GetSignalChannel(ctx, "approve")
     selector.AddReceive(approveChannel, func(c workflow.ReceiveChannel, more bool) {
         c.Receive(ctx, nil)
         approved = true
     })
-    
+
     // 注册 Reject Signal
     rejectChannel := workflow.GetSignalChannel(ctx, "reject")
     selector.AddReceive(rejectChannel, func(c workflow.ReceiveChannel, more bool) {
         c.Receive(ctx, &rejectionReason)
         approved = false
     })
-    
+
     // 设置超时 (7 天)
     timer := workflow.NewTimer(ctx, 7*24*time.Hour)
     selector.AddFuture(timer, func(f workflow.Future) {
         approved = false
         rejectionReason = "Approval timeout"
     })
-    
+
     // 等待任一事件
     selector.Select(ctx)
-    
+
     // 3. 处理审批结果
     if approved {
         logger.Info("Approval granted")
@@ -1513,7 +1513,7 @@ func ApprovalWorkflow(ctx workflow.Context, request ApprovalRequest) error {
             return err
         }
     }
-    
+
     return nil
 }
 
@@ -1536,14 +1536,14 @@ import (
 func ParallelProcessingWorkflow(ctx workflow.Context, items []Item) error {
     logger := workflow.GetLogger(ctx)
     logger.Info("Starting parallel processing", "ItemCount", len(items))
-    
+
     // 方式 1: 并行 Activities
     var futures []workflow.Future
     for _, item := range items {
         future := workflow.ExecuteActivity(ctx, ProcessItemActivity, item)
         futures = append(futures, future)
     }
-    
+
     // 等待所有完成
     for i, future := range futures {
         err := future.Get(ctx, nil)
@@ -1552,7 +1552,7 @@ func ParallelProcessingWorkflow(ctx workflow.Context, items []Item) error {
             // 继续处理其他任务
         }
     }
-    
+
     // 方式 2: 子工作流
     childWorkflows := []workflow.Future{}
     for _, item := range items {
@@ -1560,11 +1560,11 @@ func ParallelProcessingWorkflow(ctx workflow.Context, items []Item) error {
             WorkflowID: "process-item-" + item.ID,
         }
         childCtx := workflow.WithChildOptions(ctx, childWorkflowOptions)
-        
+
         future := workflow.ExecuteChildWorkflow(childCtx, ProcessItemWorkflow, item)
         childWorkflows = append(childWorkflows, future)
     }
-    
+
     // 等待所有子工作流
     for _, future := range childWorkflows {
         err := future.Get(ctx, nil)
@@ -1572,7 +1572,7 @@ func ParallelProcessingWorkflow(ctx workflow.Context, items []Item) error {
             logger.Error("Child workflow failed", "Error", err)
         }
     }
-    
+
     logger.Info("Parallel processing completed")
     return nil
 }
@@ -1596,7 +1596,7 @@ import (
 
 func ConfigureRetryPolicy() {
     // 针对不同 Activity 配置不同的重试策略
-    
+
     // 1. 幂等操作 (可以多次重试)
     idempotentRetryPolicy := &temporal.RetryPolicy{
         InitialInterval:    time.Second,
@@ -1604,7 +1604,7 @@ func ConfigureRetryPolicy() {
         MaximumInterval:    time.Minute * 5,
         MaximumAttempts:    10, // 多次重试
     }
-    
+
     // 2. 非幂等操作 (需要谨慎重试)
     nonIdempotentRetryPolicy := &temporal.RetryPolicy{
         InitialInterval:    time.Second * 5,
@@ -1612,7 +1612,7 @@ func ConfigureRetryPolicy() {
         MaximumInterval:    time.Minute,
         MaximumAttempts:    3, // 少量重试
     }
-    
+
     // 3. 外部 API 调用 (可能有速率限制)
     externalAPIRetryPolicy := &temporal.RetryPolicy{
         InitialInterval:    time.Second * 10,
@@ -1631,7 +1631,7 @@ func ConfigureRetryPolicy() {
 func CustomErrorHandling(ctx workflow.Context) error {
     var result ActivityResult
     err := workflow.ExecuteActivity(ctx, RiskyActivity).Get(ctx, &result)
-    
+
     if err != nil {
         // 检查错误类型
         var appErr *temporal.ApplicationError
@@ -1646,11 +1646,11 @@ func CustomErrorHandling(ctx workflow.Context) error {
                 return fmt.Errorf("permanent error: %w", err)
             }
         }
-        
+
         // 其他错误
         return err
     }
-    
+
     return nil
 }
 ```
@@ -1673,7 +1673,7 @@ func StatefulWorkflow(ctx workflow.Context) error {
         ProcessedItems: []string{},
         Checkpoints:    map[string]time.Time{},
     }
-    
+
     // 查询状态 (外部可以查询)
     err := workflow.SetQueryHandler(ctx, "getState", func() (WorkflowState, error) {
         return state, nil
@@ -1681,24 +1681,24 @@ func StatefulWorkflow(ctx workflow.Context) error {
     if err != nil {
         return err
     }
-    
+
     // 执行多个步骤
     for i := 1; i <= 10; i++ {
         state.CurrentStep = i
         state.Checkpoints[fmt.Sprintf("step_%d", i)] = workflow.Now(ctx)
-        
+
         // 执行步骤
         var result StepResult
         err := workflow.ExecuteActivity(ctx, ProcessStepActivity, i).Get(ctx, &result)
         if err != nil {
             return err
         }
-        
+
         state.ProcessedItems = append(state.ProcessedItems, result.ItemID)
-        
+
         // 即使进程崩溃,状态也不会丢失
     }
-    
+
     return nil
 }
 
@@ -1721,10 +1721,10 @@ import (
 // VersionedWorkflow 支持版本升级的工作流
 func VersionedWorkflow(ctx workflow.Context, input Input) error {
     logger := workflow.GetLogger(ctx)
-    
+
     // 版本 1: 初始版本
     version := workflow.GetVersion(ctx, "workflow-v1", workflow.DefaultVersion, 1)
-    
+
     if version == workflow.DefaultVersion {
         // 旧版本逻辑 (向后兼容)
         err := workflow.ExecuteActivity(ctx, OldProcessActivity, input).Get(ctx, nil)
@@ -1738,10 +1738,10 @@ func VersionedWorkflow(ctx workflow.Context, input Input) error {
             return err
         }
     }
-    
+
     // 版本 2: 添加新功能
     version = workflow.GetVersion(ctx, "workflow-v2", workflow.DefaultVersion, 1)
-    
+
     if version == 1 {
         // 新增的功能
         err := workflow.ExecuteActivity(ctx, NewFeatureActivity, input).Get(ctx, nil)
@@ -1750,7 +1750,7 @@ func VersionedWorkflow(ctx workflow.Context, input Input) error {
             // 不影响主流程
         }
     }
-    
+
     logger.Info("Workflow completed")
     return nil
 }
@@ -1791,13 +1791,13 @@ groups:
     annotations:
       summary: "Workflow running too long"
       description: "Workflow {{ $labels.workflow_id }} has been running for > 5 minutes"
-  
+
   # Workflow 失败率高
   - alert: HighWorkflowFailureRate
     expr: |
-      rate(temporal_workflow_failed_total[5m]) 
-      / 
-      rate(temporal_workflow_started_total[5m]) 
+      rate(temporal_workflow_failed_total[5m])
+      /
+      rate(temporal_workflow_started_total[5m])
       > 0.1
     for: 5m
     labels:
@@ -1805,7 +1805,7 @@ groups:
     annotations:
       summary: "High workflow failure rate"
       description: "Workflow failure rate > 10%"
-  
+
   # Activity 重试次数过多
   - alert: ExcessiveActivityRetries
     expr: |
@@ -1816,7 +1816,7 @@ groups:
     annotations:
       summary: "Activity retrying excessively"
       description: "Activity {{ $labels.activity_type }} has retried {{ $value }} times"
-  
+
   # Task Queue 积压
   - alert: TaskQueueBacklog
     expr: |
@@ -1845,23 +1845,23 @@ func OptimizeWorkerConfiguration() {
     workerOptions := worker.Options{
         // 并发 Workflow 执行数
         MaxConcurrentWorkflowTaskExecutionSize: 100,
-        
+
         // 并发 Activity 执行数
         MaxConcurrentActivityExecutionSize: 200,
-        
+
         // Activity 任务轮询器数量
         MaxConcurrentActivityTaskPollers: 5,
-        
+
         // Workflow 任务轮询器数量
         MaxConcurrentWorkflowTaskPollers: 5,
-        
+
         // Sticky Schedule (提高性能)
         EnableSessionWorker: true,
-        
+
         // 本地 Activity (无网络开销)
         EnableLocalActivityWorker: true,
     }
-    
+
     // 根据负载动态调整
 }
 
@@ -1872,13 +1872,13 @@ func FastWorkflow(ctx workflow.Context) error {
         ScheduleToCloseTimeout: time.Second,
     }
     ctx = workflow.WithLocalActivityOptions(ctx, lao)
-    
+
     var result string
     err := workflow.ExecuteLocalActivity(ctx, QuickComputeActivity).Get(ctx, &result)
     if err != nil {
         return err
     }
-    
+
     return nil
 }
 
@@ -2115,11 +2115,11 @@ ROI: 550% (首年)
 
 ### Temporal.io 核心价值
 
-✅ **简化分布式系统开发** - 代码即工作流  
-✅ **自动处理失败** - 内置重试与补偿  
-✅ **持久化状态** - 无需担心进程崩溃  
-✅ **完整可观测性** - 与 OTLP 深度集成  
-✅ **版本管理** - 无停机升级  
+✅ **简化分布式系统开发** - 代码即工作流
+✅ **自动处理失败** - 内置重试与补偿
+✅ **持久化状态** - 无需担心进程崩溃
+✅ **完整可观测性** - 与 OTLP 深度集成
+✅ **版本管理** - 无停机升级
 ✅ **易于测试** - 单元测试工作流
 
 ### 适用场景
@@ -2175,8 +2175,8 @@ ROI: 550% (首年)
 
 ---
 
-**文档完成时间**: 2025年10月9日  
-**文档状态**: 完整版 (2,000+ 行)  
+**文档完成时间**: 2025年10月9日
+**文档状态**: 完整版 (2,000+ 行)
 **推荐学习时长**: 2-3 天 (含实践)
 
 ---

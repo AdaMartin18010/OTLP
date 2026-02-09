@@ -1,8 +1,8 @@
 # 🤖 时序异常检测实战指南 - Prophet/LSTM/Isolation Forest
 
-**文档版本**: v1.0  
-**创建日期**: 2025-10-09  
-**状态**: 🟡 进行中 (P0-1任务)  
+**文档版本**: v1.0
+**创建日期**: 2025-10-09
+**状态**: 🟡 进行中 (P0-1任务)
 **目标**: 补充完整的时序异常检测能力,对标Datadog Watchdog
 
 ---
@@ -82,7 +82,7 @@
 # ❌ 传统固定阈值方法的问题
 if cpu_usage > 80:  # 固定阈值
     alert("CPU高")
-    
+
 # 问题:
 # 1. 无法适应业务周期 (如:工作日 vs 周末, 白天 vs 夜晚)
 # 2. 误报率高 (正常的业务高峰也会告警)
@@ -168,7 +168,7 @@ warnings.filterwarnings('ignore')
 
 class ProphetAnomalyDetector:
     """基于Prophet的时序异常检测器"""
-    
+
     def __init__(
         self,
         interval_width: float = 0.95,  # 95%置信区间
@@ -180,7 +180,7 @@ class ProphetAnomalyDetector:
     ):
         """
         初始化Prophet异常检测器
-        
+
         Args:
             interval_width: 置信区间宽度,越大越不敏感
             changepoint_prior_scale: 趋势变化灵敏度,越大越敏感
@@ -200,16 +200,16 @@ class ProphetAnomalyDetector:
             uncertainty_samples=1000  # 提高置信区间准确性
         )
         self.is_fitted = False
-    
+
     def fit(self, timeseries: pd.DataFrame) -> 'ProphetAnomalyDetector':
         """
         训练Prophet模型
-        
+
         Args:
             timeseries: 时间序列数据,必须包含'ds'和'y'列
                        ds: 日期时间 (datetime)
                        y: 观测值 (float)
-        
+
         Returns:
             self (支持链式调用)
         """
@@ -218,19 +218,19 @@ class ProphetAnomalyDetector:
             raise TypeError("timeseries必须是pandas DataFrame")
         if 'ds' not in timeseries.columns or 'y' not in timeseries.columns:
             raise ValueError("timeseries必须包含'ds'和'y'列")
-        
+
         # 数据预处理
         df = timeseries.copy()
         df['ds'] = pd.to_datetime(df['ds'])
         df = df.sort_values('ds')
         df = df.dropna(subset=['y'])
-        
+
         # 训练模型
         self.model.fit(df)
         self.is_fitted = True
-        
+
         return self
-    
+
     def detect(
         self,
         timeseries: pd.DataFrame,
@@ -238,11 +238,11 @@ class ProphetAnomalyDetector:
     ) -> pd.DataFrame:
         """
         检测时序异常
-        
+
         Args:
             timeseries: 待检测的时间序列
             forecast_periods: 额外预测的未来周期数
-        
+
         Returns:
             包含异常检测结果的DataFrame:
             - ds: 时间
@@ -256,7 +256,7 @@ class ProphetAnomalyDetector:
         """
         if not self.is_fitted:
             raise ValueError("模型尚未训练,请先调用fit()")
-        
+
         # 预测
         if forecast_periods > 0:
             future = self.model.make_future_dataframe(
@@ -265,22 +265,22 @@ class ProphetAnomalyDetector:
             )
         else:
             future = timeseries[['ds']]
-        
+
         forecast = self.model.predict(future)
-        
+
         # 合并实际值和预测值
         result = timeseries.merge(
             forecast[['ds', 'yhat', 'yhat_lower', 'yhat_upper']],
             on='ds',
             how='left'
         )
-        
+
         # 检测异常
         result['is_anomaly'] = (
-            (result['y'] < result['yhat_lower']) | 
+            (result['y'] < result['yhat_lower']) |
             (result['y'] > result['yhat_upper'])
         )
-        
+
         # 计算异常分数 (0-1)
         result['deviation'] = np.where(
             result['y'] > result['yhat'],
@@ -288,9 +288,9 @@ class ProphetAnomalyDetector:
             (result['yhat'] - result['y']) / (result['yhat'] - result['yhat_lower'] + 1e-10)
         )
         result['anomaly_score'] = np.clip(result['deviation'], 0, 1)
-        
+
         return result
-    
+
     def get_components(self) -> pd.DataFrame:
         """获取模型组件 (趋势、季节性)"""
         if not self.is_fitted:
@@ -302,40 +302,40 @@ class ProphetAnomalyDetector:
 
 def example_prophet_cpu_detection():
     """示例: CPU使用率异常检测"""
-    
+
     # 1. 生成模拟数据 (7天的分钟级CPU数据)
     print("🔧 生成模拟CPU数据...")
     dates = pd.date_range('2024-10-01', periods=7*24*60, freq='T')
-    
+
     # 模拟正常模式:
     # - 日周期: 白天高,夜晚低
     # - 周周期: 工作日高,周末低
     # - 随机噪声
     hour_of_day = dates.hour + dates.minute / 60
     day_of_week = dates.dayofweek
-    
+
     cpu_base = 30  # 基线30%
     cpu_daily = 20 * np.sin((hour_of_day - 6) * np.pi / 12)  # 日周期
     cpu_weekly = 10 * (day_of_week < 5)  # 工作日+10%
     cpu_noise = np.random.normal(0, 5, len(dates))
-    
+
     cpu = cpu_base + cpu_daily + cpu_weekly + cpu_noise
     cpu = np.clip(cpu, 0, 100)
-    
+
     # 注入异常
     anomaly_indices = [1000, 2500, 5000]  # 3个异常点
     cpu[anomaly_indices] = [95, 10, 98]
-    
+
     df = pd.DataFrame({
         'ds': dates,
         'y': cpu
     })
-    
+
     # 2. 训练模型 (使用前5天数据)
     print("🎓 训练Prophet模型...")
     train_df = df[df['ds'] < '2024-10-06']
     test_df = df[df['ds'] >= '2024-10-06']
-    
+
     detector = ProphetAnomalyDetector(
         interval_width=0.95,
         changepoint_prior_scale=0.05,
@@ -343,22 +343,22 @@ def example_prophet_cpu_detection():
         weekly_seasonality=True
     )
     detector.fit(train_df)
-    
+
     # 3. 检测异常
     print("🔍 检测异常...")
     result = detector.detect(df)
-    
+
     # 4. 统计结果
     anomalies = result[result['is_anomaly']]
     print(f"\n📊 检测结果:")
     print(f"  总数据点: {len(result)}")
     print(f"  检测到异常: {len(anomalies)}")
     print(f"  异常率: {len(anomalies)/len(result)*100:.2f}%")
-    
+
     if len(anomalies) > 0:
         print(f"\n🚨 异常详情:")
         print(anomalies[['ds', 'y', 'yhat', 'yhat_lower', 'yhat_upper', 'anomaly_score']].head(10))
-    
+
     return result, detector
 
 # 运行示例
@@ -449,7 +449,7 @@ warnings.filterwarnings('ignore')
 
 class LSTMAnomalyDetector:
     """基于LSTM的时序异常检测器"""
-    
+
     def __init__(
         self,
         sequence_length: int = 60,  # 使用过去60个时间点预测下一个
@@ -461,7 +461,7 @@ class LSTMAnomalyDetector:
     ):
         """
         初始化LSTM异常检测器
-        
+
         Args:
             sequence_length: 输入序列长度 (时间步数)
             lstm_units: LSTM隐藏层单元数
@@ -476,12 +476,12 @@ class LSTMAnomalyDetector:
         self.epochs = epochs
         self.batch_size = batch_size
         self.threshold_percentile = threshold_percentile
-        
+
         self.model: Optional[keras.Model] = None
         self.scaler = StandardScaler()
         self.threshold: Optional[float] = None
         self.is_fitted = False
-    
+
     def _build_model(self, n_features: int) -> keras.Model:
         """构建LSTM模型"""
         model = keras.Sequential([
@@ -492,32 +492,32 @@ class LSTMAnomalyDetector:
                 input_shape=(self.sequence_length, n_features)
             ),
             keras.layers.Dropout(self.dropout_rate),
-            
+
             # LSTM层2
             keras.layers.LSTM(self.lstm_units, return_sequences=False),
             keras.layers.Dropout(self.dropout_rate),
-            
+
             # 输出层
             keras.layers.Dense(n_features)
         ])
-        
+
         model.compile(
             optimizer=keras.optimizers.Adam(learning_rate=0.001),
             loss='mse'
         )
-        
+
         return model
-    
+
     def _create_sequences(
         self,
         data: np.ndarray
     ) -> Tuple[np.ndarray, np.ndarray]:
         """
         创建训练序列
-        
+
         Args:
             data: 原始数据 (n_samples, n_features)
-        
+
         Returns:
             X: 输入序列 (n_samples - sequence_length, sequence_length, n_features)
             y: 目标值 (n_samples - sequence_length, n_features)
@@ -527,7 +527,7 @@ class LSTMAnomalyDetector:
             X.append(data[i:i+self.sequence_length])
             y.append(data[i+self.sequence_length])
         return np.array(X), np.array(y)
-    
+
     def fit(
         self,
         data: np.ndarray,
@@ -536,24 +536,24 @@ class LSTMAnomalyDetector:
     ) -> 'LSTMAnomalyDetector':
         """
         训练LSTM模型
-        
+
         Args:
             data: 训练数据 (n_samples, n_features)
             validation_split: 验证集比例
             verbose: 训练日志等级 (0=静默, 1=进度条, 2=每个epoch)
-        
+
         Returns:
             self
         """
         # 数据标准化
         data_scaled = self.scaler.fit_transform(data)
-        
+
         # 创建序列
         X, y = self._create_sequences(data_scaled)
-        
+
         # 构建模型
         self.model = self._build_model(n_features=data.shape[1])
-        
+
         # 训练
         history = self.model.fit(
             X, y,
@@ -569,44 +569,44 @@ class LSTMAnomalyDetector:
                 )
             ]
         )
-        
+
         # 计算重构误差阈值
         predictions = self.model.predict(X, verbose=0)
         mse = np.mean(np.square(y - predictions), axis=1)
         self.threshold = np.percentile(mse, self.threshold_percentile)
-        
+
         self.is_fitted = True
         return self
-    
+
     def detect(self, data: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
         """
         检测异常
-        
+
         Args:
             data: 待检测数据 (n_samples, n_features)
-        
+
         Returns:
             is_anomaly: 异常标记 (bool数组)
             anomaly_scores: 异常分数 (重构误差)
         """
         if not self.is_fitted:
             raise ValueError("模型尚未训练,请先调用fit()")
-        
+
         # 标准化
         data_scaled = self.scaler.transform(data)
-        
+
         # 创建序列
         X, y = self._create_sequences(data_scaled)
-        
+
         # 预测
         predictions = self.model.predict(X, verbose=0)
-        
+
         # 计算重构误差
         mse = np.mean(np.square(y - predictions), axis=1)
-        
+
         # 判断异常
         is_anomaly = mse > self.threshold
-        
+
         # 前sequence_length个点无法判断 (需要填充)
         is_anomaly = np.concatenate([
             np.zeros(self.sequence_length, dtype=bool),
@@ -616,7 +616,7 @@ class LSTMAnomalyDetector:
             np.zeros(self.sequence_length),
             mse
         ])
-        
+
         return is_anomaly, mse
 
 
@@ -624,31 +624,31 @@ class LSTMAnomalyDetector:
 
 def example_lstm_memory_detection():
     """示例: 内存使用率异常检测 (包含内存泄漏)"""
-    
+
     print("🔧 生成模拟内存数据 (包含内存泄漏)...")
-    
+
     # 生成14天的分钟级数据
     n_samples = 14 * 24 * 60
     time = np.arange(n_samples)
-    
+
     # 正常模式
     memory_base = 50
     memory_trend = 0.001 * time  # 缓慢增长趋势
     memory_daily = 10 * np.sin(2 * np.pi * time / (24 * 60))
     memory_noise = np.random.normal(0, 2, n_samples)
     memory = memory_base + memory_trend + memory_daily + memory_noise
-    
+
     # 注入内存泄漏 (从第10天开始)
     leak_start = 10 * 24 * 60
     memory[leak_start:] += 0.005 * (time[leak_start:] - leak_start)
-    
+
     memory = np.clip(memory, 0, 100).reshape(-1, 1)
-    
+
     # 训练/测试分割 (前10天训练,后4天测试)
     train_size = 10 * 24 * 60
     train_data = memory[:train_size]
     test_data = memory[train_size:]
-    
+
     # 训练模型
     print("🎓 训练LSTM模型...")
     detector = LSTMAnomalyDetector(
@@ -659,30 +659,30 @@ def example_lstm_memory_detection():
         threshold_percentile=95.0
     )
     detector.fit(train_data, verbose=1)
-    
+
     # 检测异常
     print("\n🔍 检测内存异常...")
     is_anomaly, anomaly_scores = detector.detect(memory)
-    
+
     # 统计结果
     n_anomalies = np.sum(is_anomaly)
     anomaly_rate = n_anomalies / len(is_anomaly) * 100
-    
+
     print(f"\n📊 检测结果:")
     print(f"  总数据点: {len(is_anomaly)}")
     print(f"  检测到异常: {n_anomalies}")
     print(f"  异常率: {anomaly_rate:.2f}%")
-    
+
     # 检查是否检测到内存泄漏
     leak_period_anomalies = np.sum(is_anomaly[leak_start:])
     leak_detection_rate = leak_period_anomalies / len(is_anomaly[leak_start:]) * 100
     print(f"  内存泄漏期间异常率: {leak_detection_rate:.2f}%")
-    
+
     if leak_detection_rate > 10:
         print(f"  ✅ 成功检测到内存泄漏!")
     else:
         print(f"  ❌ 未能检测到内存泄漏 (调整threshold_percentile)")
-    
+
     return is_anomaly, anomaly_scores, detector
 
 # 运行示例
@@ -757,7 +757,7 @@ Isolation Forest是一种基于决策树的异常检测算法,核心思想是:**
 示例:
 数据集: [50, 51, 52, ..., 100] (大部分集中在50-60)
 
-正常点 (55): 
+正常点 (55):
   分割1: [<60] → 还有很多点
   分割2: [<58] → 还有很多点
   分割3: [<56] → 还有一些点
@@ -796,7 +796,7 @@ from typing import Dict, List
 
 class IsolationForestAnomalyDetector:
     """基于Isolation Forest的多维度异常检测器"""
-    
+
     def __init__(
         self,
         contamination: float = 0.01,  # 预期异常比例 (1%)
@@ -806,7 +806,7 @@ class IsolationForestAnomalyDetector:
     ):
         """
         初始化Isolation Forest检测器
-        
+
         Args:
             contamination: 预期异常比例 (0.01 = 1%)
             n_estimators: 森林中树的数量,越多越稳定
@@ -821,45 +821,45 @@ class IsolationForestAnomalyDetector:
             n_jobs=-1  # 使用所有CPU核心
         )
         self.is_fitted = False
-    
+
     def fit(self, data: pd.DataFrame) -> 'IsolationForestAnomalyDetector':
         """
         训练模型
-        
+
         Args:
             data: 训练数据 (DataFrame,每列是一个特征)
-        
+
         Returns:
             self
         """
         self.model.fit(data)
         self.is_fitted = True
         return self
-    
+
     def detect(self, data: pd.DataFrame) -> pd.DataFrame:
         """
         检测异常
-        
+
         Args:
             data: 待检测数据
-        
+
         Returns:
             包含异常检测结果的DataFrame
         """
         if not self.is_fitted:
             raise ValueError("模型尚未训练")
-        
+
         # 预测 (-1=异常, 1=正常)
         predictions = self.model.predict(data)
-        
+
         # 异常分数 (越小越异常)
         anomaly_scores = self.model.score_samples(data)
-        
+
         # 构建结果
         result = data.copy()
         result['is_anomaly'] = predictions == -1
         result['anomaly_score'] = -anomaly_scores  # 反转,越大越异常
-        
+
         return result
 
 
@@ -867,43 +867,43 @@ class IsolationForestAnomalyDetector:
 
 def example_isolation_forest_multivariate():
     """示例: CPU+内存+延迟多维度异常检测"""
-    
+
     print("🔧 生成模拟多维度数据...")
-    
+
     # 生成7天的分钟级数据
     n_samples = 7 * 24 * 60
     time = np.arange(n_samples)
-    
+
     # 正常模式 (CPU, Memory, Latency相关)
     cpu_base = 50 + 20 * np.sin(2 * np.pi * time / (24 * 60))
     memory_base = 60 + 15 * np.sin(2 * np.pi * time / (24 * 60) + 0.5)
     latency_base = 100 + 30 * np.sin(2 * np.pi * time / (24 * 60) + 1.0)
-    
+
     cpu = cpu_base + np.random.normal(0, 5, n_samples)
     memory = memory_base + np.random.normal(0, 3, n_samples)
     latency = latency_base + np.random.normal(0, 10, n_samples)
-    
+
     # 注入多维度异常
     # 异常1: CPU+内存同时飙高 (可能是内存泄漏)
     anomaly_1 = 1000
     cpu[anomaly_1] = 95
     memory[anomaly_1] = 90
-    
+
     # 异常2: 延迟飙高但CPU/内存正常 (可能是网络问题)
     anomaly_2 = 3000
     latency[anomaly_2] = 500
-    
+
     # 异常3: CPU高但内存低 (可能是CPU密集计算)
     anomaly_3 = 5000
     cpu[anomaly_3] = 98
     memory[anomaly_3] = 30
-    
+
     df = pd.DataFrame({
         'cpu': np.clip(cpu, 0, 100),
         'memory': np.clip(memory, 0, 100),
         'latency': np.clip(latency, 0, 1000)
     })
-    
+
     # 训练模型
     print("🎓 训练Isolation Forest模型...")
     detector = IsolationForestAnomalyDetector(
@@ -911,28 +911,28 @@ def example_isolation_forest_multivariate():
         n_estimators=100
     )
     detector.fit(df)
-    
+
     # 检测异常
     print("🔍 检测多维度异常...")
     result = detector.detect(df)
-    
+
     # 统计结果
     anomalies = result[result['is_anomaly']]
     print(f"\n📊 检测结果:")
     print(f"  总数据点: {len(result)}")
     print(f"  检测到异常: {len(anomalies)}")
     print(f"  异常率: {len(anomalies)/len(result)*100:.2f}%")
-    
+
     # 检查是否检测到注入的异常
     injected_anomalies = [anomaly_1, anomaly_2, anomaly_3]
     detected_injected = sum(result.iloc[idx]['is_anomaly'] for idx in injected_anomalies)
     print(f"  成功检测注入的异常: {detected_injected}/3")
-    
+
     if len(anomalies) > 0:
         print(f"\n🚨 Top 10异常:")
         top_anomalies = result[result['is_anomaly']].nlargest(10, 'anomaly_score')
         print(top_anomalies[['cpu', 'memory', 'latency', 'anomaly_score']])
-    
+
     return result, detector
 
 # 运行示例
@@ -1055,7 +1055,7 @@ detector = IsolationForestAnomalyDetector(
 ```text
 开始
   │
-  ├─ 单个指标? 
+  ├─ 单个指标?
   │    ├─ 是 → 有明显周期性?
   │    │        ├─ 是 → Prophet ✅
   │    │        └─ 否 → LSTM
@@ -1162,12 +1162,12 @@ services:
     depends_on:
       - redis
       - prometheus
-  
+
   redis:
     image: redis:7-alpine
     ports:
       - "6379:6379"
-  
+
   prometheus:
     image: prom/prometheus:latest
     ports:
@@ -1372,7 +1372,7 @@ is_anomaly = scores < threshold
 
 ---
 
-**文档负责人**: OTLP项目组 - AI/ML小组  
-**最后更新**: 2025-10-09  
-**状态**: ✅ 已完成  
+**文档负责人**: OTLP项目组 - AI/ML小组
+**最后更新**: 2025-10-09
+**状态**: ✅ 已完成
 **下一版本**: 将在2025 Q1增加多模态异常检测

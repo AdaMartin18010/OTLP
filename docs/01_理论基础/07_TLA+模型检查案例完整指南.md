@@ -81,6 +81,33 @@
 
 ---
 
+**TLA+ 建模与验证结构总览**（方法分类处）：
+
+```mermaid
+mindmap
+  root((TLA+在OTLP中))
+    基础
+      语法
+      工具链
+    OTLP建模
+      Trace模型
+      Span状态机
+      Context传播
+      Collector
+    属性规范
+      安全性
+      活性
+      不变式
+    模型检查案例
+      Trace完整性
+      Context传播
+      故障恢复
+      采样策略
+    结果分析
+      反例
+      优化
+```
+
 ## 第一部分: TLA+基础
 
 ### 1.1 TLA+概述

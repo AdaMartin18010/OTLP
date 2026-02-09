@@ -57,6 +57,25 @@
   - [12. 最佳实践](#12-最佳实践)
   - [13. 参考资源](#13-参考资源)
 
+**OTLP 编码选型矩阵**（Protobuf vs JSON，详见 [05_HTTP_JSON编码详解](./05_HTTP_JSON编码详解.md)）：
+
+| 维度 | Protocol Buffers (本文档) | HTTP JSON |
+|------|---------------------------|-----------|
+| 格式 | 二进制 | 文本 JSON |
+| 体积 | 更小 | 更大 |
+| 解析速度 | 更快 | 较慢 |
+| 适用场景 | 服务间、高性能 | 浏览器、调试、互操作 |
+| 内容类型 | application/x-protobuf | application/json |
+
+**编码流程简图**：
+
+```mermaid
+flowchart LR
+  A[OTLP 数据] --> B[Protobuf Schema]
+  B --> C[Varint/编码规则]
+  C --> D[二进制输出]
+```
+
 ## 1. 概念定义
 
 ### 1.1 正式定义

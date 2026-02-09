@@ -34,6 +34,24 @@
     - [官方文档](#官方文档)
     - [SDK文档](#sdk文档)
 
+**LogRecord 字段与严重性思维导图**（本页内嵌）：
+
+```mermaid
+mindmap
+  root((LogRecord))
+    时间
+      time_unix_nano
+      observed_time
+    严重性
+      severity_number
+      severity_text
+    内容
+      body
+      attributes
+    关联
+      trace_id_span_id
+```
+
 ---
 
 ## 1. 概述

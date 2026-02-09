@@ -1,7 +1,7 @@
 # 🇨🇳 阿里云OpenTelemetry集成指南
 
-> **阿里云服务**: SLS, ARMS, Prometheus  
-> **OTLP版本**: v1.3.0  
+> **阿里云服务**: SLS, ARMS, Prometheus
+> **OTLP版本**: v1.3.0
 > **最后更新**: 2025年10月9日
 
 ---
@@ -157,11 +157,11 @@ processors:
   batch:
     timeout: 10s
     send_batch_size: 1024
-  
+
   memory_limiter:
     check_interval: 1s
     limit_mib: 512
-  
+
   resource:
     attributes:
       - key: cloud.provider
@@ -179,7 +179,7 @@ exporters:
     logstore: "otlp-logs"
     access_key_id: "${ALIYUN_ACCESS_KEY_ID}"
     access_key_secret: "${ALIYUN_ACCESS_KEY_SECRET}"
-  
+
   # SLS Traces导出器
   alibabacloud_logservice/traces:
     endpoint: "cn-hangzhou.log.aliyuncs.com"
@@ -187,7 +187,7 @@ exporters:
     logstore: "otlp-traces"
     access_key_id: "${ALIYUN_ACCESS_KEY_ID}"
     access_key_secret: "${ALIYUN_ACCESS_KEY_SECRET}"
-  
+
   # SLS Metrics导出器
   alibabacloud_logservice/metrics:
     endpoint: "cn-hangzhou.log.aliyuncs.com"
@@ -202,12 +202,12 @@ service:
       receivers: [otlp]
       processors: [memory_limiter, resource, batch]
       exporters: [alibabacloud_logservice/logs]
-    
+
     traces:
       receivers: [otlp]
       processors: [memory_limiter, resource, batch]
       exporters: [alibabacloud_logservice/traces]
-    
+
     metrics:
       receivers: [otlp]
       processors: [memory_limiter, resource, batch]
@@ -307,7 +307,7 @@ import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 
 public class AliyunOTLPExample {
-    
+
     public static OpenTelemetrySdk initOpenTelemetry() {
         // 创建Resource
         Resource resource = Resource.getDefault()
@@ -428,9 +428,9 @@ if __name__ == "__main__":
 * | WHERE duration > 500000000  -- 纳秒
 
 -- 统计请求量TOP 10的服务
-* | SELECT service.name, COUNT(*) as count 
-    GROUP BY service.name 
-    ORDER BY count DESC 
+* | SELECT service.name, COUNT(*) as count
+    GROUP BY service.name
+    ORDER BY count DESC
     LIMIT 10
 ```
 
@@ -439,8 +439,8 @@ if __name__ == "__main__":
 ```sql
 -- 查询HTTP请求QPS
 * | WHERE __topic__ = "otlp-metrics" AND metric.name = "http.server.request.duration"
-  | SELECT from_unixtime(__time__) as time, 
-           COUNT(*) / 60.0 as qps 
+  | SELECT from_unixtime(__time__) as time,
+           COUNT(*) / 60.0 as qps
     GROUP BY time
 
 -- 查询P99延迟
@@ -556,7 +556,7 @@ service:
 rate(http_server_request_duration_count[1m])
 
 # P99延迟
-histogram_quantile(0.99, 
+histogram_quantile(0.99,
   rate(http_server_request_duration_bucket[5m])
 )
 
@@ -665,13 +665,13 @@ exporters:
     logstore: "otlp-traces"
     access_key_id: "${ALIYUN_ACCESS_KEY_ID}"
     access_key_secret: "${ALIYUN_ACCESS_KEY_SECRET}"
-  
+
   # ARMS (链路追踪)
   otlp/arms:
     endpoint: "tracing-analysis-dc-hz.aliyuncs.com:8090"
     headers:
       Authentication: "${ARMS_TOKEN}"
-  
+
   # Prometheus (指标)
   prometheusremotewrite:
     endpoint: "https://cn-hangzhou-intranet.arms.aliyuncs.com/prometheus/xxx/api/v1/write"
@@ -682,7 +682,7 @@ service:
       receivers: [otlp]
       processors: [batch]
       exporters: [alibabacloud_logservice/sls, otlp/arms]  # 多后端
-    
+
     metrics:
       receivers: [otlp]
       processors: [batch]
@@ -885,6 +885,6 @@ exporters:
 
 ---
 
-**最后更新**: 2025年10月9日  
-**适用区域**: 中国大陆 (cn-hangzhou, cn-beijing, cn-shanghai等)  
+**最后更新**: 2025年10月9日
+**适用区域**: 中国大陆 (cn-hangzhou, cn-beijing, cn-shanghai等)
 **下一篇**: [腾讯云OTLP集成指南](./02_腾讯云OTLP集成指南.md)

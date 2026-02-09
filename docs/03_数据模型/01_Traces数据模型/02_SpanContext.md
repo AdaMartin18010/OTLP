@@ -41,6 +41,24 @@
   - [9. 最佳实践](#9-最佳实践)
   - [10. 参考资源](#10-参考资源)
 
+**SpanContext 结构思维导图**（本页内嵌）：
+
+```mermaid
+mindmap
+  root((SpanContext))
+    标识
+      trace_id
+      span_id
+    传播控制
+      trace_flags
+      trace_state
+    上下文
+      is_remote
+    W3C
+      traceparent
+      tracestate
+```
+
 ## 1. 概念定义
 
 ### 1.1 正式定义

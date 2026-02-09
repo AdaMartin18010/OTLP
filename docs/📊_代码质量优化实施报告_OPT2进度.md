@@ -1,8 +1,8 @@
 # 📊 代码质量优化实施报告 - OPT-2 错误处理增强
 
-> **实施日期**: 2025年10月9日  
-> **优化任务**: OPT-2 增强错误处理 (15 处)  
-> **负责人**: AI Assistant  
+> **实施日期**: 2025年10月9日
+> **优化任务**: OPT-2 增强错误处理 (15 处)
+> **负责人**: AI Assistant
 > **状态**: 🔄 进行中 (60% 完成)
 
 ---
@@ -96,20 +96,20 @@ def __init__(self, api_key: Optional[str] = None, model: str = "gpt-4"):
     Args:
         api_key: OpenAI API Key (如果为 None,从环境变量 OPENAI_API_KEY 读取)
         model: 模型名称
-    
+
     Raises:
         ValueError: 如果 API Key 未提供且环境变量不存在
     """
     import os
     import logging
-    
+
     self.api_key = api_key or os.getenv("OPENAI_API_KEY")
     if not self.api_key:
         raise ValueError(
             "OpenAI API Key is required. "
             "Provide via api_key parameter or OPENAI_API_KEY environment variable."
         )
-    
+
     self.model = model
     openai.api_key = self.api_key
     self.logger = logging.getLogger(__name__)
@@ -138,7 +138,7 @@ def __init__(self, api_key: Optional[str] = None, model: str = "gpt-4"):
 ```python
 def analyze_logs(self, logs: List[str], context: Optional[Dict] = None) -> Dict:
     log_text = "\n".join(logs)
-    
+
     try:
         response = openai.ChatCompletion.create(
             model=self.model,
@@ -147,10 +147,10 @@ def analyze_logs(self, logs: List[str], context: Optional[Dict] = None) -> Dict:
             max_tokens=1000,
             response_format={"type": "json_object"}
         )
-        
+
         result = json.loads(response.choices[0].message.content)
         return result
-        
+
     except Exception as e:
         return {
             "is_anomaly": False,
@@ -171,35 +171,35 @@ def analyze_logs(
 ) -> Dict:
     """
     分析日志,检测异常
-    
+
     Args:
         logs: 日志列表
         context: 上下文信息
         timeout: API 请求超时时间 (秒)
         retries: 失败重试次数
-    
+
     Returns:
         分析结果 (JSON)
-    
+
     Raises:
         ValueError: 如果 logs 为空或格式无效
         openai.APIError: 如果 API 调用失败
     """
     import time
     from openai import APIError, Timeout, RateLimitError
-    
+
     # 输入验证
     if not logs:
         raise ValueError("Logs list cannot be empty")
-    
+
     if len(logs) > 1000:
         self.logger.warning(f"Large log batch ({len(logs)} logs), truncating to 1000")
         logs = logs[:1000]
-    
+
     # 准备消息
     log_text = "\n".join(logs)
     # ... (省略 prompt 构建)
-    
+
     # 重试循环
     last_exception = None
     for attempt in range(retries):
@@ -212,36 +212,36 @@ def analyze_logs(
                 request_timeout=timeout,  # 添加超时
                 response_format={"type": "json_object"}
             )
-            
+
             result = json.loads(response.choices[0].message.content)
-            
+
             # 添加元数据
             result['timestamp'] = datetime.now().isoformat()
             result['model'] = self.model
             result['token_usage'] = response.usage.total_tokens
-            
+
             # 验证响应格式
             required_fields = ['is_anomaly', 'severity', 'confidence']
             if not all(field in result for field in required_fields):
                 self.logger.warning(f"Incomplete response fields: {result.keys()}")
                 result['_incomplete'] = True
-            
+
             return result
-        
+
         except Timeout as e:
             last_exception = e
             self.logger.warning(f"Timeout on attempt {attempt+1}/{retries}: {e}")
             if attempt < retries - 1:
                 time.sleep(2 ** attempt)  # 指数退避
                 continue
-        
+
         except RateLimitError as e:
             last_exception = e
             self.logger.warning(f"Rate limit hit on attempt {attempt+1}/{retries}")
             if attempt < retries - 1:
                 time.sleep(10 * (attempt + 1))  # 等待更长时间
                 continue
-        
+
         except APIError as e:
             last_exception = e
             self.logger.error(f"OpenAI API error on attempt {attempt+1}/{retries}: {e}")
@@ -254,7 +254,7 @@ def analyze_logs(
                 "error": f"API Error: {str(e)}",
                 "timestamp": datetime.now().isoformat()
             }
-        
+
         except json.JSONDecodeError as e:
             last_exception = e
             self.logger.error(f"Failed to parse LLM response as JSON: {e}")
@@ -263,7 +263,7 @@ def analyze_logs(
                 "error": f"Invalid JSON response: {str(e)}",
                 "timestamp": datetime.now().isoformat()
             }
-        
+
         except Exception as e:
             last_exception = e
             self.logger.error(f"Unexpected error on attempt {attempt+1}/{retries}: {e}")
@@ -273,7 +273,7 @@ def analyze_logs(
                     "error": str(e),
                     "timestamp": datetime.now().isoformat()
                 }
-    
+
     # 所有重试都失败
     return {
         "is_anomaly": False,
@@ -310,14 +310,14 @@ def __init__(self, db_config: Dict, llm_analyzer: LLMLogAnalyzer):
     Args:
         db_config: 数据库配置字典
         llm_analyzer: LLM 分析器实例
-    
+
     Raises:
         psycopg2.Error: 如果数据库连接失败
     """
     self.db_config = db_config
     self.llm_analyzer = llm_analyzer
     self.logger = logging.getLogger(__name__)
-    
+
     # 验证数据库连接
     try:
         with psycopg2.connect(**self.db_config) as conn:
@@ -326,7 +326,7 @@ def __init__(self, db_config: Dict, llm_analyzer: LLMLogAnalyzer):
     except psycopg2.Error as e:
         self.logger.error(f"Database connection failed: {e}")
         raise
-    
+
     # ... (初始化 OpenTelemetry)
 ```
 
@@ -357,19 +357,19 @@ def fetch_recent_logs(
 ) -> List[str]:
     conn = psycopg2.connect(**self.db_config)
     cursor = conn.cursor()
-    
+
     query = """..."""
     cursor.execute(query, (service_name, severity, time_range_minutes))
     rows = cursor.fetchall()
-    
+
     logs = []
     for row in rows:
         # 格式化日志
         ...
-    
+
     cursor.close()
     conn.close()
-    
+
     return logs
 ```
 
@@ -385,16 +385,16 @@ def fetch_recent_logs(
 ) -> List[str]:
     """
     从数据库获取最近的日志
-    
+
     Args:
         service_name: 服务名称
         time_range_minutes: 时间范围(分钟)
         severity: 最低日志级别
         max_logs: 最大返回日志数
-    
+
     Returns:
         格式化后的日志列表
-    
+
     Raises:
         ValueError: 如果参数无效
         psycopg2.Error: 如果数据库查询失败
@@ -402,18 +402,18 @@ def fetch_recent_logs(
     # 输入验证
     if not service_name:
         raise ValueError("service_name cannot be empty")
-    
+
     if time_range_minutes <= 0 or time_range_minutes > 1440:  # 最多24小时
         raise ValueError("time_range_minutes must be between 1 and 1440")
-    
+
     if max_logs <= 0 or max_logs > 10000:
         raise ValueError("max_logs must be between 1 and 10000")
-    
+
     try:
         with psycopg2.connect(**self.db_config) as conn:
             with conn.cursor() as cursor:
                 query = """
-                    SELECT 
+                    SELECT
                         time, severity_text, body, service_name, trace_id
                     FROM otlp_logs
                     WHERE service_name = %s
@@ -422,10 +422,10 @@ def fetch_recent_logs(
                     ORDER BY time DESC
                     LIMIT %s
                 """
-                
+
                 cursor.execute(query, (service_name, severity, time_range_minutes, max_logs))
                 rows = cursor.fetchall()
-                
+
                 # 格式化为日志字符串
                 logs = []
                 for row in rows:
@@ -434,10 +434,10 @@ def fetch_recent_logs(
                     if trace_id:
                         log_line += f" [TraceID: {trace_id}]"
                     logs.append(log_line)
-                
+
                 self.logger.info(f"Fetched {len(logs)} logs for service {service_name}")
                 return logs
-    
+
     except psycopg2.Error as e:
         self.logger.error(f"Database query failed: {e}")
         raise
@@ -463,8 +463,8 @@ def fetch_recent_logs(
 ```python
 class CostOptimizedLLMAnalyzer:
     def __init__(
-        self, 
-        primary_model="gpt-4", 
+        self,
+        primary_model="gpt-4",
         fallback_model="gpt-3.5-turbo",
         rate_limit_calls=50,
         rate_limit_period=60
@@ -478,35 +478,35 @@ class CostOptimizedLLMAnalyzer:
         """
         import threading
         from collections import deque
-        
+
         self.primary_model = primary_model
         self.fallback_model = fallback_model
         self.logger = logging.getLogger(__name__)
-        
+
         # 速率限制 (Token Bucket 算法)
         self.rate_limit_calls = rate_limit_calls
         self.rate_limit_period = rate_limit_period
         self._call_times = deque()
         self._rate_limit_lock = threading.Lock()
-        
+
         # ... (成本配置)
-    
+
     def _check_rate_limit(self) -> bool:
         """
         检查是否超过速率限制
-        
+
         Returns:
             True 如果在限制内,False 如果超限
         """
         import time
-        
+
         with self._rate_limit_lock:
             current_time = time.time()
-            
+
             # 移除时间窗口外的调用记录
             while self._call_times and current_time - self._call_times[0] > self.rate_limit_period:
                 self._call_times.popleft()
-            
+
             # 检查是否超限
             if len(self._call_times) >= self.rate_limit_calls:
                 oldest_call = self._call_times[0]
@@ -516,24 +516,24 @@ class CostOptimizedLLMAnalyzer:
                     f"wait {wait_time:.1f}s"
                 )
                 return False
-            
+
             # 记录本次调用
             self._call_times.append(current_time)
             return True
-    
+
     def _quick_screen(self, logs: List[str], model: str) -> Dict:
         """快速筛选 (简化 prompt)"""
         import time
-        
+
         # 速率限制检查
         max_wait = 30  # 最多等待30秒
         start_wait = time.time()
-        
+
         while not self._check_rate_limit():
             if time.time() - start_wait > max_wait:
                 raise ValueError(f"Rate limit exceeded, waited {max_wait}s")
             time.sleep(1)
-        
+
         # ... (调用 LLM)
 ```
 
@@ -561,27 +561,27 @@ class CostOptimizedLLMAnalyzer:
 def analyze_with_caching(self, logs: List[str], cache_ttl: int = 3600) -> Dict:
     import hashlib
     import redis
-    
+
     log_hash = hashlib.sha256("\n".join(logs).encode()).hexdigest()
-    
+
     redis_client = redis.Redis(host='localhost', port=6379)
     cached_result = redis_client.get(f"log_analysis:{log_hash}")
-    
+
     if cached_result:
         return {
             **json.loads(cached_result),
             "cache_hit": True,
             "cost_usd": 0.0
         }
-    
+
     result = self.analyze_with_tiered_models(logs)
-    
+
     redis_client.setex(
         f"log_analysis:{log_hash}",
         cache_ttl,
         json.dumps(result)
     )
-    
+
     result['cache_hit'] = False
     return result
 ```
@@ -590,49 +590,49 @@ def analyze_with_caching(self, logs: List[str], cache_ttl: int = 3600) -> Dict:
 
 ```python
 def analyze_with_caching(
-    self, 
-    logs: List[str], 
+    self,
+    logs: List[str],
     cache_ttl: int = 3600,
     redis_host: str = 'localhost',
     redis_port: int = 6379
 ) -> Dict:
     """
     使用缓存减少重复分析
-    
+
     Args:
         logs: 日志列表
         cache_ttl: 缓存过期时间(秒)
         redis_host: Redis 主机地址
         redis_port: Redis 端口
-    
+
     Returns:
         分析结果,包含 cache_hit 标志
     """
     import hashlib
     import redis
     from redis.exceptions import RedisError
-    
+
     # 计算日志哈希
     log_hash = hashlib.sha256(
         "\n".join(logs).encode('utf-8')
     ).hexdigest()
-    
+
     # 尝试连接 Redis 并查询缓存
     try:
         redis_client = redis.Redis(
-            host=redis_host, 
+            host=redis_host,
             port=redis_port,
             socket_connect_timeout=5,
             socket_timeout=5,
             decode_responses=True
         )
-        
+
         # 测试连接
         redis_client.ping()
-        
+
         # 查询缓存
         cached_result = redis_client.get(f"log_analysis:{log_hash}")
-        
+
         if cached_result:
             self.logger.info(f"Cache hit for log hash {log_hash[:8]}")
             return {
@@ -640,14 +640,14 @@ def analyze_with_caching(
                 "cache_hit": True,
                 "cost_usd": 0.0
             }
-    
+
     except RedisError as e:
         self.logger.warning(f"Redis connection failed: {e}, proceeding without cache")
         redis_client = None
-    
+
     # 缓存未命中或 Redis 不可用,调用 LLM
     result = self.analyze_with_tiered_models(logs)
-    
+
     # 尝试存入缓存
     if redis_client:
         try:
@@ -659,7 +659,7 @@ def analyze_with_caching(
             self.logger.info(f"Cached result for log hash {log_hash[:8]}")
         except RedisError as e:
             self.logger.warning(f"Failed to cache result: {e}")
-    
+
     result['cache_hit'] = False
     return result
 ```
@@ -729,7 +729,7 @@ from pydantic import BaseModel, Field, validator
 class DataItem(BaseModel):
     value: float = Field(..., gt=0, description="Must be positive")
     name: str = Field(..., min_length=1)
-    
+
     @validator('value')
     def validate_value(cls, v):
         if v > 1e6:
@@ -745,7 +745,7 @@ def process_data(data: List[Dict]):
         except ValidationError as e:
             logger.error(f"Invalid data: {e}")
             continue
-    
+
     for item in validated_items:
         result = compute(item.value)
 ```
@@ -770,11 +770,11 @@ class DatabaseClient:
     def __init__(self, conn_string: str):
         self.conn_string = conn_string
         self.conn = None
-    
+
     def __enter__(self):
         self.conn = psycopg2.connect(self.conn_string)
         return self
-    
+
     def __exit__(self, exc_type, exc_val, exc_tb):
         if self.conn:
             if exc_type:
@@ -782,7 +782,7 @@ class DatabaseClient:
             else:
                 self.conn.commit()
             self.conn.close()
-    
+
     @contextmanager
     def cursor(self):
         cursor = self.conn.cursor()
@@ -790,7 +790,7 @@ class DatabaseClient:
             yield cursor
         finally:
             cursor.close()
-    
+
     def query(self, sql: str, params=None):
         with self.cursor() as cur:
             cur.execute(sql, params or ())
@@ -976,5 +976,5 @@ def fetch_api_data(url: str) -> Dict:
 
 ---
 
-**报告生成时间**: 2025年10月9日 14:30  
+**报告生成时间**: 2025年10月9日 14:30
 **下次更新**: 完成 AIOps 和 Temporal 优化后 (预计今日 18:00)

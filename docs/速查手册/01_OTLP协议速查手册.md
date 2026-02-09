@@ -1,7 +1,7 @@
 # 📘 OTLP协议速查手册
 
-> **版本**: v1.3.0  
-> **最后更新**: 2025年10月9日  
+> **版本**: v1.3.0
+> **最后更新**: 2025年10月9日
 > **用途**: 快速参考OTLP核心协议要点
 
 ---
@@ -386,7 +386,7 @@ func initTracer() (*trace.TracerProvider, error) {
             MaxElapsedTime:  300 * time.Second,
         }),
     )
-    
+
     tp := trace.NewTracerProvider(
         trace.WithBatcher(exporter,
             trace.WithMaxExportBatchSize(1024),
@@ -561,5 +561,5 @@ logging.basicConfig(level=logging.DEBUG)
 
 ---
 
-**最后更新**: 2025年10月9日  
+**最后更新**: 2025年10月9日
 **下一篇**: [Semantic Conventions速查手册](./02_Semantic_Conventions速查手册.md)

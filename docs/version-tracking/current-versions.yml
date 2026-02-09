@@ -20,6 +20,10 @@ collector:
   repo: open-telemetry/opentelemetry-collector
   description: OpenTelemetry Collector
 
+# 可选: Metrics/Logs 规范版本（通常与 otlp_spec 或 opentelemetry-specification 同步）
+# metrics_spec:  # 见 https://opentelemetry.io/docs/specs/otel/metrics/
+# logs_spec:    # 见 https://opentelemetry.io/docs/specs/otel/logs/
+
 last_checked: '2025-10-09T00:00:00Z'
 
 # 版本历史 (最近5次更新)

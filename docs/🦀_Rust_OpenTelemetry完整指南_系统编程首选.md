@@ -1,11 +1,11 @@
 # 🦀 Rust OpenTelemetry 完整指南 - 系统编程首选语言
 
-> **文档版本**: v1.0  
-> **创建日期**: 2025年10月9日  
-> **文档类型**: P0 优先级 - 编程语言生态补充  
-> **预估篇幅**: 2,500+ 行  
-> **Rust 版本**: 1.75+  
-> **OpenTelemetry Rust SDK**: v0.22+  
+> **文档版本**: v1.0
+> **创建日期**: 2025年10月9日
+> **文档类型**: P0 优先级 - 编程语言生态补充
+> **预估篇幅**: 2,500+ 行
+> **Rust 版本**: 1.75+
+> **OpenTelemetry Rust SDK**: v0.22+
 > **目标**: 填补 Rust 生态空白,支持高性能、边缘计算、嵌入式场景
 
 ---
@@ -155,22 +155,22 @@
 fn ownership_basics() {
     // 规则 1: 每个值都有一个所有者
     let s = String::from("hello");  // s 是 "hello" 的所有者
-    
+
     // 规则 2: 值只能有一个所有者
     let s2 = s;  // 所有权转移 (move) 到 s2
     // println!("{}", s);  // ❌ 编译错误: s 已失效
-    
+
     // 规则 3: 当所有者离开作用域,值被 drop
 }  // s2 在此处被 drop,内存自动释放
 
 // 借用 (Borrowing)
 fn borrowing_example() {
     let s1 = String::from("hello");
-    
+
     // 不可变借用 (Immutable Borrow)
     let len = calculate_length(&s1);  // &s1 借用,不转移所有权
     println!("Length of '{}' is {}", s1, len);  // ✅ s1 仍然有效
-    
+
     // 可变借用 (Mutable Borrow)
     let mut s2 = String::from("hello");
     change(&mut s2);
@@ -289,14 +289,14 @@ pub fn init_telemetry(
         KeyValue::new("service.version", env!("CARGO_PKG_VERSION")),
         KeyValue::new("deployment.environment", "production"),
     ]);
-    
+
     // 2. 配置 OTLP Exporter
     let exporter = opentelemetry_otlp::new_exporter()
         .tonic()
         .with_endpoint(otlp_endpoint)
         .with_timeout(Duration::from_secs(5))
         .build_span_exporter()?;
-    
+
     // 3. 配置 TraceProvider
     let provider = trace::TracerProvider::builder()
         .with_batch_exporter(
@@ -310,10 +310,10 @@ pub fn init_telemetry(
         .with_sampler(Sampler::AlwaysOn)  // 或 TraceIdRatioBased
         .with_id_generator(RandomIdGenerator::default())
         .build();
-    
+
     // 4. 设置全局 TraceProvider
     global::set_tracer_provider(provider.clone());
-    
+
     // 5. 返回 Tracer
     Ok(provider.tracer("my-app"))
 }
@@ -321,14 +321,14 @@ pub fn init_telemetry(
 /// 集成 tracing 库
 pub fn init_tracing_subscriber(service_name: &str, otlp_endpoint: &str) {
     use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
-    
+
     // 初始化 OpenTelemetry
     let tracer = init_telemetry(service_name, otlp_endpoint)
         .expect("Failed to initialize OpenTelemetry");
-    
+
     // 创建 OpenTelemetry layer
     let telemetry_layer = tracing_opentelemetry::layer().with_tracer(tracer);
-    
+
     // 创建 Subscriber (Console + OpenTelemetry)
     tracing_subscriber::registry()
         .with(tracing_subscriber::fmt::layer())  // 控制台输出
@@ -381,11 +381,11 @@ async fn main() {
         "payment-service",
         "http://localhost:4317",
     );
-    
+
     // 2. 创建 Tracer
     let tracer = global::tracer("payment-service");
     let state = AppState { tracer };
-    
+
     // 3. 构建路由
     let app = Router::new()
         .route("/health", get(health_check))
@@ -394,18 +394,18 @@ async fn main() {
         .with_state(Arc::new(state))
         .layer(middleware::from_fn(trace_middleware))  // 自定义追踪中间件
         .layer(TraceLayer::new_for_http());  // Tower HTTP 追踪
-    
+
     // 4. 启动服务器
     let listener = tokio::net::TcpListener::bind("0.0.0.0:8080")
         .await
         .unwrap();
-    
+
     println!("🚀 Server started at http://0.0.0.0:8080");
-    
+
     axum::serve(listener, app)
         .await
         .unwrap();
-    
+
     // 5. 优雅关闭
     telemetry::shutdown_telemetry();
 }
@@ -417,9 +417,9 @@ async fn trace_middleware<B>(
     next: Next<B>,
 ) -> Response {
     use opentelemetry::trace::{SpanKind, Status};
-    
+
     let tracer = &state.tracer;
-    
+
     // 创建 Span
     let mut span = tracer
         .span_builder(format!("{} {}", req.method(), req.uri().path()))
@@ -430,19 +430,19 @@ async fn trace_middleware<B>(
             KeyValue::new("http.scheme", req.uri().scheme_str().unwrap_or("http").to_string()),
         ])
         .start(tracer);
-    
+
     // 执行请求
     let response = next.run(req).await;
-    
+
     // 设置 Span 属性
     span.set_attribute(KeyValue::new("http.status_code", response.status().as_u16() as i64));
-    
+
     if response.status().is_server_error() {
         span.set_status(Status::error("Server error"));
     }
-    
+
     span.end();
-    
+
     response
 }
 
@@ -473,9 +473,9 @@ async fn create_payment(
 ) -> Result<Json<Payment>, StatusCode> {
     use opentelemetry::trace::{FutureExt, TraceContextExt};
     use opentelemetry::Context;
-    
+
     let tracer = &state.tracer;
-    
+
     // 创建 Span
     let span = tracer
         .span_builder("create_payment")
@@ -485,20 +485,20 @@ async fn create_payment(
             KeyValue::new("user.id", payload.user_id.clone()),
         ])
         .start(tracer);
-    
+
     // 在 Span 上下文中执行
     let cx = Context::current_with_span(span);
-    
+
     async move {
         // 1. 验证支付
         validate_payment(&cx, &payload).await?;
-        
+
         // 2. 调用支付网关
         let payment_id = call_payment_gateway(&cx, &payload).await?;
-        
+
         // 3. 保存到数据库
         save_to_database(&cx, &payment_id, &payload).await?;
-        
+
         Ok(Json(Payment {
             id: payment_id,
             amount: payload.amount,
@@ -519,16 +519,16 @@ async fn validate_payment(
     let mut span = tracer
         .span_builder("validate_payment")
         .start_with_context(&tracer, cx);
-    
+
     // 业务逻辑
     if payload.amount <= 0.0 {
         span.set_attribute(KeyValue::new("error", "invalid_amount"));
         return Err(StatusCode::BAD_REQUEST);
     }
-    
+
     span.set_attribute(KeyValue::new("validation.result", "success"));
     span.end();
-    
+
     Ok(())
 }
 
@@ -540,7 +540,7 @@ async fn call_payment_gateway(
     use opentelemetry::trace::{SpanKind, Status};
     use opentelemetry::propagation::{Injector, TextMapPropagator};
     use opentelemetry_sdk::propagation::TraceContextPropagator;
-    
+
     let tracer = global::tracer("payment-service");
     let mut span = tracer
         .span_builder("call_payment_gateway")
@@ -551,23 +551,23 @@ async fn call_payment_gateway(
             KeyValue::new("http.url", "https://api.stripe.com/v1/charges"),
         ])
         .start_with_context(&tracer, cx);
-    
+
     // HTTP 客户端 (注入 TraceContext)
     let client = reqwest::Client::new();
     let mut headers = reqwest::header::HeaderMap::new();
-    
+
     // 注入 W3C Trace Context
     let propagator = TraceContextPropagator::new();
     let mut injector = HashMap::new();
     propagator.inject_context(cx, &mut injector);
-    
+
     for (key, value) in injector {
         headers.insert(
             reqwest::header::HeaderName::from_bytes(key.as_bytes()).unwrap(),
             reqwest::header::HeaderValue::from_str(&value).unwrap(),
         );
     }
-    
+
     // 发送请求
     let response = client
         .post("https://api.stripe.com/v1/charges")
@@ -582,10 +582,10 @@ async fn call_payment_gateway(
             span.set_status(Status::error(format!("HTTP error: {}", e)));
             StatusCode::INTERNAL_SERVER_ERROR
         })?;
-    
+
     span.set_attribute(KeyValue::new("http.status_code", response.status().as_u16() as i64));
     span.end();
-    
+
     // 模拟返回
     Ok(format!("pay_{}", uuid::Uuid::new_v4()))
 }
@@ -605,10 +605,10 @@ async fn save_to_database(
             KeyValue::new("db.operation", "INSERT"),
         ])
         .start_with_context(&tracer, cx);
-    
+
     // 模拟数据库操作
     tokio::time::sleep(tokio::time::Duration::from_millis(10)).await;
-    
+
     span.end();
     Ok(())
 }
@@ -619,7 +619,7 @@ async fn get_payment(
 ) -> Result<Json<Payment>, StatusCode> {
     // 使用 tracing 宏 (自动创建 Span)
     tracing::info!(payment_id = %id, "Fetching payment");
-    
+
     Ok(Json(Payment {
         id,
         amount: 100.0,
@@ -660,10 +660,10 @@ impl Payment for PaymentServiceImpl {
     ) -> Result<Response<CreatePaymentResponse>, Status> {
         use opentelemetry::{Context, KeyValue};
         use opentelemetry::trace::TraceContextExt;
-        
+
         // 提取 TraceContext (gRPC metadata)
         let cx = extract_trace_context(request.metadata());
-        
+
         // 创建 Span
         let mut span = self.tracer
             .span_builder("create_payment")
@@ -674,15 +674,15 @@ impl Payment for PaymentServiceImpl {
                 KeyValue::new("rpc.method", "CreatePayment"),
             ])
             .start_with_context(&self.tracer, &cx);
-        
+
         let payload = request.into_inner();
-        
+
         // 业务逻辑
         let payment_id = format!("pay_{}", uuid::Uuid::new_v4());
-        
+
         span.set_attribute(KeyValue::new("payment.id", payment_id.clone()));
         span.end();
-        
+
         Ok(Response::new(CreatePaymentResponse {
             id: payment_id,
             status: "pending".to_string(),
@@ -693,19 +693,19 @@ impl Payment for PaymentServiceImpl {
 fn extract_trace_context(metadata: &tonic::metadata::MetadataMap) -> Context {
     use opentelemetry::propagation::{Extractor, TextMapPropagator};
     use opentelemetry_sdk::propagation::TraceContextPropagator;
-    
+
     struct MetadataExtractor<'a>(&'a tonic::metadata::MetadataMap);
-    
+
     impl<'a> Extractor for MetadataExtractor<'a> {
         fn get(&self, key: &str) -> Option<&str> {
             self.0.get(key).and_then(|v| v.to_str().ok())
         }
-        
+
         fn keys(&self) -> Vec<&str> {
             self.0.keys().map(|k| k.as_str()).collect()
         }
     }
-    
+
     let propagator = TraceContextPropagator::new();
     propagator.extract(&MetadataExtractor(metadata))
 }
@@ -714,17 +714,17 @@ fn extract_trace_context(metadata: &tonic::metadata::MetadataMap) -> Context {
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // 初始化
     let tracer = telemetry::init_telemetry("payment-grpc", "http://localhost:4317")?;
-    
+
     let addr = "[::1]:50051".parse()?;
     let service = PaymentServiceImpl { tracer };
-    
+
     println!("🚀 gRPC Server listening on {}", addr);
-    
+
     Server::builder()
         .add_service(PaymentServer::new(service))
         .serve(addr)
         .await?;
-    
+
     Ok(())
 }
 ```
@@ -767,7 +767,7 @@ impl<'a> Extractor for HeaderExtractor<'a> {
     fn get(&self, key: &str) -> Option<&str> {
         self.headers.get(key).and_then(|v| v.to_str().ok())
     }
-    
+
     fn keys(&self) -> Vec<&str> {
         self.headers
             .keys()
@@ -798,9 +798,9 @@ pub fn extract_trace_context(
 /// 完整示例: HTTP 客户端调用
 pub async fn make_http_call_with_tracing() -> Result<String, Box<dyn std::error::Error>> {
     use opentelemetry::{global, trace::{Tracer, SpanKind}, KeyValue};
-    
+
     let tracer = global::tracer("my-service");
-    
+
     // 1. 创建 Span
     let span = tracer
         .span_builder("http_call_to_user_service")
@@ -811,27 +811,27 @@ pub async fn make_http_call_with_tracing() -> Result<String, Box<dyn std::error:
             KeyValue::new("peer.service", "user-service"),
         ])
         .start(&tracer);
-    
+
     let cx = Context::current_with_span(span);
-    
+
     // 2. 创建 HTTP 客户端
     let client = reqwest::Client::new();
     let mut headers = reqwest::header::HeaderMap::new();
-    
+
     // 3. 注入 TraceContext
     inject_trace_context(&cx, &mut headers);
-    
+
     // 4. 发送请求
     let response = client
         .get("http://user-service/api/users/123")
         .headers(headers)
         .send()
         .await?;
-    
+
     let body = response.text().await?;
-    
+
     // 5. Span 自动结束 (通过 Drop trait)
-    
+
     Ok(body)
 }
 ```
@@ -872,7 +872,7 @@ pub fn init_metrics(
         KeyValue::new("service.name", service_name.to_string()),
         KeyValue::new("service.version", env!("CARGO_PKG_VERSION")),
     ]);
-    
+
     // 2. 配置 OTLP Exporter
     let exporter = opentelemetry_otlp::new_exporter()
         .tonic()
@@ -882,21 +882,21 @@ pub fn init_metrics(
             Box::new(DefaultAggregationSelector::new()),
             Box::new(DefaultTemporalitySelector::new()),
         )?;
-    
+
     // 3. 配置 Periodic Reader (每 60 秒导出)
     let reader = PeriodicReader::builder(exporter, tokio::spawn)
         .with_interval(Duration::from_secs(60))
         .build();
-    
+
     // 4. 创建 MeterProvider
     let provider = SdkMeterProvider::builder()
         .with_reader(reader)
         .with_resource(resource)
         .build();
-    
+
     // 5. 设置全局 MeterProvider
     global::set_meter_provider(provider.clone());
-    
+
     Ok(provider)
 }
 
@@ -923,10 +923,10 @@ use std::sync::Arc;
 pub struct AppMetrics {
     // Counter: 单调递增 (请求总数)
     pub http_requests_total: Counter<u64>,
-    
+
     // Histogram: 分布统计 (请求延迟)
     pub http_request_duration: Histogram<f64>,
-    
+
     // UpDownCounter: 可增可减 (当前活跃连接数)
     pub active_connections: opentelemetry::metrics::UpDownCounter<i64>,
 }
@@ -934,20 +934,20 @@ pub struct AppMetrics {
 impl AppMetrics {
     pub fn new() -> Self {
         let meter = global::meter("my-app");
-        
+
         Self {
             http_requests_total: meter
                 .u64_counter("http.requests.total")
                 .with_description("Total number of HTTP requests")
                 .with_unit("requests")
                 .init(),
-            
+
             http_request_duration: meter
                 .f64_histogram("http.request.duration")
                 .with_description("HTTP request duration in seconds")
                 .with_unit("s")
                 .init(),
-            
+
             active_connections: meter
                 .i64_up_down_counter("http.active_connections")
                 .with_description("Number of active HTTP connections")
@@ -955,7 +955,7 @@ impl AppMetrics {
                 .init(),
         }
     }
-    
+
     /// 记录 HTTP 请求
     pub fn record_request(&self, method: &str, path: &str, status: u16, duration_secs: f64) {
         let labels = vec![
@@ -963,19 +963,19 @@ impl AppMetrics {
             KeyValue::new("http.route", path.to_string()),
             KeyValue::new("http.status_code", status as i64),
         ];
-        
+
         // Counter +1
         self.http_requests_total.add(1, &labels);
-        
+
         // Histogram 记录延迟
         self.http_request_duration.record(duration_secs, &labels);
     }
-    
+
     /// 连接建立
     pub fn connection_established(&self) {
         self.active_connections.add(1, &[]);
     }
-    
+
     /// 连接关闭
     pub fn connection_closed(&self) {
         self.active_connections.add(-1, &[]);
@@ -986,10 +986,10 @@ impl AppMetrics {
 pub async fn axum_with_metrics() {
     use axum::{extract::State, http::Request, middleware::Next, response::Response, Router, routing::get};
     use std::time::Instant;
-    
+
     // 初始化 Metrics
     let metrics = Arc::new(AppMetrics::new());
-    
+
     // 创建路由
     let app = Router::new()
         .route("/", get(|| async { "Hello, World!" }))
@@ -998,7 +998,7 @@ pub async fn axum_with_metrics() {
             metrics_middleware,
         ))
         .with_state(metrics);
-    
+
     // 启动服务器
     let listener = tokio::net::TcpListener::bind("0.0.0.0:8080").await.unwrap();
     axum::serve(listener, app).await.unwrap();
@@ -1013,17 +1013,17 @@ async fn metrics_middleware<B>(
     let start = Instant::now();
     let method = req.method().to_string();
     let path = req.uri().path().to_string();
-    
+
     metrics.connection_established();
-    
+
     let response = next.run(req).await;
-    
+
     let duration = start.elapsed().as_secs_f64();
     let status = response.status().as_u16();
-    
+
     metrics.record_request(&method, &path, status, duration);
     metrics.connection_closed();
-    
+
     response
 }
 ```
@@ -1043,13 +1043,13 @@ pub struct BusinessMetrics {
 impl BusinessMetrics {
     pub fn new() -> Self {
         let meter = global::meter("ecommerce-app");
-        
+
         Self {
             orders_total: meter
                 .u64_counter("orders.total")
                 .with_description("Total number of orders")
                 .init(),
-            
+
             order_value: meter
                 .f64_histogram("order.value")
                 .with_description("Order value in USD")
@@ -1057,12 +1057,12 @@ impl BusinessMetrics {
                 .init(),
         }
     }
-    
+
     pub fn record_order(&self, product_id: &str, quantity: u64, value: f64) {
         let labels = vec![
             KeyValue::new("product.id", product_id.to_string()),
         ];
-        
+
         self.orders_total.add(1, &labels);
         self.order_value.record(value, &labels);
     }
@@ -1088,16 +1088,16 @@ pub fn init_logging(service_name: &str, otlp_endpoint: &str) {
     // 1. 初始化 OpenTelemetry Tracer
     let tracer = crate::telemetry::init_telemetry(service_name, otlp_endpoint)
         .expect("Failed to initialize telemetry");
-    
+
     // 2. 创建 OpenTelemetry layer
     let telemetry_layer = tracing_opentelemetry::layer().with_tracer(tracer);
-    
+
     // 3. 创建 JSON 格式化 layer (用于结构化日志)
     let json_layer = tracing_subscriber::fmt::layer()
         .json()
         .with_current_span(true)
         .with_span_list(true);
-    
+
     // 4. 创建 Subscriber
     tracing_subscriber::registry()
         .with(tracing_subscriber::EnvFilter::new(
@@ -1112,7 +1112,7 @@ pub fn init_logging(service_name: &str, otlp_endpoint: &str) {
 pub async fn business_logic_with_logging() {
     // 简单日志
     info!("Starting business logic");
-    
+
     // 结构化日志
     info!(
         user_id = "user_123",
@@ -1120,21 +1120,21 @@ pub async fn business_logic_with_logging() {
         amount = 99.99,
         "Processing order"
     );
-    
+
     // Span 内的日志 (自动关联 TraceID)
     let span = tracing::info_span!(
         "process_payment",
         payment_id = "pay_789",
     );
-    
+
     async {
         info!("Validating payment");
-        
+
         // 模拟错误
         if let Err(e) = validate_payment().await {
             error!(error = %e, "Payment validation failed");
         }
-        
+
         info!("Payment processed successfully");
     }
     .instrument(span)
@@ -1161,7 +1161,7 @@ pub async fn handle_request(user_id: String, request_id: String) {
         request_id = %request_id,
         "Processing request"
     );
-    
+
     // 调用子函数 (日志自动继承 Trace 上下文)
     process_data().await;
 }
@@ -1169,10 +1169,10 @@ pub async fn handle_request(user_id: String, request_id: String) {
 #[instrument]
 async fn process_data() {
     info!("Data processing started");
-    
+
     // 模拟处理
     tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
-    
+
     info!("Data processing completed");
 }
 ```
@@ -1215,7 +1215,7 @@ impl Sampler for AdaptiveSampler {
     ) -> SamplingResult {
         // 1. 总是采样错误请求
         if attributes.iter().any(|kv| {
-            kv.key.as_str() == "http.status_code" && 
+            kv.key.as_str() == "http.status_code" &&
             kv.value.as_str().parse::<u16>().unwrap_or(200) >= 500
         }) {
             return SamplingResult {
@@ -1224,7 +1224,7 @@ impl Sampler for AdaptiveSampler {
                 trace_state: Default::default(),
             };
         }
-        
+
         // 2. 健康检查端点低采样率
         if name.contains("/health") || name.contains("/metrics") {
             return SamplingResult {
@@ -1233,7 +1233,7 @@ impl Sampler for AdaptiveSampler {
                 trace_state: Default::default(),
             };
         }
-        
+
         // 3. 基于 TraceID 的概率采样
         let random = (trace_id.to_bytes()[0] as f64) / 255.0;
         if random < self.base_ratio {
@@ -1263,30 +1263,30 @@ use std::time::Duration;
 
 pub fn init_with_optimized_batching() {
     use opentelemetry_otlp::new_exporter;
-    
+
     let exporter = new_exporter()
         .tonic()
         .with_endpoint("http://localhost:4317")
         .build_span_exporter()
         .unwrap();
-    
+
     let batch_config = BatchConfig::default()
         // 队列大小: 越大内存占用越高,但丢失数据风险越低
         .with_max_queue_size(8192)
-        
+
         // 批量大小: 越大网络效率越高,但延迟越高
         .with_max_export_batch_size(1024)
-        
+
         // 导出间隔: 越短实时性越好,但网络开销越大
         .with_scheduled_delay(Duration::from_secs(3))
-        
+
         // 导出超时
         .with_max_export_timeout(Duration::from_secs(30));
-    
+
     let provider = TracerProvider::builder()
         .with_batch_exporter(exporter, batch_config)
         .build();
-    
+
     opentelemetry::global::set_tracer_provider(provider);
 }
 ```
@@ -1309,7 +1309,7 @@ pub fn share_large_context() {
         trace_id: Arc::new("trace_123".to_string()),
         large_payload: Arc::new(vec![0u8; 1024 * 1024]),  // 1MB
     };
-    
+
     // 克隆只增加引用计数,不拷贝数据
     let ctx2 = ctx.clone();
 }
@@ -1332,10 +1332,10 @@ use tracing::error;
 pub enum AppError {
     #[error("Database error: {0}")]
     Database(String),
-    
+
     #[error("HTTP client error: {0}")]
     HttpClient(String),
-    
+
     #[error("Business logic error: {0}")]
     Business(String),
 }
@@ -1358,9 +1358,9 @@ where
             span.set_status(Status::error(format!("{}", e)));
             span.set_attribute(opentelemetry::KeyValue::new("error", true));
             span.set_attribute(opentelemetry::KeyValue::new("error.message", format!("{}", e)));
-            
+
             error!(error = %e, "Operation failed");
-            
+
             Err(e)
         }
     }
@@ -1381,12 +1381,12 @@ pub async fn graceful_shutdown() {
     signal::ctrl_c()
         .await
         .expect("Failed to listen for ctrl-c");
-    
+
     println!("🛑 Shutting down gracefully...");
-    
+
     // Flush OpenTelemetry 数据
     global::shutdown_tracer_provider();
-    
+
     println!("✅ Shutdown complete");
 }
 ```
@@ -1521,21 +1521,21 @@ pub fn init_telemetry(
         KeyValue::new("service.name", service_name.to_string()),
         KeyValue::new("service.version", env!("CARGO_PKG_VERSION")),
     ]);
-    
+
     let exporter = opentelemetry_otlp::new_exporter()
         .tonic()
         .with_endpoint(otlp_endpoint)
         .with_timeout(Duration::from_secs(5))
         .build_span_exporter()?;
-    
+
     let provider = trace::TracerProvider::builder()
         .with_batch_exporter(exporter, BatchConfig::default())
         .with_resource(resource)
         .with_sampler(Sampler::ParentBased(Box::new(Sampler::TraceIdRatioBased(0.1))))
         .build();
-    
+
     global::set_tracer_provider(provider);
-    
+
     Ok(TelemetryGuard)
 }
 ```
@@ -1549,7 +1549,7 @@ pub fn init_telemetry(
 async fn main() {
     // 轻量级初始化
     let _guard = init_lightweight_telemetry();
-    
+
     // 采集系统指标
     loop {
         collect_system_metrics().await;
@@ -1566,13 +1566,13 @@ fn init_lightweight_telemetry() -> impl Drop {
 
 async fn collect_system_metrics() {
     use opentelemetry::global;
-    
+
     let meter = global::meter("edge-agent");
-    
+
     // CPU 使用率
     let cpu_gauge = meter.f64_gauge("system.cpu.usage").init();
     cpu_gauge.record(get_cpu_usage(), &[]);
-    
+
     // 内存使用
     let mem_gauge = meter.u64_gauge("system.memory.usage").init();
     mem_gauge.record(get_memory_usage(), &[]);
@@ -1595,10 +1595,10 @@ fn get_memory_usage() -> u64 {
 
 ### Rust + OpenTelemetry 优势
 
-✅ **性能**: 比 Go 快 2-5 倍,内存占用少 70%  
-✅ **安全**: 编译期保证内存安全和并发安全  
-✅ **适用场景**: 高性能 Collector、边缘计算、嵌入式、WebAssembly  
-✅ **生态**: 快速发展,主流云厂商采用  
+✅ **性能**: 比 Go 快 2-5 倍,内存占用少 70%
+✅ **安全**: 编译期保证内存安全和并发安全
+✅ **适用场景**: 高性能 Collector、边缘计算、嵌入式、WebAssembly
+✅ **生态**: 快速发展,主流云厂商采用
 
 ### 后续学习路径
 
@@ -1617,6 +1617,6 @@ fn get_memory_usage() -> u64 {
 
 ---
 
-**文档完成时间**: 2025年10月9日  
-**文档状态**: 完整版 (2,500+ 行)  
+**文档完成时间**: 2025年10月9日
+**文档状态**: 完整版 (2,500+ 行)
 **适用版本**: Rust 1.75+, OpenTelemetry Rust SDK 0.22+

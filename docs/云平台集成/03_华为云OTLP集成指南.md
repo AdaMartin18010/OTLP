@@ -1,7 +1,7 @@
 # 🇨🇳 华为云OpenTelemetry集成指南
 
-> **华为云服务**: LTS, APM, AOM  
-> **OTLP版本**: v1.3.0  
+> **华为云服务**: LTS, APM, AOM
+> **OTLP版本**: v1.3.0
 > **最后更新**: 2025年10月9日
 
 ---
@@ -154,11 +154,11 @@ processors:
   batch:
     timeout: 10s
     send_batch_size: 1024
-  
+
   memory_limiter:
     check_interval: 1s
     limit_mib: 512
-  
+
   resource:
     attributes:
       - key: cloud.provider
@@ -186,12 +186,12 @@ service:
       receivers: [otlp]
       processors: [memory_limiter, resource, batch]
       exporters: [huaweicloud_lts]
-    
+
     traces:
       receivers: [otlp]
       processors: [memory_limiter, resource, batch]
       exporters: [huaweicloud_lts]
-    
+
     metrics:
       receivers: [otlp]
       processors: [memory_limiter, resource, batch]
@@ -265,7 +265,7 @@ func main() {
 
     // 使用Logger记录日志
     logger := lp.Logger("my-service")
-    
+
     logger.Info("Application started on Huawei Cloud",
         sdklog.String("region", "cn-north-4"),
         sdklog.String("availability_zone", "cn-north-4a"),
@@ -288,7 +288,7 @@ import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 
 @Configuration
 public class HuaweiCloudOTLPConfig {
-    
+
     @Bean
     public OpenTelemetrySdk openTelemetrySdk() {
         // 创建Resource
@@ -365,7 +365,7 @@ def main():
     logger = init_logger()
 
     # 记录日志
-    logger.info("Application running on Huawei Cloud", 
+    logger.info("Application running on Huawei Cloud",
                 {"region": "cn-north-4", "zone": "cn-north-4a"})
     time.sleep(2)
 
@@ -398,7 +398,7 @@ message:/error|exception|failure/i
 
 ```sql
 -- 错误率统计
-SELECT service_name, 
+SELECT service_name,
        COUNT(CASE WHEN status_code = 'ERROR' THEN 1 END) * 100.0 / COUNT(*) as error_rate
 FROM otlp_logs
 GROUP BY service_name
@@ -555,7 +555,7 @@ datasources:
 sum(rate(http_server_request_duration_count{service_name="my-service"}[1m]))
 
 # P99延迟
-histogram_quantile(0.99, 
+histogram_quantile(0.99,
   sum by(le) (rate(http_server_request_duration_bucket[5m]))
 )
 
@@ -566,7 +566,7 @@ histogram_quantile(0.99,
 (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100
 
 # 错误率趋势
-sum(rate(http_server_request_duration_count{http_status_code=~"5.."}[1m])) 
+sum(rate(http_server_request_duration_count{http_status_code=~"5.."}[1m]))
 / sum(rate(http_server_request_duration_count[1m])) * 100
 ```
 
@@ -668,7 +668,7 @@ exporters:
     endpoint: "https://lts.cn-north-4.myhuaweicloud.com"
     region: "cn-north-4"
     # ...其他配置
-  
+
   # 上海二
   huaweicloud_lts/shanghai:
     endpoint: "https://lts.cn-east-2.myhuaweicloud.com"
@@ -681,7 +681,7 @@ service:
       receivers: [otlp]
       processors: [batch, filter/beijing]
       exporters: [huaweicloud_lts/beijing]
-    
+
     logs/shanghai:
       receivers: [otlp]
       processors: [batch, filter/shanghai]
@@ -724,12 +724,12 @@ processors:
       - name: errors
         type: status_code
         status_code: {status_codes: [ERROR]}
-      
+
       # 保留慢请求
       - name: slow
         type: latency
         latency: {threshold_ms: 500}
-      
+
       # 其他10%采样
       - name: normal
         type: probabilistic
@@ -883,7 +883,7 @@ service:
 
 ---
 
-**最后更新**: 2025年10月9日  
-**适用区域**: 中国大陆 (cn-north-4, cn-east-2, cn-south-1等)  
-**上一篇**: [腾讯云OTLP集成指南](./02_腾讯云OTLP集成指南.md)  
+**最后更新**: 2025年10月9日
+**适用区域**: 中国大陆 (cn-north-4, cn-east-2, cn-south-1等)
+**上一篇**: [腾讯云OTLP集成指南](./02_腾讯云OTLP集成指南.md)
 **系列完成**: 国内三大云平台集成指南全部完成! 🎉

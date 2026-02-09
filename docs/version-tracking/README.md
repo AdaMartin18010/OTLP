@@ -16,6 +16,41 @@
 
 ---
 
+## 📚 权威文档清单（三条内容范围）
+
+本项目内容范围对应以下权威来源，建议按检查频率定期核对版本与变更：
+
+### 协议与编码
+
+| 来源 | URL | 检查频率 | 说明 |
+|------|-----|----------|------|
+| opentelemetry-proto | <https://github.com/open-telemetry/opentelemetry-proto/releases> | 每日（已纳入 workflow） | OTLP 协议、gRPC/HTTP、Protobuf/JSON |
+| OTLP Specification | <https://opentelemetry.io/docs/specs/otlp/> | 随 proto 发布 | 与 proto 对应的规范文档 |
+
+### 语义约定
+
+| 来源 | URL | 检查频率 | 说明 |
+|------|-----|----------|------|
+| semantic-conventions | <https://github.com/open-telemetry/semantic-conventions/releases> | 每日（已纳入 workflow） | HTTP/gRPC/DB/云等语义约定 |
+
+### Metrics 数据模型与映射
+
+| 来源 | URL | 检查频率 | 说明 |
+|------|-----|----------|------|
+| OpenTelemetry Metrics 规范 | <https://opentelemetry.io/docs/specs/otel/metrics/> | 按 spec 发布 | 数据模型、聚合临时性、Exponential Histogram、pre-aggregation |
+| Prometheus ↔ OTLP | Collector 文档、Prometheus Remote Write | 按 Collector 发布 | 类型映射、remote write 配置 |
+| StatsD ↔ OTLP | Collector receiver/exporter 文档 | 按 Collector 发布 | StatsD 接收与导出 |
+
+### Logs 数据模型
+
+| 来源 | URL | 检查频率 | 说明 |
+|------|-----|----------|------|
+| OpenTelemetry Logs 规范 | <https://opentelemetry.io/docs/specs/otel/logs/> | 按 spec 发布 | LogRecord、Body、Severity、Resource、与 Trace 关联、Event |
+
+**说明**: Metrics/Logs 规范通常随 [opentelemetry-specification](https://github.com/open-telemetry/opentelemetry-specification) 或 proto 更新；若需独立版本记录，可在 `current-versions.yml` 的 `monitoring_config.additional_repos` 或本清单中补充版本号与日期。
+
+---
+
 ## 🔧 工作流程
 
 ```text
@@ -158,9 +193,9 @@ open "https://github.com/open-telemetry/opentelemetry-proto/compare/vOLD...vNEW"
 
 ```markdown
 # 文件头部
-> **标准版本**: vX.Y.Z (从vOLD更新)  
-> **发布日期**: YYYY-MM-DD  
-> **最后更新**: YYYY-MM-DD  
+> **标准版本**: vX.Y.Z (从vOLD更新)
+> **发布日期**: YYYY-MM-DD
+> **最后更新**: YYYY-MM-DD
 > **变更追踪**: vOLD → vNEW
 
 ## 🆕 vX.Y.Z 新增特性 (YYYY-MM-DD)

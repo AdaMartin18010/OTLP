@@ -125,23 +125,23 @@ def wait_for_condition(
 ) -> bool:
     """
     等待条件满足 (最终一致性验证)
-    
+
     Args:
         condition: 检查条件的函数
         config: 重试配置
         timeout: 超时时间 (秒)
-    
+
     Returns:
         条件是否满足
     """
     start_time = time.time()
     delay = config.initial_delay
-    
+
     for attempt in range(config.max_attempts):
         # 检查超时
         if time.time() - start_time > timeout:
             return False
-        
+
         # 检查条件
         try:
             if condition():
@@ -149,22 +149,22 @@ def wait_for_condition(
         except Exception as e:
             # 记录但不中断重试
             print(f"Condition check failed (attempt {attempt + 1}): {e}")
-        
+
         # 等待后重试
         time.sleep(delay)
         delay = min(delay * config.backoff_factor, config.max_delay)
-    
+
     return False
 
 # 使用示例
 def verify_trace_received(trace_id: str, backend_api: str) -> None:
     """验证追踪数据已接收"""
     import requests
-    
+
     def check_trace() -> bool:
         response = requests.get(f"{backend_api}/traces/{trace_id}", timeout=5)
         return response.status_code == 200 and response.json().get("spans")
-    
+
     assert wait_for_condition(check_trace, timeout=30.0), \
         f"Trace {trace_id} not received within 30 seconds"
 ```
@@ -331,7 +331,7 @@ class OTLPBenchmark {
     for (let i = 0; i < concurrency; i++) {
       const start = i * batchSize;
       const end = Math.min(start + batchSize, totalSpans);
-      
+
       promises.push(this.generateSpanBatch(tracer, start, end));
     }
 
@@ -365,7 +365,7 @@ class OTLPBenchmark {
   private async generateSpanBatch(tracer: any, start: number, end: number): Promise<void> {
     for (let i = start; i < end; i++) {
       const spanStartTime = performance.now();
-      
+
       const span = tracer.startSpan(`operation-${i}`, {
         attributes: {
           'span.index': i,
@@ -407,7 +407,7 @@ async function runPerformanceTest(): Promise<void> {
 
   try {
     console.log('Starting OTLP performance benchmark...');
-    
+
     const result = await benchmark.runBenchmark(10000, 20);
 
     console.log('Benchmark Results:');
@@ -610,12 +610,12 @@ log_error() {
 start_test_env() {
     log_info "Starting OTLP test environment..."
     docker-compose -f docker-compose.test.yml up -d
-    
+
     log_info "Waiting for services to be ready..."
     wait_for_service "http://localhost:13133" "OTLP Collector"
     wait_for_service "http://localhost:16686" "Jaeger"
     wait_for_service "http://localhost:9090" "Prometheus"
-    
+
     log_info "Test environment is ready!"
 }
 
@@ -632,18 +632,18 @@ wait_for_service() {
     local name=$2
     local max_attempts=30
     local attempt=1
-    
+
     while [ $attempt -le $max_attempts ]; do
         if curl -s -o /dev/null -w "%{http_code}" "$url" | grep -q "200\|404"; then
             log_info "$name is ready (attempt $attempt/$max_attempts)"
             return 0
         fi
-        
+
         log_warn "$name not ready yet (attempt $attempt/$max_attempts)"
         sleep 2
         ((attempt++))
     done
-    
+
     log_error "$name failed to start after $max_attempts attempts"
     return 1
 }
@@ -669,7 +669,7 @@ logs() {
 # 健康检查
 health_check() {
     log_info "Running health checks..."
-    
+
     # Collector health
     if curl -s http://localhost:13133 | grep -q "Server available"; then
         log_info "✅ OTLP Collector is healthy"
@@ -677,7 +677,7 @@ health_check() {
         log_error "❌ OTLP Collector is unhealthy"
         return 1
     fi
-    
+
     # Jaeger health
     if curl -s http://localhost:16686 > /dev/null; then
         log_info "✅ Jaeger is healthy"
@@ -685,7 +685,7 @@ health_check() {
         log_error "❌ Jaeger is unhealthy"
         return 1
     fi
-    
+
     # Prometheus health
     if curl -s http://localhost:9090/-/healthy | grep -q "Prometheus is Healthy"; then
         log_info "✅ Prometheus is healthy"
@@ -693,14 +693,14 @@ health_check() {
         log_error "❌ Prometheus is unhealthy"
         return 1
     fi
-    
+
     log_info "All services are healthy!"
 }
 
 # 主函数
 main() {
     local command=$1
-    
+
     case "$command" in
         start)
             start_test_env
@@ -758,43 +758,43 @@ class TraceProcessorConfig:
 
 class TraceProcessor:
     """追踪数据处理器"""
-    
+
     def __init__(self, config: TraceProcessorConfig):
         self.config = config
         self.processed_count = 0
-    
+
     def process_spans(self, spans: List[trace_pb2.Span]) -> List[trace_pb2.Span]:
         """
         处理 Span 列表
-        
+
         Args:
             spans: 原始 Span 列表
-        
+
         Returns:
             处理后的 Span 列表
-        
+
         Raises:
             ValueError: 如果 Span 无效
         """
         if not spans:
             return []
-        
+
         if len(spans) > self.config.max_spans_per_trace:
             raise ValueError(
                 f"Too many spans: {len(spans)} > {self.config.max_spans_per_trace}"
             )
-        
+
         processed = []
         for span in spans:
             if self.config.enable_validation:
                 self._validate_span(span)
-            
+
             if self._should_sample():
                 processed.append(self._enrich_span(span))
-        
+
         self.processed_count += len(processed)
         return processed
-    
+
     def _validate_span(self, span: trace_pb2.Span) -> None:
         """验证 Span 有效性"""
         if not span.trace_id:
@@ -803,12 +803,12 @@ class TraceProcessor:
             raise ValueError("Span missing span_id")
         if span.end_time_unix_nano <= span.start_time_unix_nano:
             raise ValueError("Invalid span duration")
-    
+
     def _should_sample(self) -> bool:
         """采样决策"""
         import random
         return random.random() < self.config.sample_rate
-    
+
     def _enrich_span(self, span: trace_pb2.Span) -> trace_pb2.Span:
         """丰富 Span 元数据"""
         # 添加处理时间戳
@@ -825,7 +825,7 @@ class TraceProcessor:
 
 class TestTraceProcessor:
     """TraceProcessor 单元测试套件"""
-    
+
     @pytest.fixture
     def processor(self) -> TraceProcessor:
         """测试夹具: 创建处理器实例"""
@@ -835,7 +835,7 @@ class TestTraceProcessor:
             enable_validation=True
         )
         return TraceProcessor(config)
-    
+
     @pytest.fixture
     def valid_span(self) -> trace_pb2.Span:
         """测试夹具: 创建有效的 Span"""
@@ -847,22 +847,22 @@ class TestTraceProcessor:
             start_time_unix_nano=1000000,
             end_time_unix_nano=2000000,
         )
-    
+
     def test_process_empty_spans(self, processor: TraceProcessor):
         """测试: 处理空列表"""
         result = processor.process_spans([])
         assert result == []
         assert processor.processed_count == 0
-    
+
     def test_process_valid_span(self, processor: TraceProcessor, valid_span: trace_pb2.Span):
         """测试: 处理有效 Span"""
         result = processor.process_spans([valid_span])
-        
+
         assert len(result) == 1
         assert result[0].trace_id == valid_span.trace_id
         assert result[0].span_id == valid_span.span_id
         assert processor.processed_count == 1
-        
+
         # 验证丰富的元数据
         processed_at_attr = next(
             (attr for attr in result[0].attributes if attr.key == "processed_at"),
@@ -870,53 +870,53 @@ class TestTraceProcessor:
         )
         assert processed_at_attr is not None
         assert processed_at_attr.value.int_value > 0
-    
+
     @pytest.mark.parametrize("missing_field,expected_error", [
         ("trace_id", "missing trace_id"),
         ("span_id", "missing span_id"),
     ])
     def test_validate_span_missing_fields(
-        self, 
-        processor: TraceProcessor, 
+        self,
+        processor: TraceProcessor,
         valid_span: trace_pb2.Span,
         missing_field: str,
         expected_error: str
     ):
         """测试: 验证缺失必需字段的 Span"""
         setattr(valid_span, missing_field, b'')
-        
+
         with pytest.raises(ValueError, match=expected_error):
             processor.process_spans([valid_span])
-    
+
     def test_validate_span_invalid_duration(self, processor: TraceProcessor, valid_span: trace_pb2.Span):
         """测试: 验证持续时间无效的 Span"""
         valid_span.end_time_unix_nano = valid_span.start_time_unix_nano - 1
-        
+
         with pytest.raises(ValueError, match="Invalid span duration"):
             processor.process_spans([valid_span])
-    
+
     def test_too_many_spans(self, processor: TraceProcessor, valid_span: trace_pb2.Span):
         """测试: 超过最大 Span 数量限制"""
         many_spans = [valid_span] * 101  # 超过配置的 100
-        
+
         with pytest.raises(ValueError, match="Too many spans"):
             processor.process_spans(many_spans)
-    
+
     def test_sampling(self, valid_span: trace_pb2.Span):
         """测试: 采样逻辑"""
         # 50% 采样率
         config = TraceProcessorConfig(sample_rate=0.5, enable_validation=False)
         processor = TraceProcessor(config)
-        
+
         # 生成 1000 个 Span,统计采样数量
         spans = [valid_span] * 1000
-        
+
         with patch('random.random', side_effect=[0.3, 0.7] * 500):  # 交替低于和高于 0.5
             result = processor.process_spans(spans)
-        
+
         # 应该大约有 500 个被采样 (允许 5% 误差)
         assert 475 <= len(result) <= 525
-    
+
     def test_disable_validation(self, valid_span: trace_pb2.Span):
         """测试: 禁用验证"""
         config = TraceProcessorConfig(
@@ -924,7 +924,7 @@ class TestTraceProcessor:
             enable_validation=False
         )
         processor = TraceProcessor(config)
-        
+
         # 创建无效 Span (缺失 trace_id)
         invalid_span = trace_pb2.Span(
             span_id=b'\x02' * 8,
@@ -932,21 +932,21 @@ class TestTraceProcessor:
             start_time_unix_nano=1000000,
             end_time_unix_nano=2000000,
         )
-        
+
         # 禁用验证时不应抛出异常
         result = processor.process_spans([invalid_span])
         assert len(result) == 1
-    
+
     @patch('time.time', return_value=1234567890.123456)
     def test_enrich_span_timestamp(
-        self, 
-        mock_time: Mock, 
-        processor: TraceProcessor, 
+        self,
+        mock_time: Mock,
+        processor: TraceProcessor,
         valid_span: trace_pb2.Span
     ):
         """测试: Span 丰富化添加时间戳"""
         result = processor.process_spans([valid_span])
-        
+
         processed_at_attr = next(
             attr for attr in result[0].attributes if attr.key == "processed_at"
         )
@@ -963,9 +963,9 @@ def test_processor_performance(benchmark, valid_span: trace_pb2.Span):
     )
     processor = TraceProcessor(config)
     spans = [valid_span] * 1000
-    
+
     result = benchmark(processor.process_spans, spans)
-    
+
     # 断言性能指标
     assert len(result) == 1000
     # benchmark 会自动报告执行时间统计
@@ -1012,16 +1012,16 @@ func NewTraceProcessor(exporter SpanExporter, sampleRate float64, maxSpans int) 
 
 func (p *TraceProcessor) Process(ctx context.Context, traces ptrace.Traces) error {
     spanCount := traces.SpanCount()
-    
+
     if spanCount > p.maxSpans {
         return errors.New("too many spans")
     }
-    
+
     // 采样逻辑 (简化)
     if p.sampleRate < 1.0 {
         traces = p.sample(traces)
     }
-    
+
     // 导出
     return p.exporter.Export(ctx, traces)
 }
@@ -1089,7 +1089,7 @@ func (suite *TraceProcessorTestSuite) TestProcessTooManySpans() {
     traces := ptrace.NewTraces()
     rs := traces.ResourceSpans().AppendEmpty()
     ss := rs.ScopeSpans().AppendEmpty()
-    
+
     // 创建 1001 个 Span (超过限制 1000)
     for i := 0; i < 1001; i++ {
         span := ss.Spans().AppendEmpty()
@@ -1170,7 +1170,7 @@ func TestSamplingDecision(t *testing.T) {
 func BenchmarkTraceProcessor(b *testing.B) {
     mockExporter := new(MockExporter)
     mockExporter.On("Export", mock.Anything, mock.Anything).Return(nil)
-    
+
     processor := NewTraceProcessor(mockExporter, 1.0, 10000)
     ctx := context.Background()
 
@@ -1199,7 +1199,7 @@ func BenchmarkTraceProcessor(b *testing.B) {
 func TestConcurrentProcessing(t *testing.T) {
     mockExporter := new(MockExporter)
     mockExporter.On("Export", mock.Anything, mock.Anything).Return(nil)
-    
+
     processor := NewTraceProcessor(mockExporter, 1.0, 10000)
 
     // 并发执行 100 个 goroutine
@@ -1293,7 +1293,7 @@ class BatchSpanProcessorTest {
         processor.forceFlush().join(5, TimeUnit.SECONDS);
 
         // Assert
-        verify(mockExporter, atLeastOnce()).export(argThat(spans -> 
+        verify(mockExporter, atLeastOnce()).export(argThat(spans ->
             spans.size() >= 2
         ));
     }
@@ -1331,7 +1331,7 @@ class BatchSpanProcessorTest {
         processor.forceFlush().join(5, TimeUnit.SECONDS);
 
         // Assert - 验证只导出队列大小的 Span
-        verify(mockExporter, atLeastOnce()).export(argThat(spans -> 
+        verify(mockExporter, atLeastOnce()).export(argThat(spans ->
             spans.size() <= maxQueueSize
         ));
     }
@@ -1421,7 +1421,7 @@ class BatchSpanProcessorTest {
 ```python
 # pytest.ini - Python 覆盖率配置
 [pytest]
-addopts = 
+addopts =
     --cov=src
     --cov-report=html
     --cov-report=term-missing
@@ -1431,7 +1431,7 @@ addopts =
 
 [coverage:run]
 source = src
-omit = 
+omit =
     */tests/*
     */test_*.py
     */__pycache__/*
@@ -1451,31 +1451,31 @@ on: [push, pull_request]
 jobs:
   test:
     runs-on: ubuntu-latest
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      
+
       - name: Install dependencies
         run: |
           pip install -r requirements.txt
           pip install -r requirements-test.txt
-      
+
       - name: Run tests with coverage
         run: |
           pytest --cov=src --cov-report=xml --cov-report=term
-      
+
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
         with:
           file: ./coverage.xml
           fail_ci_if_error: true
           flags: unittests
-      
+
       - name: Check coverage threshold
         run: |
           coverage report --fail-under=80
@@ -1616,7 +1616,7 @@ service:
 // TearDownSuite 清理测试环境
 func (suite *CollectorTestSuite) TearDownSuite(t *testing.T) {
     ctx := context.Background()
-    
+
     if suite.collectorContainer != nil {
         require.NoError(t, suite.collectorContainer.Terminate(ctx))
     }
@@ -1710,7 +1710,7 @@ from testcontainers.compose import DockerCompose
 
 class TestMultiComponentIntegration:
     """多组件联调集成测试"""
-    
+
     @pytest.fixture(scope="class")
     def test_environment(self):
         """启动完整的测试环境"""
@@ -1721,20 +1721,20 @@ class TestMultiComponentIntegration:
         ) as compose:
             # 等待服务启动
             time.sleep(15)
-            
+
             # 获取服务端点
             endpoints = {
                 "collector": "http://localhost:4318",
                 "jaeger": "http://localhost:16686",
                 "prometheus": "http://localhost:9090",
             }
-            
+
             # 健康检查
             for name, url in endpoints.items():
                 assert self._wait_for_service(url), f"{name} failed to start"
-            
+
             yield endpoints
-    
+
     def _wait_for_service(self, url: str, timeout: int = 60) -> bool:
         """等待服务就绪"""
         start = time.time()
@@ -1747,7 +1747,7 @@ class TestMultiComponentIntegration:
                 pass
             time.sleep(2)
         return False
-    
+
     def test_traces_pipeline(self, test_environment: Dict[str, str]):
         """测试追踪数据管道"""
         # 1. 生成测试追踪
@@ -1775,7 +1775,7 @@ class TestMultiComponentIntegration:
                 }]
             }]
         }
-        
+
         # 2. 发送到 Collector
         response = requests.post(
             f"{test_environment['collector']}/v1/traces",
@@ -1784,14 +1784,14 @@ class TestMultiComponentIntegration:
             timeout=10
         )
         assert response.status_code == 200, f"Failed to send traces: {response.text}"
-        
+
         # 3. 等待数据传输
         time.sleep(5)
-        
+
         # 4. 验证数据到达 Jaeger
         trace_id = "0102030405060708090a0b0c0d0e0f10"
         jaeger_url = f"{test_environment['jaeger']}/api/traces/{trace_id}"
-        
+
         for _ in range(10):
             response = requests.get(jaeger_url, timeout=5)
             if response.status_code == 200:
@@ -1801,14 +1801,14 @@ class TestMultiComponentIntegration:
             time.sleep(2)
         else:
             pytest.fail("Trace not found in Jaeger after 20 seconds")
-        
+
         # 5. 验证追踪内容
         assert len(trace_result["data"]) == 1
         assert trace_result["data"][0]["traceID"] == trace_id
         spans = trace_result["data"][0]["spans"]
         assert len(spans) == 1
         assert spans[0]["operationName"] == "test-span"
-    
+
     def test_metrics_pipeline(self, test_environment: Dict[str, str]):
         """测试指标数据管道"""
         # 1. 生成测试指标
@@ -1836,7 +1836,7 @@ class TestMultiComponentIntegration:
                 }]
             }]
         }
-        
+
         # 2. 发送到 Collector
         response = requests.post(
             f"{test_environment['collector']}/v1/metrics",
@@ -1845,14 +1845,14 @@ class TestMultiComponentIntegration:
             timeout=10
         )
         assert response.status_code == 200
-        
+
         # 3. 等待数据传输
         time.sleep(10)
-        
+
         # 4. 查询 Prometheus
         prom_url = f"{test_environment['prometheus']}/api/v1/query"
         params = {"query": "test_counter"}
-        
+
         for _ in range(10):
             response = requests.get(prom_url, params=params, timeout=5)
             if response.status_code == 200:
@@ -1862,7 +1862,7 @@ class TestMultiComponentIntegration:
             time.sleep(2)
         else:
             pytest.fail("Metric not found in Prometheus after 20 seconds")
-        
+
         # 5. 验证指标值
         metric_result = result["data"]["result"][0]
         assert metric_result["metric"]["__name__"] == "test_counter"
@@ -1945,21 +1945,21 @@ test.describe('E2E Distributed Tracing', () => {
 
     // 验证追踪链路
     const traceData = await fetchTraceFromJaeger(traceId);
-    
+
     expect(traceData).toBeDefined();
     expect(traceData.traceID).toBe(traceId);
-    
+
     // 验证服务拓扑
     const spans = traceData.spans;
     expect(spans.length).toBeGreaterThan(1);
-    
+
     // 验证根 Span
     const rootSpan = spans.find((s: any) => !s.references || s.references.length === 0);
     expect(rootSpan).toBeDefined();
     expect(rootSpan.operationName).toBe('e2e-test-request');
-    
+
     // 验证子 Span
-    const childSpans = spans.filter((s: any) => 
+    const childSpans = spans.filter((s: any) =>
       s.references && s.references.some((r: any) => r.spanID === spanId)
     );
     expect(childSpans.length).toBeGreaterThan(0);
@@ -1994,11 +1994,11 @@ test.describe('E2E Distributed Tracing', () => {
 
     // 验证错误追踪
     const traceData = await fetchTraceFromJaeger(traceId);
-    
-    const errorSpans = traceData.spans.filter((s: any) => 
+
+    const errorSpans = traceData.spans.filter((s: any) =>
       s.tags.some((t: any) => t.key === 'error' && t.value === true)
     );
-    
+
     expect(errorSpans.length).toBeGreaterThan(0);
   });
 });
@@ -2044,27 +2044,27 @@ class ServiceEndpoint:
 
 class TestCrossServiceTracing:
     """跨服务链路测试"""
-    
+
     @pytest.fixture(scope="class")
     def tracer_provider(self):
         """初始化追踪提供器"""
         resource = Resource(attributes={
             SERVICE_NAME: "test-orchestrator"
         })
-        
+
         provider = TracerProvider(resource=resource)
         otlp_exporter = OTLPSpanExporter(
             endpoint="http://localhost:4317",
             insecure=True
         )
-        
+
         provider.add_span_processor(BatchSpanProcessor(otlp_exporter))
         trace.set_tracer_provider(provider)
-        
+
         yield provider
-        
+
         provider.shutdown()
-    
+
     @pytest.fixture
     def service_chain(self) -> List[ServiceEndpoint]:
         """定义服务调用链"""
@@ -2073,58 +2073,58 @@ class TestCrossServiceTracing:
             ServiceEndpoint("backend", "http://localhost:8081/api/users", "fetch_users"),
             ServiceEndpoint("database", "http://localhost:5432", "SELECT users"),
         ]
-    
+
     def test_complete_service_chain(
-        self, 
+        self,
         tracer_provider: TracerProvider,
         service_chain: List[ServiceEndpoint]
     ):
         """测试完整的服务调用链"""
         tracer = trace.get_tracer(__name__)
-        
+
         with tracer.start_as_current_span("test-service-chain") as span:
             trace_id = format(span.get_span_context().trace_id, '032x')
             span_id = format(span.get_span_context().span_id, '016x')
-            
+
             # 构造 W3C Trace Context header
             traceparent = f"00-{trace_id}-{span_id}-01"
-            
+
             # 调用第一个服务 (frontend)
             response = requests.get(
                 service_chain[0].url,
                 headers={"traceparent": traceparent},
                 timeout=10
             )
-            
+
             assert response.status_code == 200, f"Frontend request failed: {response.text}"
-            
+
             # 添加自定义属性
             span.set_attribute("test.chain_length", len(service_chain))
             span.set_attribute("test.frontend_response_time", response.elapsed.total_seconds())
-        
+
         # 刷新追踪数据
         tracer_provider.force_flush()
-        
+
         # 等待数据传输
         time.sleep(5)
-        
+
         # 验证完整链路
         trace_data = self._fetch_trace_from_backend(trace_id)
-        
+
         assert trace_data is not None, f"Trace {trace_id} not found"
         assert len(trace_data["spans"]) >= len(service_chain), \
             f"Expected at least {len(service_chain)} spans, got {len(trace_data['spans'])}"
-        
+
         # 验证每个服务的 Span
         span_operations = {span["operationName"] for span in trace_data["spans"]}
-        
+
         for service in service_chain:
             assert any(service.expected_operation in op for op in span_operations), \
                 f"Missing span for service {service.name} (operation: {service.expected_operation})"
-        
+
         # 验证链路完整性 (父子关系)
         self._verify_span_relationships(trace_data["spans"])
-    
+
     def test_service_failure_propagation(
         self,
         tracer_provider: TracerProvider,
@@ -2132,12 +2132,12 @@ class TestCrossServiceTracing:
     ):
         """测试服务故障传播"""
         tracer = trace.get_tracer(__name__)
-        
+
         with tracer.start_as_current_span("test-failure-propagation") as span:
             trace_id = format(span.get_span_context().trace_id, '032x')
             span_id = format(span.get_span_context().span_id, '016x')
             traceparent = f"00-{trace_id}-{span_id}-01"
-            
+
             # 调用会失败的端点
             try:
                 response = requests.get(
@@ -2150,23 +2150,23 @@ class TestCrossServiceTracing:
             except requests.RequestException as e:
                 span.record_exception(e)
                 span.set_status(trace.Status(trace.StatusCode.ERROR, str(e)))
-        
+
         tracer_provider.force_flush()
         time.sleep(5)
-        
+
         # 验证错误标记
         trace_data = self._fetch_trace_from_backend(trace_id)
         error_spans = [
             s for s in trace_data["spans"]
             if any(tag["key"] == "error" and tag["value"] for tag in s.get("tags", []))
         ]
-        
+
         assert len(error_spans) > 0, "No error spans found in failed request"
-    
+
     def _fetch_trace_from_backend(self, trace_id: str, max_retries: int = 10) -> Dict:
         """从后端获取追踪数据"""
         jaeger_url = f"http://localhost:16686/api/traces/{trace_id}"
-        
+
         for attempt in range(max_retries):
             try:
                 response = requests.get(jaeger_url, timeout=5)
@@ -2176,15 +2176,15 @@ class TestCrossServiceTracing:
                         return data["data"][0]
             except requests.RequestException:
                 pass
-            
+
             time.sleep(2)
-        
+
         return None
-    
+
     def _verify_span_relationships(self, spans: List[Dict]) -> None:
         """验证 Span 父子关系完整性"""
         span_map = {span["spanID"]: span for span in spans}
-        
+
         for span in spans:
             # 检查父 Span 引用
             if span.get("references"):
@@ -2230,18 +2230,18 @@ const OTLP_ENDPOINT = __ENV.OTLP_ENDPOINT || 'http://localhost:4318/v1/traces';
 
 // 生成测试追踪数据
 function generateTraceData() {
-  const traceId = Array.from({ length: 32 }, () => 
+  const traceId = Array.from({ length: 32 }, () =>
     Math.floor(Math.random() * 16).toString(16)
   ).join('');
-  
-  const spanId = Array.from({ length: 16 }, () => 
+
+  const spanId = Array.from({ length: 16 }, () =>
     Math.floor(Math.random() * 16).toString(16)
   ).join('');
-  
+
   const startTime = Date.now() * 1000000;  // 纳秒
   const duration = Math.random() * 100 + 50;  // 50-150ms
   const endTime = startTime + (duration * 1000000);
-  
+
   return {
     resourceSpans: [{
       resource: {
@@ -2276,30 +2276,30 @@ function generateTraceData() {
 // 主测试场景
 export default function () {
   const traceData = generateTraceData();
-  
+
   const payload = JSON.stringify(traceData);
   const params = {
     headers: {
       'Content-Type': 'application/json',
     },
   };
-  
+
   // 发送追踪数据
   const startTime = Date.now();
   const response = http.post(OTLP_ENDPOINT, payload, params);
   const duration = Date.now() - startTime;
-  
+
   // 记录指标
   traceDuration.add(duration);
-  
+
   // 检查响应
   const success = check(response, {
     'status is 200': (r) => r.status === 200,
     'response time < 500ms': (r) => r.timings.duration < 500,
   });
-  
+
   errorRate.add(!success);
-  
+
   // 模拟实际负载 (随机睡眠 100-500ms)
   sleep(Math.random() * 0.4 + 0.1);
 }
@@ -2343,7 +2343,7 @@ export function teardown(data) {
         </collectionProp>
       </elementProp>
     </TestPlan>
-    
+
     <hashTree>
       <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Trace Senders">
         <stringProp name="ThreadGroup.num_threads">100</stringProp>
@@ -2352,7 +2352,7 @@ export function teardown(data) {
         <boolProp name="ThreadGroup.scheduler">true</boolProp>
         <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
       </ThreadGroup>
-      
+
       <hashTree>
         <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Send Trace">
           <stringProp name="HTTPSampler.domain">${OTLP_HOST}</stringProp>
@@ -2389,7 +2389,7 @@ export function teardown(data) {
             </collectionProp>
           </elementProp>
         </HTTPSamplerProxy>
-        
+
         <hashTree>
           <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Headers">
             <collectionProp name="HeaderManager.headers">
@@ -2399,7 +2399,7 @@ export function teardown(data) {
               </elementProp>
             </collectionProp>
           </HeaderManager>
-          
+
           <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Status Code Assertion">
             <collectionProp name="Asserion.test_strings">
               <stringProp name="49586">200</stringProp>
@@ -2667,19 +2667,19 @@ import time
 
 class TestOTLPgRPCProtocol:
     """OTLP gRPC 协议一致性测试"""
-    
+
     @pytest.fixture(scope="class")
     def grpc_channel(self):
         """创建 gRPC 通道"""
         channel = grpc.insecure_channel('localhost:4317')
         yield channel
         channel.close()
-    
+
     @pytest.fixture(scope="class")
     def trace_service_stub(self, grpc_channel):
         """创建 TraceService stub"""
         return trace_service_pb2_grpc.TraceServiceStub(grpc_channel)
-    
+
     def create_valid_trace_request(self) -> trace_service_pb2.ExportTraceServiceRequest:
         """创建有效的追踪导出请求"""
         return trace_service_pb2.ExportTraceServiceRequest(
@@ -2728,80 +2728,80 @@ class TestOTLPgRPCProtocol:
                 )
             ]
         )
-    
+
     def test_export_valid_trace(self, trace_service_stub):
         """测试: 导出有效追踪"""
         request = self.create_valid_trace_request()
-        
+
         try:
             response = trace_service_stub.Export(request, timeout=10)
-            
+
             # 验证响应类型
             assert isinstance(response, trace_service_pb2.ExportTraceServiceResponse)
-            
+
             # 验证 PartialSuccess (如果存在)
             if response.HasField('partial_success'):
                 assert response.partial_success.rejected_spans == 0, \
                     f"Unexpected rejected spans: {response.partial_success.error_message}"
-            
+
         except grpc.RpcError as e:
             pytest.fail(f"gRPC export failed: {e.code()} - {e.details()}")
-    
+
     def test_empty_request(self, trace_service_stub):
         """测试: 空请求"""
         request = trace_service_pb2.ExportTraceServiceRequest()
-        
+
         # 空请求应该被接受 (根据 OTLP 规范)
         response = trace_service_stub.Export(request, timeout=10)
         assert isinstance(response, trace_service_pb2.ExportTraceServiceResponse)
-    
+
     def test_invalid_trace_id(self, trace_service_stub):
         """测试: 无效的 trace_id (长度不正确)"""
         request = self.create_valid_trace_request()
         # 设置无效的 trace_id (不是 16 字节)
         request.resource_spans[0].scope_spans[0].spans[0].trace_id = b'\x01' * 8  # 只有 8 字节
-        
+
         try:
             response = trace_service_stub.Export(request, timeout=10)
-            
+
             # 某些实现可能拒绝,某些可能接受但标记为部分成功
             if response.HasField('partial_success'):
                 assert response.partial_success.rejected_spans > 0
-            
+
         except grpc.RpcError as e:
             # 预期可能失败 (根据实现)
             assert e.code() == grpc.StatusCode.INVALID_ARGUMENT
-    
+
     def test_compression_support(self, grpc_channel):
         """测试: gRPC 压缩支持"""
         stub = trace_service_pb2_grpc.TraceServiceStub(grpc_channel)
         request = self.create_valid_trace_request()
-        
+
         # 测试 gzip 压缩
         response = stub.Export(
             request,
             compression=grpc.Compression.Gzip,
             timeout=10
         )
-        
+
         assert isinstance(response, trace_service_pb2.ExportTraceServiceResponse)
-    
+
     def test_metadata_propagation(self, trace_service_stub):
         """测试: 元数据传播"""
         request = self.create_valid_trace_request()
-        
+
         metadata = (
             ('x-custom-header', 'test-value'),
             ('authorization', 'Bearer test-token'),
         )
-        
+
         response = trace_service_stub.Export(request, metadata=metadata, timeout=10)
         assert isinstance(response, trace_service_pb2.ExportTraceServiceResponse)
-    
+
     def test_timeout_handling(self, trace_service_stub):
         """测试: 超时处理"""
         request = self.create_valid_trace_request()
-        
+
         try:
             # 设置极短的超时
             response = trace_service_stub.Export(request, timeout=0.001)
@@ -2810,25 +2810,25 @@ class TestOTLPgRPCProtocol:
         except grpc.RpcError as e:
             # 预期超时
             assert e.code() == grpc.StatusCode.DEADLINE_EXCEEDED
-    
+
     def test_concurrent_exports(self, trace_service_stub):
         """测试: 并发导出"""
         import concurrent.futures
-        
+
         requests = [self.create_valid_trace_request() for _ in range(100)]
-        
+
         with concurrent.futures.ThreadPoolExecutor(max_workers=20) as executor:
             futures = [
                 executor.submit(trace_service_stub.Export, req, timeout=10)
                 for req in requests
             ]
-            
+
             results = [future.result() for future in concurrent.futures.as_completed(futures)]
-        
+
         # 所有请求都应该成功
         assert len(results) == 100
         assert all(isinstance(r, trace_service_pb2.ExportTraceServiceResponse) for r in results)
-    
+
     def test_large_payload(self, trace_service_stub):
         """测试: 大负载 (1000 spans)"""
         request = trace_service_pb2.ExportTraceServiceRequest(
@@ -2860,7 +2860,7 @@ class TestOTLPgRPCProtocol:
                 )
             ]
         )
-        
+
         response = trace_service_stub.Export(request, timeout=30)
         assert isinstance(response, trace_service_pb2.ExportTraceServiceResponse)
 
@@ -2876,9 +2876,9 @@ from typing import Dict, Any
 
 class TestOTLPHTTPProtocol:
     """OTLP HTTP 协议一致性测试"""
-    
+
     BASE_URL = "http://localhost:4318"
-    
+
     def create_valid_trace_json(self) -> Dict[str, Any]:
         """创建有效的追踪 JSON"""
         return {
@@ -2909,32 +2909,32 @@ class TestOTLPHTTPProtocol:
                 }]
             }]
         }
-    
+
     def test_json_content_type(self):
         """测试: application/json Content-Type"""
         data = self.create_valid_trace_json()
-        
+
         response = requests.post(
             f"{self.BASE_URL}/v1/traces",
             json=data,
             headers={"Content-Type": "application/json"},
             timeout=10
         )
-        
+
         assert response.status_code == 200, f"Unexpected status: {response.status_code} - {response.text}"
-        
+
         # 验证响应格式
         if response.text:
             response_data = response.json()
             assert isinstance(response_data, dict)
-    
+
     def test_protobuf_content_type(self):
         """测试: application/x-protobuf Content-Type"""
         from opentelemetry.proto.collector.trace.v1 import trace_service_pb2
         from opentelemetry.proto.trace.v1 import trace_pb2
         from opentelemetry.proto.common.v1 import common_pb2
         from opentelemetry.proto.resource.v1 import resource_pb2
-        
+
         request = trace_service_pb2.ExportTraceServiceRequest(
             resource_spans=[
                 trace_pb2.ResourceSpans(
@@ -2963,24 +2963,24 @@ class TestOTLPHTTPProtocol:
                 )
             ]
         )
-        
+
         response = requests.post(
             f"{self.BASE_URL}/v1/traces",
             data=request.SerializeToString(),
             headers={"Content-Type": "application/x-protobuf"},
             timeout=10
         )
-        
+
         assert response.status_code == 200
-    
+
     def test_gzip_compression(self):
         """测试: gzip 压缩"""
         import gzip
-        
+
         data = self.create_valid_trace_json()
         json_data = json.dumps(data).encode('utf-8')
         compressed_data = gzip.compress(json_data)
-        
+
         response = requests.post(
             f"{self.BASE_URL}/v1/traces",
             data=compressed_data,
@@ -2990,13 +2990,13 @@ class TestOTLPHTTPProtocol:
             },
             timeout=10
         )
-        
+
         assert response.status_code == 200
-    
+
     def test_custom_headers(self):
         """测试: 自定义 HTTP headers"""
         data = self.create_valid_trace_json()
-        
+
         response = requests.post(
             f"{self.BASE_URL}/v1/traces",
             json=data,
@@ -3007,9 +3007,9 @@ class TestOTLPHTTPProtocol:
             },
             timeout=10
         )
-        
+
         assert response.status_code == 200
-    
+
     def test_cors_headers(self):
         """测试: CORS headers"""
         # OPTIONS 预检请求
@@ -3022,20 +3022,20 @@ class TestOTLPHTTPProtocol:
             },
             timeout=10
         )
-        
+
         # 验证 CORS headers (如果支持)
         if response.status_code == 200:
             assert "Access-Control-Allow-Origin" in response.headers or \
                    response.status_code == 404  # 某些实现不支持 OPTIONS
-    
+
     def test_http_methods(self):
         """测试: 只支持 POST 方法"""
         data = self.create_valid_trace_json()
-        
+
         # GET 应该失败
         response = requests.get(f"{self.BASE_URL}/v1/traces", timeout=10)
         assert response.status_code in [404, 405]
-        
+
         # PUT 应该失败
         response = requests.put(
             f"{self.BASE_URL}/v1/traces",
@@ -3043,11 +3043,11 @@ class TestOTLPHTTPProtocol:
             timeout=10
         )
         assert response.status_code in [404, 405]
-        
+
         # DELETE 应该失败
         response = requests.delete(f"{self.BASE_URL}/v1/traces", timeout=10)
         assert response.status_code in [404, 405]
-    
+
     def test_error_responses(self):
         """测试: 错误响应格式"""
         # 发送无效 JSON
@@ -3057,25 +3057,25 @@ class TestOTLPHTTPProtocol:
             headers={"Content-Type": "application/json"},
             timeout=10
         )
-        
+
         # 应该返回 4xx 错误
         assert 400 <= response.status_code < 500
-    
+
     def test_partial_success_response(self):
         """测试: 部分成功响应"""
         # 发送包含无效数据的请求
         data = self.create_valid_trace_json()
         data["resourceSpans"][0]["scopeSpans"][0]["spans"][0]["traceId"] = "invalid"  # 无效长度
-        
+
         response = requests.post(
             f"{self.BASE_URL}/v1/traces",
             json=data,
             timeout=10
         )
-        
+
         # 可能返回 200 (部分成功) 或 400 (完全失败),取决于实现
         assert response.status_code in [200, 400]
-        
+
         if response.status_code == 200 and response.text:
             response_data = response.json()
             if "partialSuccess" in response_data:
@@ -3122,13 +3122,13 @@ class BenchmarkResult:
 
 class ThroughputBenchmark:
     """吞吐量基准测试"""
-    
+
     def __init__(self, config: BenchmarkConfig):
         self.config = config
         self.latencies: List[float] = []
         self.success_count = 0
         self.failure_count = 0
-    
+
     def generate_payload(self) -> Dict:
         """生成测试负载"""
         base_payload = {
@@ -3143,11 +3143,11 @@ class ThroughputBenchmark:
                 }]
             }]
         }
-        
+
         # 根据 payload_size 调整 span 数量
         span_counts = {"small": 1, "medium": 10, "large": 100}
         num_spans = span_counts.get(self.config.payload_size, 1)
-        
+
         for i in range(num_spans):
             span = {
                 "traceId": f"{i:032x}",
@@ -3158,15 +3158,15 @@ class ThroughputBenchmark:
                 "endTimeUnixNano": str(int((time.time() + 0.1) * 1e9)),
             }
             base_payload["resourceSpans"][0]["scopeSpans"][0]["spans"].append(span)
-        
+
         return base_payload
-    
+
     async def send_request(self, session: aiohttp.ClientSession) -> None:
         """发送单个请求"""
         payload = self.generate_payload()
-        
+
         start_time = time.perf_counter()
-        
+
         try:
             async with session.post(
                 self.config.endpoint,
@@ -3175,46 +3175,46 @@ class ThroughputBenchmark:
                 timeout=aiohttp.ClientTimeout(total=30)
             ) as response:
                 await response.read()
-                
+
                 end_time = time.perf_counter()
                 latency_ms = (end_time - start_time) * 1000
-                
+
                 self.latencies.append(latency_ms)
-                
+
                 if response.status == 200:
                     self.success_count += 1
                 else:
                     self.failure_count += 1
-        
+
         except Exception as e:
             self.failure_count += 1
             print(f"Request failed: {e}")
-    
+
     async def run_benchmark(self) -> BenchmarkResult:
         """运行基准测试"""
         print(f"Starting benchmark: {self.config.total_requests} requests with concurrency {self.config.concurrency}")
-        
+
         connector = aiohttp.TCPConnector(limit=self.config.concurrency)
         async with aiohttp.ClientSession(connector=connector) as session:
             start_time = time.time()
-            
+
             # 创建任务
             tasks = [
                 self.send_request(session)
                 for _ in range(self.config.total_requests)
             ]
-            
+
             # 执行任务 (限制并发)
             for i in range(0, len(tasks), self.config.concurrency):
                 batch = tasks[i:i + self.config.concurrency]
                 await asyncio.gather(*batch, return_exceptions=True)
-            
+
             end_time = time.time()
             total_duration = end_time - start_time
-        
+
         # 计算统计指标
         self.latencies.sort()
-        
+
         return BenchmarkResult(
             total_requests=self.config.total_requests,
             successful_requests=self.success_count,
@@ -3228,7 +3228,7 @@ class ThroughputBenchmark:
             min_latency_ms=min(self.latencies),
             max_latency_ms=max(self.latencies),
         )
-    
+
     def print_results(self, result: BenchmarkResult) -> None:
         """打印结果"""
         print("\n" + "="*60)
@@ -3256,13 +3256,13 @@ async def main():
         BenchmarkConfig(total_requests=1000, concurrency=100, payload_size="medium"),
         BenchmarkConfig(total_requests=500, concurrency=100, payload_size="large"),
     ]
-    
+
     for config in configs:
         print(f"\nRunning benchmark: concurrency={config.concurrency}, payload={config.payload_size}")
         benchmark = ThroughputBenchmark(config)
         result = await benchmark.run_benchmark()
         benchmark.print_results(result)
-        
+
         # 等待系统恢复
         await asyncio.sleep(5)
 
@@ -3294,28 +3294,28 @@ jobs:
   static-analysis:
     name: Static Analysis
     runs-on: ubuntu-latest
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      
+
       - name: Install linters
         run: |
           pip install pylint mypy black isort
-      
+
       - name: Run Black (formatting check)
         run: black --check src/
-      
+
       - name: Run isort (import sorting)
         run: isort --check-only src/
-      
+
       - name: Run Pylint
         run: pylint src/
-      
+
       - name: Run MyPy (type checking)
         run: mypy src/
 
@@ -3326,20 +3326,20 @@ jobs:
     strategy:
       matrix:
         python-version: ['3.9', '3.10', '3.11', '3.12']
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-      
+
       - name: Install dependencies
         run: |
           pip install -r requirements.txt
           pip install -r requirements-test.txt
-      
+
       - name: Run unit tests
         run: |
           pytest tests/unit \
@@ -3347,14 +3347,14 @@ jobs:
             --cov-report=xml \
             --cov-report=term \
             --junitxml=test-results/junit.xml
-      
+
       - name: Upload coverage
         uses: codecov/codecov-action@v3
         with:
           file: ./coverage.xml
           flags: unittests
           name: python-${{ matrix.python-version }}
-      
+
       - name: Upload test results
         uses: actions/upload-artifact@v3
         if: always()
@@ -3367,13 +3367,13 @@ jobs:
     name: Integration Tests
     runs-on: ubuntu-latest
     needs: [unit-tests]
-    
+
     services:
       redis:
         image: redis:7-alpine
         ports:
           - 6379:6379
-      
+
       postgres:
         image: postgres:16-alpine
         env:
@@ -3387,15 +3387,15 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      
+
       - name: Start OTLP Collector
         run: |
           docker run -d --name otel-collector \
@@ -3403,25 +3403,25 @@ jobs:
             -v $(pwd)/test-configs/collector-config.yaml:/etc/otel-collector-config.yaml \
             otel/opentelemetry-collector-contrib:${{ env.OTLP_VERSION }} \
             --config=/etc/otel-collector-config.yaml
-          
+
           # Wait for collector
           sleep 10
           curl -f http://localhost:8888/
-      
+
       - name: Start Jaeger
         run: |
           docker run -d --name jaeger \
             -p 16686:16686 -p 14250:14250 \
             -e COLLECTOR_OTLP_ENABLED=true \
             jaegertracing/all-in-one:1.52
-          
+
           sleep 5
-      
+
       - name: Install dependencies
         run: |
           pip install -r requirements.txt
           pip install -r requirements-test.txt
-      
+
       - name: Run integration tests
         env:
           OTLP_ENDPOINT: http://localhost:4318
@@ -3431,13 +3431,13 @@ jobs:
         run: |
           pytest tests/integration \
             --junitxml=test-results/integration-junit.xml
-      
+
       - name: Collect logs
         if: failure()
         run: |
           docker logs otel-collector > collector-logs.txt
           docker logs jaeger > jaeger-logs.txt
-      
+
       - name: Upload logs
         if: failure()
         uses: actions/upload-artifact@v3
@@ -3452,29 +3452,29 @@ jobs:
     name: E2E Tests
     runs-on: ubuntu-latest
     needs: [integration-tests]
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-      
+
       - name: Start test environment
         run: |
           docker-compose -f docker-compose.test.yml up -d
           sleep 20
-      
+
       - name: Install Playwright
         run: |
           npm install -D @playwright/test
           npx playwright install --with-deps
-      
+
       - name: Run E2E tests
         run: |
           npx playwright test tests/e2e/
-      
+
       - name: Upload Playwright report
         uses: actions/upload-artifact@v3
         if: always()
@@ -3487,15 +3487,15 @@ jobs:
     name: Performance Tests
     runs-on: ubuntu-latest
     needs: [integration-tests]
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Start test environment
         run: |
           docker-compose -f docker-compose.test.yml up -d
           sleep 20
-      
+
       - name: Install K6
         run: |
           sudo gpg -k
@@ -3505,19 +3505,19 @@ jobs:
             | sudo tee /etc/apt/sources.list.d/k6.list
           sudo apt-get update
           sudo apt-get install k6
-      
+
       - name: Run performance tests
         run: |
           k6 run tests/performance/performance-test.js \
             --out json=performance-results.json
-      
+
       - name: Analyze performance regression
         run: |
           python scripts/analyze_performance_regression.py \
             --current performance-results.json \
             --baseline performance-baseline.json \
             --threshold 0.10  # 10% regression threshold
-      
+
       - name: Upload performance results
         uses: actions/upload-artifact@v3
         with:
@@ -3528,10 +3528,10 @@ jobs:
   security-scan:
     name: Security Scan
     runs-on: ubuntu-latest
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Run Trivy (vulnerability scanner)
         uses: aquasecurity/trivy-action@master
         with:
@@ -3539,17 +3539,17 @@ jobs:
           scan-ref: '.'
           format: 'sarif'
           output: 'trivy-results.sarif'
-      
+
       - name: Upload Trivy results to GitHub Security
         uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: 'trivy-results.sarif'
-      
+
       - name: Run Bandit (Python security linter)
         run: |
           pip install bandit
           bandit -r src/ -f json -o bandit-results.json
-      
+
       - name: Upload Bandit results
         uses: actions/upload-artifact@v3
         with:
@@ -3562,24 +3562,24 @@ jobs:
     runs-on: ubuntu-latest
     needs: [unit-tests, integration-tests, e2e-tests, performance-tests, security-scan]
     if: always()
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Download all artifacts
         uses: actions/download-artifact@v3
-      
+
       - name: Generate unified report
         run: |
           python scripts/generate_test_report.py \
             --output test-report.html
-      
+
       - name: Upload test report
         uses: actions/upload-artifact@v3
         with:
           name: test-report
           path: test-report.html
-      
+
       - name: Comment PR with report
         if: github.event_name == 'pull_request'
         uses: actions/github-script@v7
@@ -3662,29 +3662,29 @@ class OTLPTestConfig:
 
 class OTLPTestEnvironment:
     """OTLP 测试环境管理器"""
-    
+
     def __init__(self, config: Optional[OTLPTestConfig] = None):
         self.config = config or OTLPTestConfig()
         self.docker_client = docker.from_env()
         self.containers: Dict[str, Any] = {}
         self._started = False
-    
+
     def __enter__(self):
         """进入上下文时启动测试环境"""
         self.start()
         return self
-    
+
     def __exit__(self, exc_type, exc_val, exc_tb):
         """退出上下文时清理测试环境"""
         self.cleanup()
-    
+
     def start(self) -> None:
         """启动测试环境"""
         if self._started:
             return
-        
+
         print("Starting OTLP test environment...")
-        
+
         # 启动 Jaeger
         self.containers['jaeger'] = self.docker_client.containers.run(
             self.config.jaeger_image,
@@ -3697,7 +3697,7 @@ class OTLPTestEnvironment:
             detach=True,
             remove=True,
         )
-        
+
         # 启动 Collector
         collector_config = self._generate_collector_config()
         self.containers['collector'] = self.docker_client.containers.run(
@@ -3711,17 +3711,17 @@ class OTLPTestEnvironment:
             detach=True,
             remove=True,
         )
-        
+
         # 等待服务就绪
         self._wait_for_readiness()
         self._started = True
         print("✅ Test environment ready")
-    
+
     def cleanup(self) -> None:
         """清理测试环境"""
         if not self._started:
             return
-        
+
         print("Cleaning up test environment...")
         for name, container in self.containers.items():
             try:
@@ -3729,15 +3729,15 @@ class OTLPTestEnvironment:
                 print(f"  Stopped {name}")
             except Exception as e:
                 print(f"  Error stopping {name}: {e}")
-        
+
         self.containers.clear()
         self._started = False
         print("✅ Cleanup complete")
-    
+
     def _generate_collector_config(self) -> str:
         """生成 Collector 配置"""
         jaeger_endpoint = f"{self.containers['jaeger'].name}:4317"
-        
+
         return f"""
 receivers:
   otlp:
@@ -3767,11 +3767,11 @@ service:
       processors: [batch]
       exporters: [otlp, logging]
 """
-    
+
     def _wait_for_readiness(self) -> None:
         """等待服务就绪"""
         start = time.time()
-        
+
         # 等待 Collector
         collector_ready = False
         while time.time() - start < self.config.startup_timeout:
@@ -3786,10 +3786,10 @@ service:
             except requests.RequestException:
                 pass
             time.sleep(1)
-        
+
         if not collector_ready:
             raise TimeoutError("Collector failed to start")
-        
+
         # 等待 Jaeger
         jaeger_ready = False
         while time.time() - start < self.config.startup_timeout:
@@ -3804,25 +3804,25 @@ service:
             except requests.RequestException:
                 pass
             time.sleep(1)
-        
+
         if not jaeger_ready:
             raise TimeoutError("Jaeger failed to start")
-    
+
     def create_trace_client(self, service_name: str = "test-service") -> 'OTLPTraceClient':
         """创建追踪客户端"""
         return OTLPTraceClient(
             endpoint=f"http://localhost:{self.config.collector_http_port}",
             service_name=service_name
         )
-    
+
     def verify_trace_received(
-        self, 
-        trace_id: str, 
+        self,
+        trace_id: str,
         timeout: int = 10
     ) -> bool:
         """验证追踪数据已接收"""
         jaeger_api = f"http://localhost:{self.config.jaeger_ui_port}/api/traces/{trace_id}"
-        
+
         start = time.time()
         while time.time() - start < timeout:
             try:
@@ -3834,13 +3834,13 @@ service:
             except requests.RequestException:
                 pass
             time.sleep(1)
-        
+
         return False
-    
+
     def get_trace(self, trace_id: str) -> Optional[Dict]:
         """获取追踪数据"""
         jaeger_api = f"http://localhost:{self.config.jaeger_ui_port}/api/traces/{trace_id}"
-        
+
         try:
             response = requests.get(jaeger_api, timeout=5)
             if response.status_code == 200:
@@ -3849,18 +3849,18 @@ service:
                     return data['data'][0]
         except requests.RequestException:
             pass
-        
+
         return None
 
 class OTLPTraceClient:
     """OTLP 追踪客户端 (简化版)"""
-    
+
     def __init__(self, endpoint: str, service_name: str):
         self.endpoint = f"{endpoint}/v1/traces"
         self.service_name = service_name
-    
+
     def send_trace(
-        self, 
+        self,
         operation_name: str,
         attributes: Optional[Dict[str, Any]] = None,
         duration_ms: float = 100.0
@@ -3868,14 +3868,14 @@ class OTLPTraceClient:
         """发送测试追踪"""
         trace_id = uuid.uuid4().hex
         span_id = uuid.uuid4().hex[:16]
-        
+
         start_time = int(time.time() * 1e9)
         end_time = int((time.time() + duration_ms / 1000) * 1e9)
-        
+
         span_attributes = [
             {"key": "test.type", "value": {"stringValue": "automated"}}
         ]
-        
+
         if attributes:
             for key, value in attributes.items():
                 if isinstance(value, str):
@@ -3888,7 +3888,7 @@ class OTLPTraceClient:
                         "key": key,
                         "value": {"intValue": str(value)}
                     })
-        
+
         payload = {
             "resourceSpans": [{
                 "resource": {
@@ -3909,17 +3909,17 @@ class OTLPTraceClient:
                 }]
             }]
         }
-        
+
         response = requests.post(
             self.endpoint,
             json=payload,
             headers={"Content-Type": "application/json"},
             timeout=10
         )
-        
+
         if response.status_code != 200:
             raise RuntimeError(f"Failed to send trace: {response.status_code} - {response.text}")
-        
+
         return trace_id
 
 # ===== 使用示例 =====
@@ -3929,7 +3929,7 @@ def test_otlp_framework_example():
     with OTLPTestEnvironment() as env:
         # 创建客户端
         client = env.create_trace_client(service_name="example-service")
-        
+
         # 发送追踪
         trace_id = client.send_trace(
             operation_name="example-operation",
@@ -3939,19 +3939,19 @@ def test_otlp_framework_example():
             },
             duration_ms=50.0
         )
-        
+
         print(f"Sent trace: {trace_id}")
-        
+
         # 验证接收
         assert env.verify_trace_received(trace_id, timeout=10), \
             f"Trace {trace_id} not received"
-        
+
         # 获取并验证内容
         trace_data = env.get_trace(trace_id)
         assert trace_data is not None
         assert len(trace_data['spans']) == 1
         assert trace_data['spans'][0]['operationName'] == 'example-operation'
-        
+
         print("✅ Test passed!")
 
 if __name__ == "__main__":
@@ -4047,15 +4047,15 @@ services:
       volumes:
         - ./collector-config.yaml:/etc/config.yaml
       command: ["--config=/etc/config.yaml"]
-  
+
   otel-collector-2:
     image: otel/opentelemetry-collector-contrib:0.108.0
     <<: *collector-common
-  
+
   otel-collector-3:
     image: otel/opentelemetry-collector-contrib:0.108.0
     <<: *collector-common
-  
+
   # 负载均衡器
   nginx-lb:
     image: nginx:alpine
@@ -4087,11 +4087,11 @@ from typing import Dict, Any
 
 class RealisticTraceGenerator:
     """生成更真实的测试追踪数据"""
-    
+
     def generate_realistic_span(self) -> Dict[str, Any]:
         """生成真实的 Span 数据"""
         span = self._base_span()
-        
+
         # 随机添加真实场景的复杂性
         scenarios = [
             self._add_error_scenario,
@@ -4100,13 +4100,13 @@ class RealisticTraceGenerator:
             self._add_unicode_characters,
             self._add_large_events,
         ]
-        
+
         # 20% 概率触发特殊场景
         if random.random() < 0.2:
             random.choice(scenarios)(span)
-        
+
         return span
-    
+
     def _base_span(self) -> Dict[str, Any]:
         """基础 Span"""
         return {
@@ -4122,7 +4122,7 @@ class RealisticTraceGenerator:
             "startTimeUnixNano": str(int(time.time() * 1e9)),
             "endTimeUnixNano": str(int((time.time() + random.uniform(0.01, 2.0)) * 1e9)),
         }
-    
+
     def _add_error_scenario(self, span: Dict[str, Any]) -> None:
         """添加错误场景"""
         span["status"] = {
@@ -4142,7 +4142,7 @@ class RealisticTraceGenerator:
                 {"key": "exception.stacktrace", "value": {"stringValue": self._generate_stacktrace()}},
             ]
         }]
-    
+
     def _add_unicode_characters(self, span: Dict[str, Any]) -> None:
         """添加 Unicode 字符 (测试编码处理)"""
         span["name"] = "用户查询 🔍"
@@ -4150,18 +4150,18 @@ class RealisticTraceGenerator:
             {"key": "user.name", "value": {"stringValue": "张三"}},
             {"key": "emoji", "value": {"stringValue": "👍😀🚀"}},
         ]
-    
+
     def _add_many_attributes(self, span: Dict[str, Any]) -> None:
         """添加大量属性 (测试容量限制)"""
         span["attributes"] = [
             {"key": f"attr_{i}", "value": {"stringValue": f"value_{i}"}}
             for i in range(100)
         ]
-    
+
     def _random_hex(self, length: int) -> str:
         """生成随机十六进制字符串"""
         return ''.join(random.choices('0123456789abcdef', k=length))
-    
+
     def _generate_stacktrace(self) -> str:
         """生成模拟堆栈跟踪"""
         return "\n".join([
@@ -4186,19 +4186,19 @@ from typing import Generator
 
 class TestWithProperIsolation:
     """测试隔离最佳实践"""
-    
+
     @pytest.fixture(autouse=True)
     def setup_and_teardown(self) -> Generator:
         """每个测试前后自动清理"""
         # Setup: 创建隔离的测试数据
         self.test_id = uuid.uuid4().hex
         self.trace_ids = []
-        
+
         yield
-        
+
         # Teardown: 清理测试数据
         self._cleanup_test_data()
-    
+
     def _cleanup_test_data(self) -> None:
         """清理测试数据"""
         for trace_id in self.trace_ids:
@@ -4207,13 +4207,13 @@ class TestWithProperIsolation:
                 requests.delete(f"http://backend/traces/{trace_id}")
             except:
                 pass
-    
+
     def test_isolated_1(self):
         """隔离的测试 1"""
         trace_id = self._send_test_trace(f"test-1-{self.test_id}")
         self.trace_ids.append(trace_id)
         # ... 测试逻辑 ...
-    
+
     def test_isolated_2(self):
         """隔离的测试 2"""
         trace_id = self._send_test_trace(f"test-2-{self.test_id}")
@@ -4345,6 +4345,6 @@ class TestWithProperIsolation:
 
 ---
 
-**文档版本**: v1.0.0  
-**最后更新**: 2025-10-09  
+**文档版本**: v1.0.0
+**最后更新**: 2025-10-09
 **贡献者**: OTLP 测试框架工作组

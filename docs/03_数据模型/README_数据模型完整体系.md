@@ -8,6 +8,58 @@
 
 ---
 
+## 本项目内容范围（三条范围）
+
+本仓库文档围绕以下三条内容范围组织，数据模型部分对应 **Metrics** 与 **Logs** 两条：
+
+| 范围 | 定义要点 | 本目录对应入口 |
+|------|----------|----------------|
+| **OpenTelemetry OTLP** | trace/metric/log 传输、序列化（gRPC/HTTP）、语义约定 | 见 [01_OTLP核心协议](../01_OTLP核心协议/)、[02_Semantic_Conventions](../02_Semantic_Conventions/) |
+| **OTLP Metrics Data Model** | 支持 pre-aggregated 时序、与 Prometheus/StatsD 双向映射 | [02_Metrics数据模型](./02_Metrics数据模型/)、[03_Pre-aggregation与Prometheus_StatsD映射](./02_Metrics数据模型/03_Pre-aggregation与Prometheus_StatsD映射.md) |
+| **OTLP Logs Data Model** | 统一日志结构（Event、属性、资源）、多种日志格式无歧义映射 | [03_Logs数据模型](./03_Logs数据模型/)、[03_统一结构与多格式映射](./03_Logs数据模型/03_统一结构与多格式映射.md) |
+
+范围与权威来源的对齐及缺口见 [00_范围-权威对齐矩阵](../🔬_批判性评价与持续改进计划/00_范围-权威对齐矩阵.md)。
+
+**本模块思维表征**：数据模型（Traces/Metrics/Logs）的思维导图、多维矩阵、定理/公理推理树、决策树见 [📊 多维思维表征体系 §9 按内容范围](../../📊_多维思维表征体系_2025.md#9-按内容范围otlp--metrics--logs的思维表征) 与 [§10 按文档模块索引](../../📊_多维思维表征体系_2025.md#10-按文档模块的思维表征索引)（03_数据模型行）。
+
+**三条范围（OTLP / Metrics / Logs）思维导图**（本目录内嵌）：
+
+```mermaid
+mindmap
+  root((数据模型<br/>完整体系))
+    OTLP协议范围
+      传输与序列化
+        gRPC_HTTP
+        Protobuf_JSON
+      语义约定
+        HTTP_gRPC_数据库
+        消息队列_云_FaaS
+    Metrics数据模型
+      时序与聚合
+        Counter_Gauge
+        Histogram_Summary
+      Pre_aggregation
+        Prometheus_StatsD映射
+      基数控制
+    Logs数据模型
+      LogRecord结构
+        时间戳_Severity_Body
+        Attributes_TraceContext
+      统一结构与多格式映射
+        结构化_传统_Syslog
+```
+
+**三大信号对比矩阵**（数据模型视角）：
+
+| 维度 | Traces | Metrics | Logs |
+|------|--------|---------|------|
+| 数据单元 | Span / SpanContext | 数据点 / 时序 | LogRecord |
+| 时间语义 | 请求/操作级别 | 时间序列聚合 | 事件级别 |
+| 关联方式 | TraceId/SpanId | 标签/Resource | TraceContext |
+| 本目录入口 | [01_Traces数据模型](./01_Traces数据模型/) | [02_Metrics数据模型](./02_Metrics数据模型/) | [03_Logs数据模型](./03_Logs数据模型/) |
+
+---
+
 ## 📋 文档概览
 
 ### 核心文档列表

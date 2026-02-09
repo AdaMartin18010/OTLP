@@ -2,8 +2,8 @@
 
 ## The World's First Comprehensive Formal Verification Framework for OpenTelemetry Protocol
 
-> **Status**: Production-Ready | **Rating**: 9.7/10 (Excellent+)  
-> **Target**: ICSE 2026 | **Scale**: 9.3M Production Traces Verified  
+> **Status**: Production-Ready | **Rating**: 9.7/10 (Excellent+)
+> **Target**: ICSE 2026 | **Scale**: 9.3M Production Traces Verified
 > **Open Source**: Coming Soon | **License**: MIT
 
 ---
@@ -611,12 +611,12 @@ cd core && cargo build --release
 
 ### For Enterprises
 
-📧 Contact us for a personalized demo:  
+📧 Contact us for a personalized demo:
 **[demo@otlp-formal.org]**
 
 ### For Researchers
 
-📄 Request access to our dataset:  
+📄 Request access to our dataset:
 **[research@otlp-formal.org]**
 
 ---
@@ -657,17 +657,17 @@ SOFTWARE.
 
 The OTLP Formal Verification Framework is more than just a tool—it's a paradigm shift in how we ensure correctness in distributed systems. Join us in making observability reliable, verifiable, and trustworthy.
 
-🌟 **Star us on GitHub**  
-🐦 **Follow us on Twitter**  
-💬 **Join our Discord**  
+🌟 **Star us on GitHub**
+🐦 **Follow us on Twitter**
+💬 **Join our Discord**
 📧 **Subscribe to our newsletter**
 
 ---
 
 **Made with ❤️ by the OTLP Formal Verification Team**:
 
-**Version**: 1.0.0  
-**Last Updated**: October 26, 2025  
+**Version**: 1.0.0
+**Last Updated**: October 26, 2025
 **Status**: Production Ready 🚀
 
 ---

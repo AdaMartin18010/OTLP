@@ -1,9 +1,9 @@
 # 📊 Profiles 性能分析完整指南 - 连续性能剖析与 OTLP 集成
 
-> **文档版本**: v1.0  
-> **创建日期**: 2025年10月9日  
-> **文档类型**: P1 优先级 - Profiles 信号深度指南  
-> **预估篇幅**: 2,500+ 行  
+> **文档版本**: v1.0
+> **创建日期**: 2025年10月9日
+> **文档类型**: P1 优先级 - Profiles 信号深度指南
+> **预估篇幅**: 2,500+ 行
 > **目标**: 掌握 Continuous Profiling 与 OTLP Profiles 信号
 
 ---
@@ -1915,11 +1915,11 @@ func slowOperation(ctx context.Context) {
     // 采集这个 Span 的 CPU Profile
     var buf bytes.Buffer
     pprof.StartCPUProfile(&buf)
-    
+
     // 执行耗时操作
     time.Sleep(2 * time.Second)
     heavyComputation()
-    
+
     pprof.StopCPUProfile()
 
     // 将 Profile 与 Span 关联
@@ -2297,7 +2297,7 @@ scrape_configs:
    - 查看代码 git blame
    - 发现 2 周前添加了新的查询: SELECT * FROM order_items WHERE order_id = ?
    - 问题: N+1 查询! 每个订单都查询一次
-   
+
 2. validateOrder 函数:
    - 新增的业务逻辑
    - 包含多次数据库查询和外部 API 调用
@@ -2432,11 +2432,11 @@ ROI:
 
 ### Continuous Profiling 核心价值
 
-✅ **提前发现性能问题**: 在用户投诉之前发现  
-✅ **快速定位根因**: 从 Metrics → Traces → Profiles → 代码  
-✅ **历史数据追溯**: 回答"什么时候开始变慢的"  
-✅ **优化效果验证**: 量化优化前后的性能差异  
-✅ **成本优化**: 发现资源浪费 (CPU, 内存, 网络)  
+✅ **提前发现性能问题**: 在用户投诉之前发现
+✅ **快速定位根因**: 从 Metrics → Traces → Profiles → 代码
+✅ **历史数据追溯**: 回答"什么时候开始变慢的"
+✅ **优化效果验证**: 量化优化前后的性能差异
+✅ **成本优化**: 发现资源浪费 (CPU, 内存, 网络)
 ✅ **低开销**: <1% CPU, 可 7x24 运行
 
 ### 适用场景
@@ -2496,8 +2496,8 @@ ROI:
 
 ---
 
-**文档完成时间**: 2025年10月9日  
-**文档状态**: 完整版 (2,500+ 行)  
+**文档完成时间**: 2025年10月9日
+**文档状态**: 完整版 (2,500+ 行)
 **推荐学习时长**: 3-5 天 (含实践)
 
 ---

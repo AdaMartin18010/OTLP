@@ -3,6 +3,8 @@
 > **Collector版本**: v0.90+
 > **最后更新**: 2025年10月8日
 
+**本模块思维表征**：核心组件（SDK/Collector）的**思维导图**、**组件对比矩阵**与**选型/部署决策树**见 [📊 多维思维表征体系 §10.2 核心组件模块](../../📊_多维思维表征体系_2025.md#102-核心组件模块04_核心组件)。
+
 ---
 
 ## 目录
@@ -147,6 +149,26 @@ Pipeline = Receiver → Processor(s) → Exporter(s)
 - 可配置多个pipeline
 - 组件可复用
 
+**Collector 管线选型决策树**：
+
+```mermaid
+flowchart TD
+  A[数据进入] --> B{信号类型?}
+  B -->|Traces| C[traces pipeline]
+  B -->|Metrics| D[metrics pipeline]
+  B -->|Logs| E[logs pipeline]
+  C --> F{需采样?}
+  F -->|是| G[TailSampling/Batch]
+  F -->|否| H[Batch only]
+  G --> I[Exporter]
+  H --> I
+  D --> J[Batch/MemoryLimiter]
+  J --> I
+  E --> K[Batch]
+  K --> I
+```
+
+```text
 示例:
 traces:
   receiver → processor1 → processor2 → exporter1
@@ -155,6 +177,7 @@ traces:
 
 metrics:
   receiver → processor → exporter
+
 ```
 
 **Pipeline配置**：

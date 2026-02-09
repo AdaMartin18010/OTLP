@@ -50,6 +50,27 @@
     - [SDK文档](#sdk文档)
     - [最佳实践](#最佳实践)
 
+**Metrics 子类型思维导图**（本页内嵌）：
+
+```mermaid
+mindmap
+  root((Metrics子类型))
+    单调
+      Counter
+      UpDownCounter
+    瞬时值
+      Gauge
+    分布
+      Histogram
+      ExponentialHistogram
+      Summary
+    选型
+      计数用Counter
+      增减用UpDownCounter
+      当前值用Gauge
+      延迟用Histogram
+```
+
 ---
 
 ## 1. 概述

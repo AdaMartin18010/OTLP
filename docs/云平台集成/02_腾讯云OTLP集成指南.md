@@ -1,7 +1,7 @@
 # 🇨🇳 腾讯云OpenTelemetry集成指南
 
-> **腾讯云服务**: CLS, APM, TDMQ, TMP  
-> **OTLP版本**: v1.3.0  
+> **腾讯云服务**: CLS, APM, TDMQ, TMP
+> **OTLP版本**: v1.3.0
 > **最后更新**: 2025年10月9日
 
 ---
@@ -164,11 +164,11 @@ processors:
   batch:
     timeout: 10s
     send_batch_size: 1024
-  
+
   memory_limiter:
     check_interval: 1s
     limit_mib: 512
-  
+
   resource:
     attributes:
       - key: cloud.provider
@@ -200,12 +200,12 @@ service:
       receivers: [otlp]
       processors: [memory_limiter, resource, batch]
       exporters: [kafka/cls]
-    
+
     traces:
       receivers: [otlp]
       processors: [memory_limiter, resource, batch]
       exporters: [kafka/cls]
-    
+
     metrics:
       receivers: [otlp]
       processors: [memory_limiter, resource, batch]
@@ -299,7 +299,7 @@ func main() {
 
     // 使用Logger
     logger := lp.Logger("my-service")
-    
+
     // 记录日志
     logger.Info("Application started",
         log.String("version", "1.0.0"),
@@ -324,7 +324,7 @@ import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 
 @Configuration
 public class TencentCloudOTLPConfig {
-    
+
     @Bean
     public OpenTelemetrySdk openTelemetrySdk() {
         // 创建Resource
@@ -432,7 +432,7 @@ message: *timeout*
 
 ```sql
 -- 统计各服务的错误率
-* | SELECT service.name, 
+* | SELECT service.name,
            COUNT(CASE WHEN status.code = 'ERROR' THEN 1 END) * 100.0 / COUNT(*) as error_rate
     GROUP BY service.name
     ORDER BY error_rate DESC
@@ -441,7 +441,7 @@ message: *timeout*
 * | SELECT approx_percentile(duration, 0.99) as p99_latency
 
 -- 统计QPS
-* | SELECT date_trunc('minute', __TIMESTAMP__) as time, 
+* | SELECT date_trunc('minute', __TIMESTAMP__) as time,
            COUNT(*) / 60.0 as qps
     GROUP BY time
     ORDER BY time
@@ -610,12 +610,12 @@ datasources:
 rate(http_server_request_duration_count[1m])
 
 # P99延迟
-histogram_quantile(0.99, 
+histogram_quantile(0.99,
   rate(http_server_request_duration_bucket[5m])
 )
 
 # 错误率
-sum(rate(http_server_request_duration_count{http_status_code=~"5.."}[1m])) 
+sum(rate(http_server_request_duration_count{http_status_code=~"5.."}[1m]))
 / sum(rate(http_server_request_duration_count[1m]))
 
 # 请求量TOP 10
@@ -796,19 +796,19 @@ processors:
       - name: errors-always
         type: status_code
         status_code: {status_codes: [ERROR]}
-      
+
       # 保留慢请求 (>1s)
       - name: slow-requests
         type: latency
         latency: {threshold_ms: 1000}
-      
+
       # 重要服务100%采样
       - name: critical-services
         type: string_attribute
         string_attribute:
           key: service.name
           values: [payment-service, auth-service]
-      
+
       # 其他10%采样
       - name: probabilistic-10pct
         type: probabilistic
@@ -1031,7 +1031,7 @@ exporters:
 
 ---
 
-**最后更新**: 2025年10月9日  
-**适用区域**: 中国大陆 (ap-guangzhou, ap-shanghai, ap-beijing等)  
-**上一篇**: [阿里云OTLP集成指南](./01_阿里云OTLP集成指南.md)  
+**最后更新**: 2025年10月9日
+**适用区域**: 中国大陆 (ap-guangzhou, ap-shanghai, ap-beijing等)
+**上一篇**: [阿里云OTLP集成指南](./01_阿里云OTLP集成指南.md)
 **下一篇**: [华为云OTLP集成指南](./03_华为云OTLP集成指南.md)

@@ -1,8 +1,8 @@
 # OpenTelemetry 2025 Knowledge Consolidation and Validation Project
 
-> **Project Positioning**: Knowledge Consolidation + Formal Proof + Academic Research  
-> **Base Standard**: International 2025 Latest Standards  
-> **Document Language**: Chinese (Primary) / English (Secondary)  
+> **Project Positioning**: Knowledge Consolidation + Formal Proof + Academic Research
+> **Base Standard**: International 2025 Latest Standards
+> **Document Language**: Chinese (Primary) / English (Secondary)
 > **Last Updated**: October 17, 2025
 
 [中文版](./README.md) | **English Version**
@@ -260,11 +260,11 @@ MIT License
 
 ---
 
-**Project Status**: 🟢 Excellent (7.5/10)  
-**Recommendation**: ⭐⭐⭐⭐☆ (4.5/5)  
+**Project Status**: 🟢 Excellent (7.5/10)
+**Recommendation**: ⭐⭐⭐⭐☆ (4.5/5)
 **Target Audience**: OpenTelemetry learners, practitioners, researchers
 
 ---
 
-**Last Updated**: October 17, 2025  
+**Last Updated**: October 17, 2025
 **Maintainer**: OTLP Project Team

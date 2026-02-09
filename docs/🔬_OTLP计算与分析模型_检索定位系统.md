@@ -1,8 +1,8 @@
 # 🔬 OTLP 计算与分析模型:数据检索、定位与计算系统
 
-> **文档版本**: v1.0.0  
-> **创建日期**: 2025年10月9日  
-> **对标标准**: OTLP v1.3.0 + PostgreSQL 17 + ClickHouse 24.x + Apache Flink 1.18  
+> **文档版本**: v1.0.0
+> **创建日期**: 2025年10月9日
+> **对标标准**: OTLP v1.3.0 + PostgreSQL 17 + ClickHouse 24.x + Apache Flink 1.18
 > **理论基础**: 关系代数、数据流计算、索引理论、分布式计算模型
 
 ---
@@ -70,10 +70,10 @@
 
 1. Selection (选择, σ):
    σ_condition(Relation)
-   
+
    OTLP 应用:
    σ_(service_name='api-gateway' ∧ duration_ns>1000000000)(Spans)
-   
+
    SQL 等价:
    SELECT * FROM otlp_spans s
    JOIN otlp_resources r ON s.resource_id = r.resource_id
@@ -82,22 +82,22 @@
 
 2. Projection (投影, π):
    π_attributes(Relation)
-   
+
    OTLP 应用:
    π_(trace_id, span_id, name, duration_ns)(Spans)
-   
+
    SQL 等价:
    SELECT trace_id, span_id, name, duration_ns
    FROM otlp_spans;
 
 3. Join (连接, ⋈):
    Relation1 ⋈_condition Relation2
-   
+
    OTLP 应用 (父子 Span 连接):
    Spans ⋈_(parent.span_id = child.parent_span_id) Spans
-   
+
    SQL 等价:
-   SELECT 
+   SELECT
      parent.name AS parent_name,
      child.name AS child_name,
      child.duration_ns
@@ -107,12 +107,12 @@
 
 4. Aggregation (聚合, γ):
    γ_(grouping_attrs; aggregate_functions)(Relation)
-   
+
    OTLP 应用 (按服务统计 P99 延迟):
    γ_(service_name; PERCENTILE(0.99, duration_ns) AS p99)(Spans ⋈ Resources)
-   
+
    SQL 等价:
-   SELECT 
+   SELECT
      r.service_name,
      PERCENTILE_CONT(0.99) WITHIN GROUP (ORDER BY s.duration_ns) AS p99_latency_ns
    FROM otlp_spans s
@@ -146,7 +146,7 @@ max_durations AS (
   FROM child_spans
   GROUP BY trace_id
 )
-SELECT 
+SELECT
   cs.trace_id,
   cs.name AS slowest_child_span,
   cs.duration_ns / 1000000 AS duration_ms,
@@ -170,11 +170,11 @@ WITH RECURSIVE service_deps AS (
   JOIN otlp_resources caller_r ON caller_s.resource_id = caller_r.resource_id
   JOIN otlp_resources callee_r ON callee_s.resource_id = callee_r.resource_id
   WHERE caller_r.service_name != callee_r.service_name
-  
+
   UNION
-  
+
   -- Recursive case: 传递依赖
-  SELECT 
+  SELECT
     sd.caller,
     callee_r.service_name AS callee,
     sd.depth + 1
@@ -196,10 +196,10 @@ ORDER BY caller, shortest_path;
 -- 查询所有 HTTP 500 错误,且包含特定 user_id
 
 -- 关系代数 + 半结构化数据查询:
--- σ_(attributes @> '{"http.status_code": 500}' ∧ 
+-- σ_(attributes @> '{"http.status_code": 500}' ∧
 --    attributes->>'user.id' = '123456')(Spans)
 
-SELECT 
+SELECT
   s.trace_id,
   s.span_id,
   s.name,
@@ -284,7 +284,7 @@ CREATE INDEX idx_spans_covering_summary ON otlp_spans(
 
 -- 查询语句
 EXPLAIN (ANALYZE, BUFFERS, VERBOSE, FORMAT JSON)
-SELECT 
+SELECT
   r.service_name,
   COUNT(*) AS request_count,
   AVG(s.duration_ns) / 1000000 AS avg_latency_ms,
@@ -365,7 +365,7 @@ ORDER BY p99_latency_ms DESC;
 -- 5. 物化视图加速 (Materialized View)
 -- 对于频繁查询,可以预聚合
 CREATE MATERIALIZED VIEW otlp_service_latency_hourly AS
-SELECT 
+SELECT
   time_bucket('1 hour', to_timestamp(s.start_time_ns / 1000000000.0)) AS time_hour,
   r.service_name,
   COUNT(*) AS request_count,
@@ -389,7 +389,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- 定时任务 (使用 pg_cron)
-SELECT cron.schedule('refresh_service_latency', '0 * * * *', 
+SELECT cron.schedule('refresh_service_latency', '0 * * * *',
   'SELECT refresh_service_latency_hourly()');
 ```
 
@@ -405,18 +405,18 @@ CREATE TABLE otlp_spans_clickhouse (
   start_time DateTime64(9, 'UTC') CODEC(Delta, ZSTD(1)),
   end_time DateTime64(9, 'UTC') CODEC(Delta, ZSTD(1)),
   duration_ns UInt64 CODEC(Gorilla, ZSTD(1)),
-  
+
   -- 标识符
   trace_id FixedString(16) CODEC(ZSTD(1)),
   span_id FixedString(8) CODEC(ZSTD(1)),
   parent_span_id FixedString(8) CODEC(ZSTD(1)),
-  
+
   -- 资源维度
   service_name LowCardinality(String) CODEC(ZSTD(1)),
   service_version LowCardinality(String) CODEC(ZSTD(1)),
   deployment_environment LowCardinality(String) CODEC(ZSTD(1)),
   host_name LowCardinality(String) CODEC(ZSTD(1)),
-  
+
   -- Span 属性
   span_name String CODEC(ZSTD(1)),
   span_kind Enum8(
@@ -429,38 +429,38 @@ CREATE TABLE otlp_spans_clickhouse (
   ) CODEC(ZSTD(1)),
   status_code Enum8('UNSET' = 0, 'OK' = 1, 'ERROR' = 2) CODEC(ZSTD(1)),
   status_message String CODEC(ZSTD(1)),
-  
+
   -- 动态属性 (Map 类型)
   attributes Map(String, String) CODEC(ZSTD(1)),
-  
+
   -- 性能字段
   is_error UInt8 MATERIALIZED if(status_code = 'ERROR', 1, 0),
   is_root UInt8 MATERIALIZED if(parent_span_id = '\0\0\0\0\0\0\0\0', 1, 0),
   duration_ms Float64 MATERIALIZED duration_ns / 1000000.0
-  
+
 ) ENGINE = MergeTree()
 PARTITION BY toYYYYMMDD(start_time)  -- 按天分区
 ORDER BY (service_name, start_time, trace_id, span_id)  -- 排序键 (压缩 + 查询优化)
 TTL start_time + INTERVAL 30 DAY DELETE  -- 自动删除 30 天前的数据
-SETTINGS 
+SETTINGS
   index_granularity = 8192,
   storage_policy = 'hot_cold_storage';  -- 热冷分层存储
 
 -- 二级索引 (Data Skipping Indexes)
 -- 1. Bloom Filter 索引: 快速判断 trace_id 是否存在
-ALTER TABLE otlp_spans_clickhouse 
+ALTER TABLE otlp_spans_clickhouse
   ADD INDEX idx_trace_id_bloom trace_id TYPE bloom_filter GRANULARITY 4;
 
 -- 2. MinMax 索引: 加速数值范围查询
-ALTER TABLE otlp_spans_clickhouse 
+ALTER TABLE otlp_spans_clickhouse
   ADD INDEX idx_duration_minmax duration_ns TYPE minmax GRANULARITY 4;
 
 -- 3. Set 索引: 加速低基数列的 IN 查询
-ALTER TABLE otlp_spans_clickhouse 
+ALTER TABLE otlp_spans_clickhouse
   ADD INDEX idx_status_set status_code TYPE set(100) GRANULARITY 4;
 
 -- 物化列索引: 加速属性查询
-ALTER TABLE otlp_spans_clickhouse 
+ALTER TABLE otlp_spans_clickhouse
   ADD INDEX idx_http_status (attributes['http.status_code']) TYPE set(0) GRANULARITY 4;
 ```
 
@@ -468,7 +468,7 @@ ALTER TABLE otlp_spans_clickhouse
 
 ```sql
 -- Q1: 高性能聚合查询 (P50/P95/P99 延迟)
-SELECT 
+SELECT
   service_name,
   toStartOfHour(start_time) AS time_hour,
   count() AS request_count,
@@ -486,7 +486,7 @@ ORDER BY time_hour DESC, p99_latency_ms DESC
 LIMIT 100;
 
 -- Q2: 服务依赖关系分析 (高效 JOIN)
-SELECT 
+SELECT
   parent.service_name AS caller_service,
   child.service_name AS callee_service,
   count() AS call_count,
@@ -494,8 +494,8 @@ SELECT
   quantile(0.99)(child.duration_ms) AS p99_latency_ms,
   countIf(child.is_error = 1) AS error_count
 FROM otlp_spans_clickhouse AS child
-INNER JOIN otlp_spans_clickhouse AS parent 
-  ON child.parent_span_id = parent.span_id 
+INNER JOIN otlp_spans_clickhouse AS parent
+  ON child.parent_span_id = parent.span_id
   AND child.trace_id = parent.trace_id
 WHERE child.start_time >= now() - INTERVAL 1 HOUR
   AND parent.service_name != child.service_name
@@ -504,7 +504,7 @@ ORDER BY call_count DESC
 LIMIT 50;
 
 -- Q3: 基于 Map 类型的属性过滤
-SELECT 
+SELECT
   service_name,
   attributes['http.route'] AS http_route,
   attributes['http.method'] AS http_method,
@@ -520,7 +520,7 @@ ORDER BY p99_latency_ms DESC
 LIMIT 20;
 
 -- Q4: 窗口函数 + Trace 分析
-SELECT 
+SELECT
   trace_id,
   span_name,
   duration_ms,
@@ -548,15 +548,15 @@ WHERE start_time >= now() - INTERVAL 1 HOUR
 ORDER BY trace_id, span_seq;
 
 -- Q5: 时序分析 + 异常检测 (移动平均)
-SELECT 
+SELECT
   service_name,
   toStartOfMinute(start_time) AS time_minute,
   count() AS request_count,
   avg(duration_ms) AS avg_latency,
   -- 计算 5 分钟移动平均
   avg(avg_latency) OVER (
-    PARTITION BY service_name 
-    ORDER BY time_minute 
+    PARTITION BY service_name
+    ORDER BY time_minute
     ROWS BETWEEN 4 PRECEDING AND CURRENT ROW
   ) AS moving_avg_5min,
   -- 检测异常 (当前值 > 移动平均 * 2)
@@ -830,10 +830,10 @@ Bitmap Heap Scan on otlp_spans
 --    Bitmap1: resource_id + time 条件匹配的 Span (例如 10,000 行)
 --    Bitmap2: status_code = 2 的 Span (例如 5,000 行)
 --    Bitmap3: attributes 条件匹配的 Span (例如 8,000 行)
--- 
+--
 -- 2. 对 3 个 Bitmap 进行 AND 操作 (位与)
 --    Result Bitmap: 同时满足 3 个条件的 Span (例如 100 行)
--- 
+--
 -- 3. 按照 Bitmap 顺序回表 (Bitmap Heap Scan)
 --    优势: 顺序 I/O,而非随机 I/O (更高效)
 
@@ -861,23 +861,23 @@ Bitmap Heap Scan on otlp_spans
 
 -- 1.1 创建 tsvector 列和索引
 ALTER TABLE otlp_spans
-  ADD COLUMN name_tsv tsvector 
+  ADD COLUMN name_tsv tsvector
   GENERATED ALWAYS AS (to_tsvector('english', name)) STORED;
 
 ALTER TABLE otlp_spans
-  ADD COLUMN status_msg_tsv tsvector 
+  ADD COLUMN status_msg_tsv tsvector
   GENERATED ALWAYS AS (to_tsvector('english', COALESCE(status_message, ''))) STORED;
 
 CREATE INDEX idx_spans_name_fts ON otlp_spans USING GIN(name_tsv);
 CREATE INDEX idx_spans_status_fts ON otlp_spans USING GIN(status_msg_tsv);
 
 -- 1.2 全文搜索查询
-SELECT 
+SELECT
   span_id,
   name,
   status_message,
   ts_rank(name_tsv, query) + ts_rank(status_msg_tsv, query) AS rank
-FROM otlp_spans, 
+FROM otlp_spans,
   plainto_tsquery('english', 'connection timeout') AS query
 WHERE name_tsv @@ query OR status_msg_tsv @@ query
 ORDER BY rank DESC
@@ -897,7 +897,7 @@ CREATE INDEX idx_spans_name_trgm ON otlp_spans USING GIN(name gin_trgm_ops);
 CREATE INDEX idx_spans_status_trgm ON otlp_spans USING GIN(status_message gin_trgm_ops);
 
 -- 2.2 相似度搜索 (Fuzzy Match)
-SELECT 
+SELECT
   span_id,
   name,
   similarity(name, 'database conection') AS sim_score  -- 注意拼写错误
@@ -1010,17 +1010,17 @@ CREATE TABLE otlp_daily_service_health (
   report_date Date,
   service_name LowCardinality(String),
   deployment_environment LowCardinality(String),
-  
+
   total_requests UInt64,
   total_errors UInt64,
   error_rate_pct Float64,
-  
+
   avg_latency_ms Float64,
   p50_latency_ms Float64,
   p95_latency_ms Float64,
   p99_latency_ms Float64,
   p999_latency_ms Float64,
-  
+
   apdex_score Float64,  -- Application Performance Index
   health_score Float64  -- 综合健康度 (0-100)
 ) ENGINE = MergeTree()
@@ -1029,28 +1029,28 @@ ORDER BY (report_date, service_name, deployment_environment);
 
 -- 批量计算 (INSERT ... SELECT)
 INSERT INTO otlp_daily_service_health
-SELECT 
+SELECT
   toDate(start_time) AS report_date,
   service_name,
   deployment_environment,
-  
+
   -- 请求量和错误率
   count() AS total_requests,
   countIf(is_error = 1) AS total_errors,
   total_errors / total_requests * 100 AS error_rate_pct,
-  
+
   -- 延迟分布
   avg(duration_ms) AS avg_latency_ms,
   quantile(0.50)(duration_ms) AS p50_latency_ms,
   quantile(0.95)(duration_ms) AS p95_latency_ms,
   quantile(0.99)(duration_ms) AS p99_latency_ms,
   quantile(0.999)(duration_ms) AS p999_latency_ms,
-  
+
   -- Apdex Score (T = 500ms)
   (countIf(duration_ms <= 500) + countIf(duration_ms > 500 AND duration_ms <= 2000) * 0.5) / total_requests AS apdex_score,
-  
+
   -- Health Score = 权重组合
-  GREATEST(0, LEAST(100, 
+  GREATEST(0, LEAST(100,
     100 * (1 - error_rate_pct / 100) * 0.4 +  -- 错误率权重 40%
     100 * (1 - LEAST(1, p99_latency_ms / 5000)) * 0.3 +  -- P99 延迟权重 30%
     apdex_score * 100 * 0.3  -- Apdex 权重 30%
@@ -1087,7 +1087,7 @@ public class OTLPRealtimeAnalytics {
     public static void main(String[] args) throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         env.enableCheckpointing(5000); // 5 秒checkpoint
-        
+
         // 1. 数据源: Kafka (OTLP Collector -> Kafka)
         FlinkKafkaConsumer<Span> spanConsumer = new FlinkKafkaConsumer<>(
             "otlp-spans",
@@ -1095,7 +1095,7 @@ public class OTLPRealtimeAnalytics {
             kafkaProperties
         );
         DataStream<Span> spanStream = env.addSource(spanConsumer);
-        
+
         // 2. 流式计算: 滑动窗口 P99 延迟 (1 分钟窗口, 10 秒滑动)
         DataStream<ServiceLatency> p99Latency = spanStream
             .filter(span -> span.getKind() == SpanKind.SERVER)
@@ -1109,7 +1109,7 @@ public class OTLPRealtimeAnalytics {
                 result.requestCount,
                 result.errorCount
             ));
-        
+
         // 3. 实时告警: P99 > 阈值
         DataStream<Alert> alerts = p99Latency
             .filter(latency -> latency.getP99LatencyMs() > 1000)  // > 1 秒
@@ -1118,25 +1118,25 @@ public class OTLPRealtimeAnalytics {
                 latency.getServiceName(),
                 "High P99 latency: " + latency.getP99LatencyMs() + "ms"
             ));
-        
+
         // 4. 输出到告警系统 (Kafka, Webhooks, etc.)
         alerts.addSink(new AlertSinkFunction());
-        
+
         // 5. 持久化到时序数据库 (InfluxDB, Prometheus)
         p99Latency.addSink(new InfluxDBSinkFunction());
-        
+
         env.execute("OTLP Realtime Analytics");
     }
-    
+
     // 自定义聚合函数: 计算 P99 延迟
-    public static class LatencyAggregateFunction 
+    public static class LatencyAggregateFunction
         implements AggregateFunction<Span, LatencyAccumulator, LatencyResult> {
-        
+
         @Override
         public LatencyAccumulator createAccumulator() {
             return new LatencyAccumulator();
         }
-        
+
         @Override
         public LatencyAccumulator add(Span span, LatencyAccumulator acc) {
             acc.addLatency(span.getDurationNs() / 1_000_000.0);  // 转换为毫秒
@@ -1145,7 +1145,7 @@ public class OTLPRealtimeAnalytics {
             }
             return acc;
         }
-        
+
         @Override
         public LatencyResult getResult(LatencyAccumulator acc) {
             return new LatencyResult(
@@ -1156,7 +1156,7 @@ public class OTLPRealtimeAnalytics {
                 acc.errorCount
             );
         }
-        
+
         @Override
         public LatencyAccumulator merge(LatencyAccumulator a, LatencyAccumulator b) {
             // 合并两个累加器 (用于并行计算)
@@ -1186,8 +1186,8 @@ public class OTLPRealtimeAnalytics {
    用途: 每分钟统计请求量, 错误率
 
 2. Sliding Window (滑动窗口):
-   [0-60s] 
-       [10-70s] 
+   [0-60s]
+       [10-70s]
            [20-80s] ...
    特点: 重叠, 平滑的趋势变化
    用途: 移动平均, 异常检测
@@ -1213,9 +1213,9 @@ Watermark (水位线):
   最大事件时间: 12:00:08
   允许延迟: 5 秒
   Watermark: 12:00:08 - 5s = 12:00:03
-  
+
   含义: 时间戳 <= 12:00:03 的窗口可以触发计算
-  
+
   迟到事件处理:
     - 12:00:01 的事件在 12:00:10 到达 → 被包含 (在允许范围内)
     - 11:59:58 的事件在 12:00:10 到达 → 可选: 丢弃或发送到侧输出流
@@ -1233,25 +1233,25 @@ from pyflink.datastream.functions import ProcessWindowFunction
 
 class IncrementalP99Calculator(ProcessWindowFunction):
     """增量计算 P99 延迟 (使用 t-digest 算法)"""
-    
+
     def __init__(self):
         self.t_digest = None  # t-digest 数据结构
-    
+
     def open(self, runtime_context):
         # 初始化状态
         from tdigest import TDigest
         self.t_digest = TDigest()
-    
+
     def process(self, key, context, elements):
         # 增量更新 t-digest
         for span in elements:
             duration_ms = span.duration_ns / 1_000_000
             self.t_digest.update(duration_ms)
-        
+
         # 计算 P99
         p99_latency = self.t_digest.percentile(99)
         request_count = len(elements)
-        
+
         # 输出结果
         yield (
             key,  # service_name
@@ -1259,7 +1259,7 @@ class IncrementalP99Calculator(ProcessWindowFunction):
             p99_latency,
             request_count
         )
-    
+
     def clear(self, context):
         # 窗口结束后清理状态
         self.t_digest = TDigest()
@@ -1296,22 +1296,22 @@ Span 数据分片策略:
 
 策略 1: Hash Partitioning by TraceId
   partition = hash(trace_id) % num_partitions
-  
+
   优点:
     - 同一 Trace 的所有 Span 落到同一分区
     - 便于 Trace 级别的查询和分析
-  
+
   缺点:
     - 如果某个 Trace 特别大 (数千 Span), 可能导致分区倾斜
     - 不支持高效的时间范围查询
 
 策略 2: Range Partitioning by Time
   partition = floor(timestamp / partition_interval)
-  
+
   优点:
     - 时间范围查询高效 (直接定位分区)
     - 老数据可以归档或删除
-  
+
   缺点:
     - 同一 Trace 的 Span 可能分散在多个分区
     - Trace 级别查询需要跨分区聚合
@@ -1319,15 +1319,15 @@ Span 数据分片策略:
 策略 3: Composite Partitioning (时间 + 哈希)
   primary_partition = date(timestamp)
   secondary_partition = hash(trace_id) % sub_partitions
-  
+
   实现:
     table_name = f"otlp_spans_{date}_{hash_bucket}"
     例如: otlp_spans_2025_10_09_03
-  
+
   优点:
     - 结合两种策略的优点
     - 时间查询和 Trace 查询都较高效
-  
+
   缺点:
     - 分区数量增加 (管理复杂度)
 
@@ -1366,20 +1366,20 @@ import bisect
 
 class ConsistentHash:
     """一致性哈希环 (Consistent Hashing Ring)"""
-    
+
     def __init__(self, nodes=None, virtual_nodes=150):
         self.virtual_nodes = virtual_nodes  # 虚拟节点数量
         self.ring = {}  # 哈希环: {hash_value: node_id}
         self.sorted_keys = []  # 排序的哈希值列表
-        
+
         if nodes:
             for node in nodes:
                 self.add_node(node)
-    
+
     def _hash(self, key: str) -> int:
         """计算哈希值 (使用 MD5)"""
         return int(hashlib.md5(key.encode()).hexdigest(), 16)
-    
+
     def add_node(self, node_id: str):
         """添加节点 (创建虚拟节点)"""
         for i in range(self.virtual_nodes):
@@ -1387,7 +1387,7 @@ class ConsistentHash:
             hash_value = self._hash(virtual_key)
             self.ring[hash_value] = node_id
             bisect.insort(self.sorted_keys, hash_value)
-    
+
     def remove_node(self, node_id: str):
         """移除节点"""
         for i in range(self.virtual_nodes):
@@ -1395,18 +1395,18 @@ class ConsistentHash:
             hash_value = self._hash(virtual_key)
             del self.ring[hash_value]
             self.sorted_keys.remove(hash_value)
-    
+
     def get_node(self, trace_id: str) -> str:
         """获取 trace_id 对应的节点"""
         if not self.ring:
             return None
-        
+
         hash_value = self._hash(trace_id)
         # 顺时针查找第一个节点
         idx = bisect.bisect_right(self.sorted_keys, hash_value)
         if idx == len(self.sorted_keys):
             idx = 0  # 环形结构
-        
+
         return self.ring[self.sorted_keys[idx]]
 
 # 使用示例:
@@ -1452,7 +1452,7 @@ WHERE trace_id = unhex('0af7651916cd43dd8448eb211c80319c');
 -- 查询时间: ~0.1-0.5 ms
 
 -- 查询 2: 聚合查询 (所有分片)
-SELECT 
+SELECT
   service_name,
   count() AS request_count,
   quantile(0.99)(duration_ms) AS p99_latency_ms
@@ -1466,7 +1466,7 @@ GROUP BY service_name;
 --   FROM otlp_spans_local
 --   WHERE ...
 --   GROUP BY service_name
--- 
+--
 -- Reduce 阶段 (Coordinator 节点):
 --   合并各分片的部分结果:
 --   - count(): 直接求和
@@ -1480,12 +1480,12 @@ GROUP BY service_name;
 
 -- 1. 本地聚合 (Local Aggregation)
 -- 减少网络传输数据量
-SELECT 
+SELECT
   service_name,
   sum(local_count) AS total_count,
   quantileMerge(0.99)(local_p99) AS global_p99
 FROM (
-  SELECT 
+  SELECT
     service_name,
     count() AS local_count,
     quantileState(0.99)(duration_ms) AS local_p99
@@ -1519,7 +1519,7 @@ SET query_cache_ttl = 300;  -- 缓存 5 分钟
 -- 索引性能分析工具 (PostgreSQL)
 
 -- 1. 查看索引使用情况
-SELECT 
+SELECT
   schemaname,
   tablename,
   indexname,
@@ -1538,7 +1538,7 @@ ORDER BY idx_scan DESC;
 -- index_size > 10GB → 大索引 (评估是否必要)
 
 -- 2. 识别缺失的索引
-SELECT 
+SELECT
   schemaname,
   tablename,
   seq_scan,  -- 顺序扫描次数
@@ -1555,16 +1555,16 @@ ORDER BY seq_tup_read DESC;
 -- seq_scan > idx_scan 且 avg_seq_read > 1000 → 可能需要添加索引
 
 -- 3. 索引膨胀检测
-SELECT 
+SELECT
   schemaname,
   tablename,
   indexname,
   pg_size_pretty(pg_relation_size(indexrelid)) AS index_size,
   pg_size_pretty(
-    pg_relation_size(indexrelid) - 
+    pg_relation_size(indexrelid) -
     pg_relation_size(indexrelid, 'main')
   ) AS bloat_size,
-  (pg_relation_size(indexrelid) - pg_relation_size(indexrelid, 'main'))::float / 
+  (pg_relation_size(indexrelid) - pg_relation_size(indexrelid, 'main'))::float /
     NULLIF(pg_relation_size(indexrelid), 0) * 100 AS bloat_pct
 FROM pg_stat_user_indexes
 WHERE schemaname = 'public' AND tablename = 'otlp_spans'
@@ -1589,7 +1589,7 @@ VACUUM (ANALYZE, VERBOSE) otlp_spans;
 
 -- 原始查询 (慢):
 EXPLAIN (ANALYZE, BUFFERS)
-SELECT 
+SELECT
   r.service_name,
   COUNT(*) AS error_count,
   STRING_AGG(s.status_message, ', ' ORDER BY s.start_time_ns DESC) AS error_messages
@@ -1607,17 +1607,17 @@ ORDER BY error_count DESC;
 
 -- 优化后查询:
 EXPLAIN (ANALYZE, BUFFERS)
-SELECT 
+SELECT
   r.service_name,
   COUNT(*) AS error_count,
   -- 只聚合前 10 条错误消息 (减少排序开销)
   STRING_AGG(
-    s.status_message, 
-    ', ' 
+    s.status_message,
+    ', '
     ORDER BY s.start_time_ns DESC
   ) FILTER (WHERE row_num <= 10) AS sample_error_messages
 FROM (
-  SELECT 
+  SELECT
     s.resource_id,
     s.status_message,
     s.start_time_ns,
@@ -1633,7 +1633,7 @@ ORDER BY error_count DESC;
 
 -- 进一步优化: 使用物化视图
 CREATE MATERIALIZED VIEW otlp_recent_errors AS
-SELECT 
+SELECT
   s.resource_id,
   r.service_name,
   s.status_message,
@@ -1647,7 +1647,7 @@ WHERE s.status_code = 2
 CREATE INDEX idx_mv_recent_errors ON otlp_recent_errors(service_name, row_num);
 
 -- 简化查询:
-SELECT 
+SELECT
   service_name,
   COUNT(*) AS error_count,
   STRING_AGG(status_message, ', ' ORDER BY start_time_ns DESC) AS sample_errors
@@ -1727,7 +1727,7 @@ ALTER TABLE otlp_spans_clickhouse
 
 ALTER TABLE otlp_spans_clickhouse
   ADD PROJECTION proj_service_latency (
-    SELECT 
+    SELECT
       service_name,
       toStartOfHour(start_time) AS time_hour,
       count() AS request_count,
@@ -1740,12 +1740,12 @@ ALTER TABLE otlp_spans_clickhouse
 -- 压缩效果对比:
 -- ============
 -- 原始数据: 1 TB (10 亿 Span, ~1KB/span)
--- 
+--
 -- 无压缩: 1 TB
 -- ZSTD(1): ~200 GB (5x 压缩)
 -- Delta + ZSTD: ~100 GB (10x 压缩)
 -- LowCardinality + Gorilla + ZSTD: ~50 GB (20x 压缩)
--- 
+--
 -- 存储成本节省: **95%**
 ```
 
@@ -1805,7 +1805,7 @@ Trace 完整链路查询     | PostgreSQL + JSONB      | 关系查询, 事务支
 -- 关键性能指标 (KPIs)
 
 -- 1. 查询延迟 (P50, P95, P99)
-SELECT 
+SELECT
   query_type,
   approx_percentile(0.50, query_duration_ms) AS p50_ms,
   approx_percentile(0.95, query_duration_ms) AS p95_ms,
@@ -1817,7 +1817,7 @@ GROUP BY query_type;
 -- 目标: P95 < 100ms, P99 < 500ms
 
 -- 2. 数据摄入吞吐量
-SELECT 
+SELECT
   count(*) / 3600 AS spans_per_second,
   sum(pg_column_size(span)) / 1024 / 1024 / 3600 AS mb_per_second
 FROM otlp_spans
@@ -1826,18 +1826,18 @@ WHERE start_time_ns >= (EXTRACT(EPOCH FROM NOW() - INTERVAL '1 hour') * 10000000
 -- 目标: > 100,000 spans/sec
 
 -- 3. 索引命中率
-SELECT 
+SELECT
   sum(idx_blks_hit) / NULLIF(sum(idx_blks_hit + idx_blks_read), 0) * 100 AS index_hit_rate
 FROM pg_statio_user_indexes;
 
 -- 目标: > 95%
 
 -- 4. 表膨胀率
-SELECT 
+SELECT
   pg_size_pretty(pg_total_relation_size('otlp_spans')) AS total_size,
   pg_size_pretty(pg_relation_size('otlp_spans')) AS table_size,
   pg_size_pretty(pg_total_relation_size('otlp_spans') - pg_relation_size('otlp_spans')) AS index_size,
-  (pg_total_relation_size('otlp_spans') - pg_relation_size('otlp_spans'))::float / 
+  (pg_total_relation_size('otlp_spans') - pg_relation_size('otlp_spans'))::float /
     NULLIF(pg_relation_size('otlp_spans'), 0) * 100 AS index_overhead_pct;
 
 -- 目标: index_overhead_pct < 50%

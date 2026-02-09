@@ -36,6 +36,25 @@
   - [8. 实战案例](#8-实战案例)
   - [9. 参考资源](#9-参考资源)
 
+**Resource 属性层级思维导图**（本页内嵌）：
+
+```mermaid
+mindmap
+  root((Resource))
+    Service
+      service_name
+      service_version
+    部署与环境
+      deployment_environment
+      host_container
+    Kubernetes
+      k8s_namespace
+      k8s_pod
+    云平台
+      cloud_provider
+      region_zone
+```
+
 ---
 
 ## 1. Resource概述

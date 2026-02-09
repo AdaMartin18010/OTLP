@@ -1,11 +1,11 @@
 # 🔍 TLA+ 模型检验实战指南 - OTLP 协议形式化验证
 
-> **文档版本**: v1.0  
-> **创建日期**: 2025年10月9日  
-> **文档类型**: P1 优先级 - 形式化验证深度指南  
-> **预估篇幅**: 2,500+ 行  
-> **TLA+ 版本**: 1.8.0+  
-> **TLC Model Checker**: 1.8.0+  
+> **文档版本**: v1.0
+> **创建日期**: 2025年10月9日
+> **文档类型**: P1 优先级 - 形式化验证深度指南
+> **预估篇幅**: 2,500+ 行
+> **TLA+ 版本**: 1.8.0+
+> **TLC Model Checker**: 1.8.0+
 > **目标**: 形式化验证 OTLP 协议的正确性与安全性
 
 ---
@@ -114,7 +114,7 @@ TLA+ (Temporal Logic of Actions Plus) 是一种形式化规范语言:
 1. 状态 (State):
    - 系统在某一时刻的快照
    - 由变量集合定义
-   
+
    示例: OTLP Exporter 状态
    {
      buffer: [{span1}, {span2}, {span3}],
@@ -125,7 +125,7 @@ TLA+ (Temporal Logic of Actions Plus) 是一种形式化规范语言:
 2. 动作 (Action):
    - 从一个状态到另一个状态的转换
    - 用 UNCHANGED 表示变量不变
-   
+
    示例: Send 动作
    Send == /\ buffer /= <<>>
            /\ sending' = TRUE
@@ -137,14 +137,14 @@ TLA+ (Temporal Logic of Actions Plus) 是一种形式化规范语言:
 
 4. 不变量 (Invariant):
    - 在所有状态下都为 TRUE 的条件
-   
+
    示例: BufferBounded == Len(buffer) <= MaxSize
 
 5. 时序属性 (Temporal Property):
    - 描述系统随时间的行为
    - □ (Always): 始终满足
    - ◇ (Eventually): 最终满足
-   
+
    示例: 活性 (Liveness)
    - ◇ AckReceived: 最终会收到确认
 ```
@@ -290,7 +290,7 @@ VARIABLE count  \* 定义状态变量
 
 Init == count = 0  \* 初始状态
 
-Increment == 
+Increment ==
     /\ count < 10  \* 前置条件
     /\ count' = count + 1  \* 后置条件 (count' 表示下一状态的 count)
 
@@ -348,7 +348,7 @@ Fairness == WF_x(Inc)
 ---- MODULE OTLPExport ----
 EXTENDS Integers, Sequences, FiniteSets
 
-CONSTANTS 
+CONSTANTS
     MaxBufferSize,  \* 缓冲区最大容量
     MaxSpans,       \* 最多生成的 span 数量
     MaxRetries      \* 最大重试次数
@@ -425,7 +425,7 @@ Retry ==
 
 \* ======== 规范 ========
 
-Next == 
+Next ==
     \/ GenerateSpan
     \/ SendBatch
     \/ ReceiveAck
@@ -454,7 +454,7 @@ AckedImpliesSent == acked \subseteq sent
 \* ======== 时序属性 (Liveness) ========
 
 \* 最终所有 span 都会被确认
-EventuallyAllAcked == 
+EventuallyAllAcked ==
     <>(Cardinality(acked) = MaxSpans)
 
 \* 如果网络持续可用,则最终会发送
@@ -1088,7 +1088,7 @@ data:
     ---- MODULE OTLPExport ----
     \* ... (完整 spec) ...
     ====
-  
+
   OTLPExport.cfg: |
     SPECIFICATION Spec
     \* ... (完整配置) ...
@@ -1303,7 +1303,7 @@ type Exporter struct {
     acked       map[int]Span    // acked
     retryCount  int             // retryCount
     networkUp   bool            // networkUp
-    
+
     mu          sync.Mutex
     maxRetries  int
     maxBufferSize int
@@ -1326,15 +1326,15 @@ func NewExporter(maxBufferSize, maxRetries int) *Exporter {
 func (e *Exporter) AddSpan(span Span) error {
     e.mu.Lock()
     defer e.mu.Unlock()
-    
+
     // 前置条件: Len(buffer) < MaxBufferSize
     if len(e.buffer) >= e.maxBufferSize {
         return ErrBufferFull
     }
-    
+
     // 动作: buffer' = Append(buffer, span)
     e.buffer = append(e.buffer, span)
-    
+
     return nil
 }
 
@@ -1342,23 +1342,23 @@ func (e *Exporter) AddSpan(span Span) error {
 func (e *Exporter) SendBatch(ctx context.Context) error {
     e.mu.Lock()
     defer e.mu.Unlock()
-    
+
     // 前置条件: buffer /= <<>> /\ networkUp
     if len(e.buffer) == 0 || !e.networkUp {
         return nil
     }
-    
+
     // 动作: sent' = sent \cup {s : s \in buffer}
     for _, span := range e.buffer {
         e.sent[span.ID] = span
     }
-    
+
     // buffer' = <<>>
     e.buffer = e.buffer[:0]
-    
+
     // 实际网络发送 (TLA+ 中抽象掉了)
     go e.doSend(ctx)
-    
+
     return nil
 }
 
@@ -1366,17 +1366,17 @@ func (e *Exporter) SendBatch(ctx context.Context) error {
 func (e *Exporter) ReceiveAck() {
     e.mu.Lock()
     defer e.mu.Unlock()
-    
+
     // 前置条件: sent /= {}
     if len(e.sent) == 0 {
         return
     }
-    
+
     // 动作: acked' = sent
     for id, span := range e.sent {
         e.acked[id] = span
     }
-    
+
     // retryCount' = 0
     e.retryCount = 0
 }
@@ -1387,14 +1387,14 @@ func (e *Exporter) checkInvariants() bool {
     if len(e.buffer) > e.maxBufferSize {
         panic("Invariant violated: BufferBounded")
     }
-    
+
     // AckedImpliesSent
     for id := range e.acked {
         if _, ok := e.sent[id]; !ok {
             panic("Invariant violated: AckedImpliesSent")
         }
     }
-    
+
     return true
 }
 ```
@@ -1465,10 +1465,10 @@ java -cp tla2tools.jar pcal.trans OTLPExportPlusCal.tla
 
 ### TLA+ 核心价值
 
-✅ **设计阶段发现 bug**: 在写代码前验证正确性  
-✅ **穷尽状态空间**: 测试难以覆盖的边界情况  
-✅ **数学证明**: 证明系统不变量和活性  
-✅ **文档即规范**: TLA+ spec 是最精确的文档  
+✅ **设计阶段发现 bug**: 在写代码前验证正确性
+✅ **穷尽状态空间**: 测试难以覆盖的边界情况
+✅ **数学证明**: 证明系统不变量和活性
+✅ **文档即规范**: TLA+ spec 是最精确的文档
 ✅ **降低维护成本**: 修改设计前先验证 spec
 
 ### 适用场景
@@ -1517,9 +1517,9 @@ java -cp tla2tools.jar pcal.trans OTLPExportPlusCal.tla
 
 ---
 
-**文档完成时间**: 2025年10月9日  
-**文档状态**: 完整版 (2,500+ 行)  
-**TLA+ 版本**: 1.8.0+  
+**文档完成时间**: 2025年10月9日
+**文档状态**: 完整版 (2,500+ 行)
+**TLA+ 版本**: 1.8.0+
 **推荐学习时长**: 2-4 周 (含实践)
 
 ---

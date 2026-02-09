@@ -40,6 +40,29 @@
   - [9. 最佳实践](#9-最佳实践)
   - [10. 参考资源](#10-参考资源)
 
+**Metrics 类型与结构思维导图**（概述处）：
+
+```mermaid
+mindmap
+  root((Metrics))
+    类型
+      Counter
+      UpDownCounter
+      Histogram
+      Gauge
+    模型结构
+      ResourceMetrics
+      ScopeMetrics
+      Metric
+    DataPoint
+      NumberDataPoint
+      HistogramDataPoint
+      ExponentialHistogram
+    聚合临时性
+      Cumulative
+      Delta
+```
+
 ## 1. 什么是Metrics
 
 ### 1.1 核心概念
@@ -678,6 +701,8 @@ OTLP推荐使用Cumulative
 Delta主要用于兼容性
 ```
 
+**延伸阅读**：pre-aggregated 时序在 OTLP 中的表示方式，以及与 Prometheus、StatsD 的双向映射，见 [03_Pre-aggregation与Prometheus_StatsD映射](./03_Pre-aggregation与Prometheus_StatsD映射.md)。
+
 ---
 
 ## 6. 基数控制
@@ -927,9 +952,10 @@ func main() {
 - **Metrics Spec**: <https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/api.md>
 - **Data Model**: <https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/metrics/data-model.md>
 - **Semantic Conventions**: <https://opentelemetry.io/docs/specs/semconv/general/metrics/>
+- **Pre-aggregation 与 Prometheus/StatsD 映射**: [03_Pre-aggregation与Prometheus_StatsD映射](./03_Pre-aggregation与Prometheus_StatsD映射.md)（pre-aggregated 时序在 OTLP 中的表示、与 Prometheus/StatsD 双向映射）
 
 ---
 
 **文档状态**: ✅ 完成
 **审核状态**: 待审核
-**下一步**: [02_Counter详解.md](./02_Counter详解.md)
+**下一步**: [02_Metrics子类型详解](./02_Metrics子类型详解.md)、[03_Pre-aggregation与Prometheus_StatsD映射](./03_Pre-aggregation与Prometheus_StatsD映射.md)

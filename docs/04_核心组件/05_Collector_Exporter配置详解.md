@@ -38,6 +38,18 @@
     - [官方文档](#官方文档)
     - [核心Exporter文档](#核心exporter文档)
 
+**Exporter 选型矩阵**（本页内嵌）：
+
+| 后端 | 推荐 Exporter | 说明 |
+|------|---------------|------|
+| OTLP | otlp | 下一级 Collector 或后端 |
+| Prometheus | prometheus | 拉取式 |
+| Kafka | kafka | 消息队列 |
+| 日志/调试 | logging | 控制台 |
+| Jaeger/Zipkin/ES | 对应 exporter | 追踪后端 |
+
+**Pipeline 位置**：`Receiver → Processor → Exporter → 后端`（Exporter 为出口）。
+
 ---
 
 ## 1. 概述

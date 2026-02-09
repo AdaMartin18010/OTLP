@@ -37,6 +37,27 @@
   - [8. 最佳实践](#8-最佳实践)
   - [9. 参考资源](#9-参考资源)
 
+**Span 结构思维导图**（本页内嵌）：
+
+```mermaid
+mindmap
+  root((Span))
+    标识
+      trace_id_span_id
+      parent_span_id
+    时间
+      start_time_end_time
+      duration
+    元数据
+      name_kind
+      attributes
+    关系
+      parent_links
+    事件与状态
+      events
+      status
+```
+
 ## 1. 概念定义
 
 ### 1.1 正式定义

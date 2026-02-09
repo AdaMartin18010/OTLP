@@ -28,6 +28,22 @@
   - [8. 最佳实践](#8-最佳实践)
   - [9. 参考资源](#9-参考资源)
 
+**Baggage vs Resource vs Span Attributes 对比矩阵**（本页内嵌）：
+
+| 维度 | Baggage | Resource | Span Attributes |
+|------|---------|----------|-----------------|
+| 传播 | 跨进程随请求 | 不传播 | 随 Span |
+| 作用域 | 请求链 | 实体（服务/主机） | 单 Span |
+| 典型用途 | 业务上下文、实验标志 | 来源标识 | 操作详情 |
+
+**Baggage 传播流程简图**：
+
+```mermaid
+flowchart LR
+  A[Service A] -->|W3C Baggage 头| B[Service B]
+  B -->|继续传播| C[Service C]
+```
+
 ---
 
 ## 1. Baggage概述

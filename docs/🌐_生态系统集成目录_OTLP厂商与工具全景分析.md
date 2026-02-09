@@ -14,41 +14,41 @@ graph TB
         EBPF[eBPF 采集器]
         MESH[Service Mesh]
     end
-    
+
     subgraph "数据处理层"
         COLLECTOR[OTLP Collector]
         PROCESSOR[处理器/增强器]
         ROUTER[路由/采样]
     end
-    
+
     subgraph "存储与分析层"
         COMMERCIAL[商业平台]
         OPENSOURCE[开源平台]
         CLOUD[云托管服务]
     end
-    
+
     subgraph "可视化与告警层"
         DASHBOARD[仪表板]
         ALERT[告警系统]
         AI[AI 分析]
     end
-    
+
     SDK --> COLLECTOR
     AUTO --> COLLECTOR
     EBPF --> COLLECTOR
     MESH --> COLLECTOR
-    
+
     COLLECTOR --> PROCESSOR
     PROCESSOR --> ROUTER
-    
+
     ROUTER --> COMMERCIAL
     ROUTER --> OPENSOURCE
     ROUTER --> CLOUD
-    
+
     COMMERCIAL --> DASHBOARD
     OPENSOURCE --> DASHBOARD
     CLOUD --> DASHBOARD
-    
+
     DASHBOARD --> ALERT
     ALERT --> AI
 ```
@@ -112,32 +112,32 @@ graph TB
 ```mermaid
 graph TD
     START[开始选型]
-    
+
     Q1{预算限制?}
     Q2{数据量级?}
     Q3{团队规模?}
     Q4{合规要求?}
     Q5{定制化需求?}
-    
+
     OPENSOURCE[开源自托管]
     COMMERCIAL[商业 SaaS]
     CLOUD[云原生服务]
     HYBRID[混合方案]
-    
+
     START --> Q1
-    
+
     Q1 -->|严格| OPENSOURCE
     Q1 -->|宽裕| Q2
-    
+
     Q2 -->|< 1TB/day| COMMERCIAL
     Q2 -->|> 1TB/day| Q3
-    
+
     Q3 -->|< 10 人| CLOUD
     Q3 -->|> 10 人| Q4
-    
+
     Q4 -->|高合规| OPENSOURCE
     Q4 -->|一般| Q5
-    
+
     Q5 -->|高定制| HYBRID
     Q5 -->|标准| COMMERCIAL
 ```
@@ -180,7 +180,7 @@ OTLP 支持:
     Traces: 15 天 (默认), 最高 6 个月
     Metrics: 15 个月
     Logs: 3-90 天 (可配置)
-  
+
 性能指标:
   摄入延迟: < 10s (P99)
   查询延迟: < 1s (P95)
@@ -341,7 +341,7 @@ OTLP 支持:
 Data Plus (推荐):
   - 数据摄入: $0.35 / GB (超过免费额度后)
   - 用户席位: $99 / user / month (Full Platform)
-  - 数据保留: 
+  - 数据保留:
     - Traces: 8 天
     - Metrics: 13 个月
     - Logs: 30 天
@@ -397,7 +397,7 @@ OTLP 支持:
   协议: gRPC, HTTP/protobuf
   端点: https://api.honeycomb.io/v1/traces
   认证: Team API Key (x-honeycomb-team header)
-  
+
 高基数支持:
   最大 dimensions: 无限制
   最大 cardinality: 无限制 (部分定价计划有限制)
@@ -557,7 +557,7 @@ Jaeger:
     - Cassandra: 推荐用于大规模 (> 1TB)
     - Elasticsearch: 推荐用于中等规模 (< 1TB)
     - Badger: 单机测试使用
-  
+
   性能指标:
     摄入速率: > 100K spans/s (单实例)
     查询延迟: < 1s (P95) with Elasticsearch
@@ -568,7 +568,7 @@ Prometheus:
   存储:
     本地 TSDB: 推荐用于 < 1 年数据
     Thanos/Cortex: 推荐用于长期存储
-  
+
   性能指标:
     摄入速率: > 1M samples/s
     查询延迟: < 100ms (P95) for local queries
@@ -686,11 +686,11 @@ processors:
   batch:
     timeout: 10s
     send_batch_size: 1024
-  
+
   memory_limiter:
     check_interval: 1s
     limit_mib: 2000
-  
+
   resource:
     attributes:
       - key: environment
@@ -703,13 +703,13 @@ exporters:
     endpoint: jaeger:4317
     tls:
       insecure: true
-  
+
   # Prometheus for metrics
   prometheusremotewrite:
     endpoint: http://prometheus:9090/api/v1/write
     resource_to_telemetry_conversion:
       enabled: true
-  
+
   # Loki for logs
   loki:
     endpoint: http://loki:3100/loki/api/v1/push
@@ -720,12 +720,12 @@ service:
       receivers: [otlp]
       processors: [memory_limiter, batch, resource]
       exporters: [otlp/jaeger]
-    
+
     metrics:
       receivers: [otlp]
       processors: [memory_limiter, batch, resource]
       exporters: [prometheusremotewrite]
-    
+
     logs:
       receivers: [otlp]
       processors: [memory_limiter, batch, resource]
@@ -741,16 +741,16 @@ service:
   Elasticsearch: r5.xlarge ($250/月) × 3 = $750
   Prometheus: t3.large ($70/月) × 2 = $140
   Grafana: t3.medium ($35/月) × 2 = $70
-  
+
   存储 (EBS):
     Elasticsearch: 1TB × $100/月 = $100
     Prometheus: 500GB × $100/month = $50
-  
+
   总计: ~$1,250/月
 
 运维成本:
   1-2 位 SRE (20% 时间) = $2,000 - $4,000/月
-  
+
 总 TCO: ~$3,250 - $5,250/月
 ```
 
@@ -809,7 +809,7 @@ service:
      - 无需索引,极低成本
      - 原生 OTLP 支持
      - TraceQL 查询语言
-   
+
    性能指标:
      摄入速率: > 500K spans/s (单实例)
      查询延迟: < 2s (P95)
@@ -824,7 +824,7 @@ service:
      - 水平扩展架构
      - 多租户支持
      - 对象存储后端
-   
+
    性能指标:
      摄入速率: > 10M samples/s (集群)
      查询延迟: < 500ms (P95)
@@ -839,7 +839,7 @@ service:
      - 对象存储后端
      - LogQL 查询语言
      - 成本优化设计
-   
+
    性能指标:
      摄入速率: > 1GB/s (集群)
      查询延迟: < 3s (P95)
@@ -854,7 +854,7 @@ service:
      - Flame Graphs
      - 对象存储后端
      - 多语言支持
-   
+
    性能指标:
      摄入速率: > 100K profiles/s
      查询延迟: < 1s (P95)
@@ -924,14 +924,14 @@ Kubernetes 集群 (EKS):
     Mimir: r5.xlarge ($250) × 3 = $750
     Loki: t3.xlarge ($140) × 3 = $420
     Grafana: t3.medium ($35) × 2 = $70
-  
+
   子计算: $1,523/月
 
 对象存储 (S3):
   Traces (100GB/day × 30 days): 3TB × $0.023 = $69
   Metrics (10GB/day × 365 days): 3.6TB × $0.023 = $83
   Logs (50GB/day × 30 days): 1.5TB × $0.023 = $35
-  
+
   子计算: $187/月
 
 负载均衡器 (ALB): $20/月
@@ -1019,16 +1019,16 @@ JDK 支持: JDK 8+
     - Spring Boot, Spring MVC, Spring WebFlux
     - Jakarta EE (Servlet, JAX-RS)
     - Play Framework, Vert.x
-  
+
   Databases:
     - JDBC, Hibernate, MyBatis
     - MongoDB, Cassandra, Redis
     - Elasticsearch
-  
+
   Messaging:
     - Kafka, RabbitMQ, ActiveMQ
     - AWS SQS, Google Pub/Sub
-  
+
   HTTP Clients:
     - Apache HttpClient, OkHttp
     - Netty, Reactor Netty
@@ -1057,13 +1057,13 @@ import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 
 public class TelemetrySetup {
-    
+
     public static OpenTelemetry initTelemetry() {
         // 创建 OTLP Exporter
         OtlpGrpcSpanExporter spanExporter = OtlpGrpcSpanExporter.builder()
             .setEndpoint("http://localhost:4317")
             .build();
-        
+
         // 创建 TracerProvider
         SdkTracerProvider tracerProvider = SdkTracerProvider.builder()
             .setResource(Resource.builder()
@@ -1076,40 +1076,40 @@ public class TelemetrySetup {
                 .setScheduleDelay(Duration.ofSeconds(1))
                 .build())
             .build();
-        
+
         // 注册全局 OpenTelemetry
         OpenTelemetrySdk sdk = OpenTelemetrySdk.builder()
             .setTracerProvider(tracerProvider)
             .buildAndRegisterGlobal();
-        
+
         return sdk;
     }
-    
+
     public static void example() {
         Tracer tracer = GlobalOpenTelemetry.getTracer("my-instrumentation");
-        
+
         // 创建 Span
         Span span = tracer.spanBuilder("my-operation")
             .setAttribute("user.id", 12345)
             .setAttribute("request.path", "/api/users")
             .startSpan();
-        
+
         try (Scope scope = span.makeCurrent()) {
             // 业务逻辑
             doWork();
-            
+
             // 嵌套 Span
             Span childSpan = tracer.spanBuilder("database-query")
                 .setAttribute("db.system", "postgresql")
                 .setAttribute("db.statement", "SELECT * FROM users")
                 .startSpan();
-            
+
             try (Scope childScope = childSpan.makeCurrent()) {
                 queryDatabase();
             } finally {
                 childSpan.end();
             }
-            
+
         } catch (Exception e) {
             span.recordException(e);
             span.setStatus(StatusCode.ERROR, e.getMessage());
@@ -1153,11 +1153,11 @@ Go 版本: Go 1.20+
   Web Frameworks:
     - net/http, Gin, Echo, Fiber
     - gRPC, gRPC-Gateway
-  
+
   Databases:
     - database/sql, GORM
     - MongoDB, Redis, DynamoDB
-  
+
   Messaging:
     - Kafka (sarama, confluent-kafka-go)
     - RabbitMQ (amqp091-go)
@@ -1288,8 +1288,8 @@ func processData(ctx context.Context, tracer trace.Tracer) {
 
 ---
 
-**文档版本**: v1.0.0  
-**最后更新**: 2025-10-09  
+**文档版本**: v1.0.0
+**最后更新**: 2025-10-09
 **贡献者**: OTLP 生态系统研究组
 
 *本文档将持续更新,反映最新的生态系统变化...*

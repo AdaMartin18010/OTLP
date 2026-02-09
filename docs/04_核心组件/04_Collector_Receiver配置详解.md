@@ -43,6 +43,18 @@
     - [官方文档](#官方文档)
     - [核心Receiver文档](#核心receiver文档)
 
+**Receiver 选型矩阵**（本页内嵌）：
+
+| 数据源 | 推荐 Receiver | 端口/协议 |
+|--------|---------------|-----------|
+| OTLP | otlp | 4317 gRPC / 4318 HTTP |
+| Prometheus | prometheus | scrape |
+| 日志文件 | filelog | 文件路径 |
+| Kafka | kafka | 消费者 |
+| 主机指标 | hostmetrics | - |
+
+**Pipeline 位置**：`数据源 → Receiver → Processor → Exporter`（Receiver 为入口）。
+
 ---
 
 ## 1. 概述

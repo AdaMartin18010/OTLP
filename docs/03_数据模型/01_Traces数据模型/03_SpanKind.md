@@ -42,6 +42,27 @@
   - [9. 最佳实践](#9-最佳实践)
   - [10. 参考资源](#10-参考资源)
 
+**SpanKind 枚举与配对矩阵**（本页内嵌）：
+
+| SpanKind | 语义 | 典型配对 |
+|----------|------|----------|
+| INTERNAL | 进程内操作 | - |
+| CLIENT | 发起同步调用 | SERVER |
+| SERVER | 接收同步调用 | CLIENT |
+| PRODUCER | 发送消息 | CONSUMER |
+| CONSUMER | 接收消息 | PRODUCER |
+
+**SpanKind 选型决策树**：
+
+```mermaid
+flowchart TD
+  S[选择 SpanKind] --> Q{是否跨进程?}
+  Q -->|否| INTERNAL[INTERNAL]
+  Q -->|是| Q2{同步 RPC?}
+  Q2 -->|是| CLIENT_SERVER[CLIENT 或 SERVER]
+  Q2 -->|否| PRODUCER_CONSUMER[PRODUCER 或 CONSUMER]
+```
+
 ## 1. 概念定义
 
 ### 1.1 正式定义

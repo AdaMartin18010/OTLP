@@ -38,6 +38,26 @@
 
 ---
 
+**Logs 结构与关联思维导图**（概述处）：
+
+```mermaid
+mindmap
+  root((OTLP_Logs))
+    结构
+      LogRecord
+      时间戳_Severity_Body
+      Attributes
+    TraceContext
+      TraceId_SpanId
+      关联Traces
+    类型
+      应用_系统_审计
+      访问_错误
+    集成
+      结构化日志
+      传统日志
+```
+
 ## 1. Logs概述
 
 ### 1.1 什么是Logs
@@ -174,6 +194,8 @@ message LogRecord {
 9. severity_text: 严重性文本 (DEBUG, INFO, etc.)
 10. dropped_attributes_count: 丢弃的属性数量
 ```
+
+**延伸阅读**：统一结构（Event/属性/Resource）及从 JSON、syslog、云格式到 LogRecord 的无歧义映射，见 [03_统一结构与多格式映射](./03_统一结构与多格式映射.md)。
 
 ### 2.2 形式化定义
 
@@ -844,9 +866,10 @@ logger.Emit(context.Background(), api.Record{
 - **Logs规范**: <https://opentelemetry.io/docs/specs/otel/logs/>
 - **Logs API**: <https://opentelemetry.io/docs/specs/otel/logs/api/>
 - **日志语义约定**: <https://opentelemetry.io/docs/specs/semconv/general/logs/>
+- **统一结构与多格式映射**: [03_统一结构与多格式映射](./03_统一结构与多格式映射.md)（Event/属性/Resource 统一结构，JSON/syslog/云格式到 LogRecord 的无歧义映射）
 
 ---
 
 **文档状态**: ✅ 完成
 **审核状态**: 待审核
-**相关文档**: [Span结构](../01_Traces数据模型/01_Span结构.md), [Metrics概述](../02_Metrics数据模型/01_Metrics概述.md)
+**相关文档**: [Span结构](../01_Traces数据模型/01_Span结构.md), [Metrics概述](../02_Metrics数据模型/01_Metrics概述.md), [03_统一结构与多格式映射](./03_统一结构与多格式映射.md)

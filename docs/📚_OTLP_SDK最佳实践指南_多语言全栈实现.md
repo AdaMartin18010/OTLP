@@ -1,8 +1,8 @@
 # 📚 OTLP SDK 最佳实践指南 - 多语言全栈实现
 
-> **文档版本**: v1.0  
-> **创建日期**: 2025年10月9日  
-> **文档类型**: P2 优先级 - SDK 开发最佳实践  
+> **文档版本**: v1.0
+> **创建日期**: 2025年10月9日
+> **文档类型**: P2 优先级 - SDK 开发最佳实践
 > **目标**: 提供各语言 OTLP SDK 使用的权威指南
 
 ---
@@ -190,7 +190,7 @@ func InitTracerProvider(ctx context.Context, cfg TracerProviderConfig) (*sdktrac
 func Shutdown(ctx context.Context, tp *sdktrace.TracerProvider) error {
  ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
  defer cancel()
- 
+
  if err := tp.Shutdown(ctx); err != nil {
   return fmt.Errorf("failed to shutdown TracerProvider: %w", err)
  }
@@ -238,7 +238,7 @@ type User struct {
 // GetUser 获取用户信息
 func (h *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
  ctx := r.Context()
- 
+
  // 创建 Span (otelhttp 中间件已创建父 Span,这里创建子 Span)
  ctx, span := tracer.Start(ctx, "GetUser",
   trace.WithSpanKind(trace.SpanKindServer),
@@ -314,7 +314,7 @@ func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 // NewHTTPServer 创建 HTTP Server with OpenTelemetry 中间件
 func NewHTTPServer(handler *UserHandler) *http.Server {
  mux := http.NewServeMux()
- 
+
  // 注册路由
  mux.HandleFunc("/users", handler.GetUser)
  mux.HandleFunc("/users/create", handler.CreateUser)
@@ -379,12 +379,12 @@ func (r *UserRepo) GetUser(ctx context.Context, userID string) (*User, error) {
 
  var user User
  err := r.db.QueryRowContext(ctx, query, userID).Scan(&user.ID, &user.Name, &user.Email)
- 
+
  if err == sql.ErrNoRows {
   span.SetStatus(codes.Error, "user not found")
   return nil, fmt.Errorf("user not found: %s", userID)
  }
- 
+
  if err != nil {
   span.RecordError(err)
   span.SetStatus(codes.Error, "database error")
@@ -528,7 +528,7 @@ func main() {
 
    ```go
    import semconv "go.opentelemetry.io/otel/semconv/v1.21.0"
-   
+
    span.SetAttributes(
        semconv.HTTPMethod("GET"),
        semconv.HTTPRoute("/users/{id}"),
@@ -541,10 +541,10 @@ func main() {
    ```go
    // Server: 接收请求
    trace.WithSpanKind(trace.SpanKindServer)
-   
+
    // Client: 发起请求
    trace.WithSpanKind(trace.SpanKindClient)
-   
+
    // Internal: 内部操作
    trace.WithSpanKind(trace.SpanKindInternal)
    ```
@@ -557,7 +557,7 @@ func main() {
    // ❌ 错误: 忘记关闭 Span
    ctx, span := tracer.Start(ctx, "operation")
    // ... 忘记 defer span.End()
-   
+
    // ✅ 正确
    ctx, span := tracer.Start(ctx, "operation")
    defer span.End()
@@ -572,7 +572,7 @@ func main() {
        process(item)
        // 忘记 span.End()
    }
-   
+
    // ✅ 正确
    for _, item := range items {
        _, span := tracer.Start(ctx, "process")
@@ -588,7 +588,7 @@ func main() {
    span.SetAttributes(
        attribute.String("user.password", user.Password),
    )
-   
+
    // ✅ 正确: 只记录非敏感信息
    span.SetAttributes(
        attribute.String("user.id", user.ID),
@@ -783,9 +783,9 @@ public class UserController {
 
         try (Scope scope = span.makeCurrent()) {
             span.setAttribute("user.name", user.getName());
-            
+
             User createdUser = userService.createUser(user);
-            
+
             span.setStatus(StatusCode.OK);
             return ResponseEntity.status(201).body(createdUser);
 
@@ -865,16 +865,16 @@ def init_telemetry():
         SERVICE_VERSION: "1.0.0",
         "deployment.environment": "production",
     })
-    
+
     # 创建 TracerProvider
     tracer_provider = TracerProvider(resource=resource)
-    
+
     # 创建 OTLP Exporter
     otlp_exporter = OTLPSpanExporter(
         endpoint="otel-collector:4317",
         insecure=True,
     )
-    
+
     # 添加 BatchSpanProcessor
     tracer_provider.add_span_processor(
         BatchSpanProcessor(
@@ -885,7 +885,7 @@ def init_telemetry():
             export_timeout_millis=30000,
         )
     )
-    
+
     # 设置全局 TracerProvider
     trace.set_tracer_provider(tracer_provider)
 
@@ -919,21 +919,21 @@ async def get_user(user_id: str) -> User:
     # FastAPIInstrumentor 已自动创建 Span,可以获取当前 Span
     current_span = trace.get_current_span()
     current_span.set_attribute("user.id", user_id)
-    
+
     # 创建子 Span
     with tracer.start_as_current_span("database_query") as span:
         span.set_attribute("db.operation", "SELECT")
         span.set_attribute("db.system", "memory")
-        
+
         user = users_db.get(user_id)
-        
+
         if user is None:
             span.set_status(trace.Status(trace.StatusCode.ERROR, "User not found"))
             raise HTTPException(status_code=404, detail="User not found")
-        
+
         span.add_event("user_found", {"user.name": user["name"]})
         span.set_status(trace.Status(trace.StatusCode.OK))
-        
+
         return User(**user)
 
 @app.post("/users", status_code=201)
@@ -941,16 +941,16 @@ async def create_user(user: User) -> User:
     """创建用户"""
     current_span = trace.get_current_span()
     current_span.set_attribute("user.name", user.name)
-    
+
     with tracer.start_as_current_span("database_insert") as span:
         span.set_attribute("db.operation", "INSERT")
-        
+
         if user.id in users_db:
             span.set_status(trace.Status(trace.StatusCode.ERROR, "User already exists"))
             raise HTTPException(status_code=400, detail="User already exists")
-        
+
         users_db[user.id] = user.dict()
-        
+
         span.set_status(trace.Status(trace.StatusCode.OK))
         return user
 
@@ -1054,7 +1054,7 @@ app.get('/users/:id', (req, res) => {
   }
 
   const user = usersDb.get(req.params.id);
-  
+
   if (!user) {
     span?.setStatus({ code: 2, message: 'User not found' });
     res.status(404).json({ error: 'User not found' });
@@ -1067,12 +1067,12 @@ app.get('/users/:id', (req, res) => {
 
 app.post('/users', (req, res) => {
   const user: User = req.body;
-  
+
   const span = trace.getActiveSpan();
   span?.setAttribute('user.name', user.name);
 
   usersDb.set(user.id, user);
-  
+
   span?.setStatus({ code: 1 }); // OK
   res.status(201).json(user);
 });
@@ -1147,7 +1147,7 @@ async fn main() {
     let listener = tokio::net::TcpListener::bind("0.0.0.0:8000")
         .await
         .unwrap();
-    
+
     println!("Server running on port 8000");
     axum::serve(listener, app).await.unwrap();
 }

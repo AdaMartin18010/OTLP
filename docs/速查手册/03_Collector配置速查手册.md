@@ -1,7 +1,7 @@
 # 📘 OpenTelemetry Collector配置速查手册
 
-> **Collector版本**: v0.113.0  
-> **最后更新**: 2025年10月9日  
+> **Collector版本**: v0.113.0
+> **最后更新**: 2025年10月9日
 > **用途**: 快速配置OpenTelemetry Collector
 
 ---
@@ -274,13 +274,13 @@ processors:
         status_code:
           status_codes:
             - ERROR
-      
+
       # 策略2: 保留慢请求 (>500ms)
       - name: slow-traces-policy
         type: latency
         latency:
           threshold_ms: 500
-      
+
       # 策略3: 采样10%正常请求
       - name: probabilistic-policy
         type: probabilistic
@@ -465,7 +465,7 @@ service:
     - health_check
     - pprof
     - zpages
-  
+
   pipelines:
     traces:
       receivers: [otlp, jaeger]
@@ -475,7 +475,7 @@ service:
         - resource
         - tail_sampling
       exporters: [otlp, logging]
-    
+
     metrics:
       receivers: [otlp, prometheus]
       processors:
@@ -483,7 +483,7 @@ service:
         - batch
         - filter
       exporters: [otlp, prometheus]
-    
+
     logs:
       receivers: [otlp, filelog]
       processors:
@@ -491,7 +491,7 @@ service:
         - batch
         - attributes
       exporters: [otlp, loki]
-  
+
   telemetry:
     logs:
       level: info
@@ -565,7 +565,7 @@ processors:
     check_interval: 1s
     limit_mib: 2048
     spike_limit_mib: 512
-  
+
   resource:
     attributes:
       - key: deployment.environment
@@ -574,12 +574,12 @@ processors:
       - key: cluster.name
         value: ${CLUSTER_NAME}
         action: upsert
-  
+
   batch:
     timeout: 10s
     send_batch_size: 2048
     send_batch_max_size: 4096
-  
+
   tail_sampling:
     decision_wait: 10s
     policies:
@@ -592,7 +592,7 @@ processors:
       - name: sample-10pct
         type: probabilistic
         probabilistic: {sampling_percentage: 10}
-  
+
   filter:
     traces:
       span:
@@ -637,7 +637,7 @@ receivers:
     protocols:
       grpc:
         endpoint: 0.0.0.0:4317
-  
+
   # 收集K8s日志
   filelog:
     include:
@@ -652,14 +652,14 @@ receivers:
             expr: 'body matches "^\\{"'
           - output: parser-crio
             expr: 'body matches "^[^ Z]+ "'
-      
+
       - type: json_parser
         id: parser-docker
         output: extract_metadata_from_filepath
         timestamp:
           parse_from: attributes.time
           layout: '%Y-%m-%dT%H:%M:%S.%LZ'
-      
+
       - type: regex_parser
         id: parser-crio
         regex: '^(?P<time>[^ Z]+) (?P<stream>stdout|stderr) (?P<logtag>[^ ]*) (?P<log>.*)$'
@@ -667,7 +667,7 @@ receivers:
         timestamp:
           parse_from: attributes.time
           layout: '%Y-%m-%dT%H:%M:%S.%L%z'
-      
+
       - type: regex_parser
         id: extract_metadata_from_filepath
         regex: '^.*\/(?P<namespace>[^_]+)_(?P<pod_name>[^_]+)_(?P<uid>[a-f0-9\-]+)\/(?P<container_name>[^\._]+)\/(?P<restart_count>\d+)\.log$'
@@ -677,7 +677,7 @@ processors:
   memory_limiter:
     check_interval: 1s
     limit_mib: 512
-  
+
   k8sattributes:
     auth_type: serviceAccount
     passthrough: false
@@ -692,13 +692,13 @@ processors:
         - tag_name: app
           key: app.kubernetes.io/name
           from: pod
-  
+
   resource:
     attributes:
       - key: cluster.name
         value: ${K8S_CLUSTER_NAME}
         action: insert
-  
+
   batch:
     timeout: 10s
     send_batch_size: 1024
@@ -730,17 +730,17 @@ exporters:
     headers:
       Authorization: Bearer ${SAAS_API_KEY}
     compression: gzip
-  
+
   # 导出到内部Jaeger
   otlp/jaeger:
     endpoint: jaeger:4317
     tls:
       insecure: true
-  
+
   # 导出到Prometheus
   prometheus:
     endpoint: 0.0.0.0:8889
-  
+
   # 导出到Loki
   loki:
     endpoint: http://loki:3100/loki/api/v1/push
@@ -751,12 +751,12 @@ service:
       receivers: [otlp]
       processors: [batch]
       exporters: [otlp/saas, otlp/jaeger]  # 多目标
-    
+
     metrics:
       receivers: [otlp]
       processors: [batch]
       exporters: [otlp/saas, prometheus]
-    
+
     logs:
       receivers: [otlp]
       processors: [batch]
@@ -923,6 +923,6 @@ sending_queue:
 
 ---
 
-**最后更新**: 2025年10月9日  
-**上一篇**: [Semantic Conventions速查手册](./02_Semantic_Conventions速查手册.md)  
+**最后更新**: 2025年10月9日
+**上一篇**: [Semantic Conventions速查手册](./02_Semantic_Conventions速查手册.md)
 **下一篇**: [故障排查速查手册](./04_故障排查速查手册.md)

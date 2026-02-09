@@ -66,6 +66,25 @@
     - [工具和库](#工具和库)
     - [示例项目](#示例项目)
 
+**OTLP 编码选型矩阵**（JSON vs Protobuf，详见 [04_Protocol_Buffers编码](./04_Protocol_Buffers编码.md)）：
+
+| 维度 | HTTP JSON (本文档) | Protocol Buffers |
+|------|--------------------|------------------|
+| 格式 | 文本 JSON | 二进制 |
+| 适用场景 | 浏览器、curl 调试、CORS、前端 | 服务间、高性能 |
+| 内容类型 | application/json | application/x-protobuf |
+| 可读性 | 高 | 需工具解析 |
+
+**何时用 JSON / Protobuf 决策树**（本页内嵌）：
+
+```mermaid
+flowchart TD
+  Start[选择 OTLP 编码] --> Q{运行环境?}
+  Q -->|浏览器/前端| JSON[JSON 本文档]
+  Q -->|服务端/高性能| PB[Protobuf]
+  Q -->|调试/人工查看| JSON
+```
+
 ---
 
 ## 1. 概述

@@ -1,10 +1,10 @@
 # 🤖 AI 驱动日志分析完整指南 - LLM 异常检测与根因分析
 
-> **文档版本**: v1.0  
-> **创建日期**: 2025年10月9日  
-> **文档类型**: P0 优先级 - AI/ML 驱动可观测性  
-> **预估篇幅**: 3,500+ 行  
-> **技术栈**: GPT-4 / Claude 3 / Llama 3 + DoWhy + NetworkX + PyTorch  
+> **文档版本**: v1.0
+> **创建日期**: 2025年10月9日
+> **文档类型**: P0 优先级 - AI/ML 驱动可观测性
+> **预估篇幅**: 3,500+ 行
+> **技术栈**: GPT-4 / Claude 3 / Llama 3 + DoWhy + NetworkX + PyTorch
 > **目标**: 利用 AI/ML 实现智能日志分析、异常检测、根因分析
 
 ---
@@ -65,11 +65,11 @@
   1. 正则表达式匹配
      ❌ 规则维护成本高
      ❌ 无法处理未知模式
-  
+
   2. 关键字搜索
      ❌ 召回率低
      ❌ 误报率高
-  
+
   3. 人工排查
      ❌ 耗时 (4-8小时/次)
      ❌ 依赖经验
@@ -79,15 +79,15 @@ LLM 方法:
   1. 语义理解
      ✅ 理解日志含义
      ✅ 自动识别异常
-  
+
   2. 上下文推理
      ✅ 关联多条日志
      ✅ 推断根本原因
-  
+
   3. 可解释性
      ✅ 生成诊断报告
      ✅ 提供修复建议
-  
+
   4. 持续学习
      ✅ 从历史故障学习
      ✅ 知识积累
@@ -98,33 +98,33 @@ LLM 方法:
 ```text
 📄 重点论文:
 
-1. "Interpretable Online Log Analysis Using Large Language Models 
+1. "Interpretable Online Log Analysis Using Large Language Models
    with Prompt Strategies" (arXiv:2308.07610, 2024)
-   
+
    核心贡献:
    - Prompt Engineering 策略
    - Few-shot Learning
    - Chain-of-Thought 推理
-   
+
    效果:
    - 异常检测准确率: 94.5%
    - 误报率: <5%
    - 实时性: <1s
 
-2. "OWL: A Large Language Model for IT Operations" 
+2. "OWL: A Large Language Model for IT Operations"
    (arXiv:2309.09298, 2024)
-   
+
    核心贡献:
    - 专门为运维训练的 LLM (7B 参数)
    - 日志异常检测 + RCA
    - 自动生成修复脚本
-   
+
    数据集:
    - 100万+ 故障案例
    - 5000+ 修复方案
 
 3. "LogGPT: Log Anomaly Detection via GPT" (2024)
-   
+
    效果:
    - F1 Score: 0.92 (传统方法: 0.75)
    - 零样本学习 (Zero-shot)
@@ -276,7 +276,7 @@ CHAIN_OF_THOUGHT_PROMPT = """
 - 关键字: ?
 
 步骤 2: 识别异常模式
-- 是否有错误日志? 
+- 是否有错误日志?
 - 是否有重复模式?
 - 是否有时间聚集?
 - 是否有级联失败?
@@ -313,30 +313,30 @@ from datetime import datetime, timedelta
 
 class LLMLogAnalyzer:
     """LLM 驱动的日志分析器"""
-    
+
     def __init__(self, api_key: Optional[str] = None, model: str = "gpt-4"):
         """
         Args:
             api_key: OpenAI API Key (如果为 None,从环境变量 OPENAI_API_KEY 读取)
             model: 模型名称 (gpt-4, gpt-3.5-turbo, etc.)
-        
+
         Raises:
             ValueError: 如果 API Key 未提供且环境变量不存在
         """
         import os
         import logging
-        
+
         self.api_key = api_key or os.getenv("OPENAI_API_KEY")
         if not self.api_key:
             raise ValueError(
                 "OpenAI API Key is required. "
                 "Provide via api_key parameter or OPENAI_API_KEY environment variable."
             )
-        
+
         self.model = model
         openai.api_key = self.api_key
         self.logger = logging.getLogger(__name__)
-        
+
         self.system_prompt = """
 你是一个资深的系统运维专家 (SRE),专门分析日志、诊断故障、定位根本原因。
 
@@ -358,7 +358,7 @@ class LLMLogAnalyzer:
   "explanation": "推理过程"
 }
 """
-        
+
         # Few-shot examples (简化版)
         self.few_shot_examples = [
             {
@@ -387,7 +387,7 @@ class LLMLogAnalyzer:
                 }, ensure_ascii=False)
             }
         ]
-    
+
     def analyze_logs(
         self,
         logs: List[str],
@@ -397,34 +397,34 @@ class LLMLogAnalyzer:
     ) -> Dict:
         """
         分析日志,检测异常
-        
+
         Args:
             logs: 日志列表
             context: 上下文信息 (服务名、时间范围等)
             timeout: API 请求超时时间 (秒)
             retries: 失败重试次数
-        
+
         Returns:
             分析结果 (JSON)
-        
+
         Raises:
             ValueError: 如果 logs 为空或格式无效
             openai.APIError: 如果 API 调用失败
         """
         import time
         from openai import APIError, Timeout, RateLimitError
-        
+
         # 输入验证
         if not logs:
             raise ValueError("Logs list cannot be empty")
-        
+
         if len(logs) > 1000:
             self.logger.warning(f"Large log batch ({len(logs)} logs), truncating to 1000")
             logs = logs[:1000]
-        
+
         # 1. 准备 User Prompt
         log_text = "\n".join(logs)
-        
+
         if context:
             context_text = f"""
 上下文信息:
@@ -434,7 +434,7 @@ class LLMLogAnalyzer:
 """
         else:
             context_text = ""
-        
+
         user_prompt = f"""
 {context_text}
 
@@ -443,14 +443,14 @@ class LLMLogAnalyzer:
 
 请分析以上日志,识别异常。
 """
-        
+
         # 2. 调用 LLM (带重试逻辑)
         messages = [
             {"role": "system", "content": self.system_prompt},
             *self.few_shot_examples,
             {"role": "user", "content": user_prompt}
         ]
-        
+
         last_exception = None
         for attempt in range(retries):
         try:
@@ -462,36 +462,36 @@ class LLMLogAnalyzer:
                     request_timeout=timeout,
                 response_format={"type": "json_object"}  # 强制 JSON 输出
             )
-            
+
             result = json.loads(response.choices[0].message.content)
-            
+
             # 3. 添加元数据
             result['timestamp'] = datetime.now().isoformat()
             result['model'] = self.model
             result['token_usage'] = response.usage.total_tokens
-            
+
                 # 验证响应格式
                 required_fields = ['is_anomaly', 'severity', 'confidence']
                 if not all(field in result for field in required_fields):
                     self.logger.warning(f"Incomplete response fields: {result.keys()}")
                     result['_incomplete'] = True
-            
+
             return result
-            
+
             except Timeout as e:
                 last_exception = e
                 self.logger.warning(f"Timeout on attempt {attempt+1}/{retries}: {e}")
                 if attempt < retries - 1:
                     time.sleep(2 ** attempt)  # 指数退避
                     continue
-            
+
             except RateLimitError as e:
                 last_exception = e
                 self.logger.warning(f"Rate limit hit on attempt {attempt+1}/{retries}")
                 if attempt < retries - 1:
                     time.sleep(10 * (attempt + 1))  # 等待更长时间
                     continue
-            
+
             except APIError as e:
                 last_exception = e
                 self.logger.error(f"OpenAI API error on attempt {attempt+1}/{retries}: {e}")
@@ -504,7 +504,7 @@ class LLMLogAnalyzer:
                     "error": f"API Error: {str(e)}",
                     "timestamp": datetime.now().isoformat()
                 }
-            
+
             except json.JSONDecodeError as e:
                 last_exception = e
                 self.logger.error(f"Failed to parse LLM response as JSON: {e}")
@@ -513,7 +513,7 @@ class LLMLogAnalyzer:
                     "error": f"Invalid JSON response: {str(e)}",
                     "timestamp": datetime.now().isoformat()
                 }
-            
+
         except Exception as e:
                 last_exception = e
                 self.logger.error(f"Unexpected error on attempt {attempt+1}/{retries}: {e}")
@@ -523,14 +523,14 @@ class LLMLogAnalyzer:
                 "error": str(e),
                         "timestamp": datetime.now().isoformat()
                     }
-        
+
         # 所有重试都失败
         return {
             "is_anomaly": False,
             "error": f"All {retries} retry attempts failed: {str(last_exception)}",
                 "timestamp": datetime.now().isoformat()
             }
-    
+
     def analyze_real_time(
         self,
         log_stream,
@@ -539,7 +539,7 @@ class LLMLogAnalyzer:
     ):
         """
         实时日志分析 (滑动窗口)
-        
+
         Args:
             log_stream: 日志流 (生成器)
             window_size: 窗口大小 (日志条数)
@@ -547,27 +547,27 @@ class LLMLogAnalyzer:
         """
         from collections import deque
         import time
-        
+
         buffer = deque(maxlen=window_size)
         last_analysis = time.time()
-        
+
         for log_line in log_stream:
             buffer.append(log_line)
-            
+
             # 每隔 slide_interval 秒分析一次
             if time.time() - last_analysis > slide_interval:
                 if len(buffer) >= 10:  # 至少10条日志
                     result = self.analyze_logs(list(buffer))
-                    
+
                     if result.get('is_anomaly'):
                         self._handle_anomaly(result)
-                    
+
                     last_analysis = time.time()
-    
+
     def _handle_anomaly(self, result: Dict):
         """处理异常 (告警、工单等)"""
         severity = result.get('severity', 'Unknown')
-        
+
         print(f"\n⚠️  检测到异常! 严重程度: {severity}")
         print(f"类型: {result.get('anomaly_type')}")
         print(f"根因: {result.get('root_cause')}")
@@ -575,7 +575,7 @@ class LLMLogAnalyzer:
         print(f"\n修复建议:")
         for step in result.get('remediation_steps', []):
             print(f"  - {step}")
-        
+
         # TODO: 发送告警 (Slack, PagerDuty, etc.)
         # TODO: 创建工单 (Jira, ServiceNow, etc.)
 
@@ -587,7 +587,7 @@ if __name__ == '__main__':
         api_key="sk-...",  # 替换为实际 API Key
         model="gpt-4"
     )
-    
+
     # 2. 分析历史日志
     sample_logs = [
         "[ERROR] 2025-10-09 10:30:45 PaymentService: Failed to connect to database",
@@ -596,7 +596,7 @@ if __name__ == '__main__':
         "[ERROR] 2025-10-09 10:30:50 PaymentService: All retries exhausted, giving up",
         "[WARN]  2025-10-09 10:30:51 CircuitBreaker: Circuit opened for PaymentService",
     ]
-    
+
     result = analyzer.analyze_logs(
         logs=sample_logs,
         context={
@@ -605,7 +605,7 @@ if __name__ == '__main__':
             'environment': 'production'
         }
     )
-    
+
     print(json.dumps(result, indent=2, ensure_ascii=False))
 ```
 
@@ -652,20 +652,20 @@ from datetime import datetime, timedelta
 
 class OTLPLogAnalyzer:
     """从 OTLP 数据库读取日志并分析"""
-    
+
     def __init__(self, db_config: Dict, llm_analyzer: LLMLogAnalyzer):
         """
         Args:
             db_config: 数据库配置字典 (host, port, database, user, password)
             llm_analyzer: LLM 分析器实例
-        
+
         Raises:
             psycopg2.Error: 如果数据库连接失败
         """
         self.db_config = db_config
         self.llm_analyzer = llm_analyzer
         self.logger = logging.getLogger(__name__)
-        
+
         # 验证数据库连接
         try:
             with psycopg2.connect(**self.db_config) as conn:
@@ -674,17 +674,17 @@ class OTLPLogAnalyzer:
         except psycopg2.Error as e:
             self.logger.error(f"Database connection failed: {e}")
             raise
-        
+
         # 初始化 OpenTelemetry
         trace.set_tracer_provider(TracerProvider())
         tracer_provider = trace.get_tracer_provider()
-        
+
         otlp_exporter = OTLPSpanExporter(endpoint="http://localhost:4317")
         span_processor = BatchSpanProcessor(otlp_exporter)
         tracer_provider.add_span_processor(span_processor)
-        
+
         self.tracer = trace.get_tracer(__name__)
-    
+
     def fetch_recent_logs(
         self,
         service_name: str,
@@ -694,16 +694,16 @@ class OTLPLogAnalyzer:
     ) -> List[str]:
         """
         从数据库获取最近的日志
-        
+
         Args:
             service_name: 服务名称
             time_range_minutes: 时间范围(分钟)
             severity: 最低日志级别
             max_logs: 最大返回日志数
-        
+
         Returns:
             格式化后的日志列表
-        
+
         Raises:
             ValueError: 如果参数无效
             psycopg2.Error: 如果数据库查询失败
@@ -711,18 +711,18 @@ class OTLPLogAnalyzer:
         # 输入验证
         if not service_name:
             raise ValueError("service_name cannot be empty")
-        
+
         if time_range_minutes <= 0 or time_range_minutes > 1440:  # 最多24小时
             raise ValueError("time_range_minutes must be between 1 and 1440")
-        
+
         if max_logs <= 0 or max_logs > 10000:
             raise ValueError("max_logs must be between 1 and 10000")
-        
+
         try:
             with psycopg2.connect(**self.db_config) as conn:
                 with conn.cursor() as cursor:
         query = """
-            SELECT 
+            SELECT
                 time,
                 severity_text,
                 body,
@@ -735,10 +735,10 @@ class OTLPLogAnalyzer:
             ORDER BY time DESC
                         LIMIT %s
         """
-        
+
                     cursor.execute(query, (service_name, severity, time_range_minutes, max_logs))
         rows = cursor.fetchall()
-        
+
         # 格式化为日志字符串
         logs = []
         for row in rows:
@@ -747,27 +747,27 @@ class OTLPLogAnalyzer:
             if trace_id:
                 log_line += f" [TraceID: {trace_id}]"
             logs.append(log_line)
-        
+
                     self.logger.info(f"Fetched {len(logs)} logs for service {service_name}")
         return logs
-        
+
         except psycopg2.Error as e:
             self.logger.error(f"Database query failed: {e}")
             raise
-    
+
     def analyze_service(self, service_name: str):
         """分析指定服务的日志"""
-        
+
         with self.tracer.start_as_current_span("analyze_service_logs") as span:
             span.set_attribute("service.name", service_name)
-            
+
             # 1. 获取日志
             logs = self.fetch_recent_logs(service_name, time_range_minutes=5)
             span.set_attribute("log.count", len(logs))
-            
+
             if not logs:
                 return {"is_anomaly": False, "reason": "No logs found"}
-            
+
             # 2. LLM 分析
             result = self.llm_analyzer.analyze_logs(
                 logs=logs,
@@ -777,12 +777,12 @@ class OTLPLogAnalyzer:
                     'environment': 'production'
                 }
             )
-            
+
             # 3. 记录到 Span
             span.set_attribute("anomaly.detected", result.get('is_anomaly', False))
             span.set_attribute("anomaly.severity", result.get('severity', 'Unknown'))
             span.set_attribute("anomaly.type", result.get('anomaly_type', 'Unknown'))
-            
+
             return result
 
 
@@ -795,13 +795,13 @@ if __name__ == '__main__':
         'user': 'postgres',
         'password': 'password'
     }
-    
+
     llm_analyzer = LLMLogAnalyzer(api_key="sk-...")
     otlp_analyzer = OTLPLogAnalyzer(db_config, llm_analyzer)
-    
+
     # 分析支付服务
     result = otlp_analyzer.analyze_service("payment-service")
-    
+
     if result.get('is_anomaly'):
         print("⚠️ 检测到异常!")
         print(json.dumps(result, indent=2, ensure_ascii=False))
@@ -822,7 +822,7 @@ import pandas as pd
 
 class RCAEngine:
     """根因分析引擎 (结合因果推断 + 服务依赖图 + LLM)"""
-    
+
     def __init__(
         self,
         llm_analyzer: LLMLogAnalyzer,
@@ -831,13 +831,13 @@ class RCAEngine:
         self.llm_analyzer = llm_analyzer
         self.db_config = db_config
         self.service_graph = self._build_service_graph()
-    
+
     def _build_service_graph(self) -> nx.DiGraph:
         """从数据库构建服务依赖图"""
-        
+
         conn = psycopg2.connect(**self.db_config)
         cursor = conn.cursor()
-        
+
         # 查询服务调用关系 (从 Traces)
         query = """
             SELECT DISTINCT
@@ -851,20 +851,20 @@ class RCAEngine:
             WHERE parent_span.time >= NOW() - INTERVAL '1 hour'
             GROUP BY caller, callee
         """
-        
+
         cursor.execute(query)
         rows = cursor.fetchall()
-        
+
         # 构建有向图
         G = nx.DiGraph()
         for caller, callee, count in rows:
             G.add_edge(caller, callee, weight=count)
-        
+
         cursor.close()
         conn.close()
-        
+
         return G
-    
+
     def analyze_root_cause(
         self,
         anomaly_service: str,
@@ -872,7 +872,7 @@ class RCAEngine:
     ) -> Dict:
         """
         综合分析根因
-        
+
         流程:
         1. 找到所有上游服务 (依赖图)
         2. 获取上游服务的日志/指标
@@ -880,16 +880,16 @@ class RCAEngine:
         4. 因果推断验证
         5. 生成 RCA 报告
         """
-        
+
         # 1. 找到上游服务
         upstream_services = list(self.service_graph.predecessors(anomaly_service))
-        
+
         # 2. 收集相关日志
         all_logs = {}
         for service in [anomaly_service] + upstream_services:
             logs = self._fetch_logs_around_time(service, anomaly_time, window_minutes=10)
             all_logs[service] = logs
-        
+
         # 3. LLM 推断
         rca_prompt = f"""
 你是一个分布式系统故障诊断专家。
@@ -901,11 +901,11 @@ class RCAEngine:
 
 各服务日志:
 """
-        
+
         for service, logs in all_logs.items():
             rca_prompt += f"\n### {service} 日志:\n"
             rca_prompt += "\n".join(logs[:20])  # 限制长度
-        
+
         rca_prompt += """
 
 请分析:
@@ -924,15 +924,15 @@ class RCAEngine:
   "explanation": "详细解释"
 }
 """
-        
+
         llm_result = self.llm_analyzer.analyze_logs(
             logs=[rca_prompt],
             context={'type': 'root_cause_analysis'}
         )
-        
+
         # 4. 可视化依赖路径
         root_cause_service = llm_result.get('root_cause_service')
-        
+
         if root_cause_service and root_cause_service in self.service_graph:
             paths = list(nx.all_simple_paths(
                 self.service_graph,
@@ -940,11 +940,11 @@ class RCAEngine:
                 target=anomaly_service,
                 cutoff=5  # 最多5跳
             ))
-            
+
             llm_result['dependency_paths'] = paths
-        
+
         return llm_result
-    
+
     def _fetch_logs_around_time(
         self,
         service: str,
@@ -952,10 +952,10 @@ class RCAEngine:
         window_minutes: int
     ) -> List[str]:
         """获取某个时间点前后的日志"""
-        
+
         conn = psycopg2.connect(**self.db_config)
         cursor = conn.cursor()
-        
+
         query = """
             SELECT time, severity_text, body
             FROM otlp_logs
@@ -963,18 +963,18 @@ class RCAEngine:
               AND time BETWEEN %s AND %s
             ORDER BY time
         """
-        
+
         start_time = center_time - timedelta(minutes=window_minutes)
         end_time = center_time + timedelta(minutes=window_minutes)
-        
+
         cursor.execute(query, (service, start_time, end_time))
         rows = cursor.fetchall()
-        
+
         logs = [f"[{row[1]}] {row[0]} {row[2]}" for row in rows]
-        
+
         cursor.close()
         conn.close()
-        
+
         return logs
 
 
@@ -982,13 +982,13 @@ class RCAEngine:
 if __name__ == '__main__':
     llm_analyzer = LLMLogAnalyzer(api_key="sk-...")
     rca_engine = RCAEngine(llm_analyzer, db_config)
-    
+
     # 分析根因
     result = rca_engine.analyze_root_cause(
         anomaly_service="payment-service",
         anomaly_time=datetime(2025, 10, 9, 10, 30, 45)
     )
-    
+
     print("🔍 根因分析结果:")
     print(json.dumps(result, indent=2, ensure_ascii=False))
 ```
@@ -1034,31 +1034,31 @@ import openai
 
 class NaturalLanguageLogSearch:
     """使用 LLM + 向量数据库实现自然语言日志搜索"""
-    
+
     def __init__(self, api_key: str):
         self.api_key = api_key
         openai.api_key = api_key
-        
+
         # 初始化向量数据库 (ChromaDB)
         self.client = chromadb.Client()
-        
+
         # 使用 OpenAI Embeddings
         self.embedding_function = embedding_functions.OpenAIEmbeddingFunction(
             api_key=api_key,
             model_name="text-embedding-3-small"
         )
-        
+
         # 创建集合
         self.collection = self.client.create_collection(
             name="logs",
             embedding_function=self.embedding_function,
             metadata={"hnsw:space": "cosine"}
         )
-    
+
     def index_logs(self, logs: List[Dict]):
         """
         索引日志到向量数据库
-        
+
         Args:
             logs: [
                 {
@@ -1074,33 +1074,33 @@ class NaturalLanguageLogSearch:
         documents = []
         metadatas = []
         ids = []
-        
+
         for log in logs:
             # 构造文档 (用于 Embedding)
             doc = f"""
 [{log['severity']}] {log['timestamp']} {log['service']}: {log['message']}
 """
             documents.append(doc)
-            
+
             metadatas.append({
                 "timestamp": log['timestamp'],
                 "service": log['service'],
                 "severity": log['severity']
             })
-            
+
             ids.append(log['id'])
-        
+
         # 批量插入
         self.collection.add(
             documents=documents,
             metadatas=metadatas,
             ids=ids
         )
-    
+
     def search(self, query: str, top_k: int = 10) -> List[Dict]:
         """
         自然语言搜索日志
-        
+
         Examples:
             - "支付服务昨天晚上的数据库错误"
             - "所有内存溢出的日志"
@@ -1111,7 +1111,7 @@ class NaturalLanguageLogSearch:
             query_texts=[query],
             n_results=top_k
         )
-        
+
         # 2. 格式化结果
         matched_logs = []
         for i, doc in enumerate(results['documents'][0]):
@@ -1120,9 +1120,9 @@ class NaturalLanguageLogSearch:
                 "metadata": results['metadatas'][0][i],
                 "distance": results['distances'][0][i]
             })
-        
+
         return matched_logs
-    
+
     def search_with_filters(
         self,
         query: str,
@@ -1132,27 +1132,27 @@ class NaturalLanguageLogSearch:
         top_k: int = 10
     ) -> List[Dict]:
         """带过滤条件的搜索"""
-        
+
         where_clause = {}
-        
+
         if service:
             where_clause['service'] = service
-        
+
         if severity:
             where_clause['severity'] = severity
-        
+
         results = self.collection.query(
             query_texts=[query],
             n_results=top_k,
             where=where_clause if where_clause else None
         )
-        
+
         return results
-    
+
     def ask_question(self, question: str) -> str:
         """
         直接提问,LLM 自动搜索日志并回答
-        
+
         Examples:
             - "为什么支付服务昨天晚上宕机了?"
             - "数据库连接池的配置有问题吗?"
@@ -1168,7 +1168,7 @@ class NaturalLanguageLogSearch:
   "queries": ["查询1", "查询2", "查询3"]
 }}
 """
-        
+
         response = openai.ChatCompletion.create(
             model="gpt-4",
             messages=[
@@ -1178,15 +1178,15 @@ class NaturalLanguageLogSearch:
             temperature=0.0,
             response_format={"type": "json_object"}
         )
-        
+
         queries = json.loads(response.choices[0].message.content)['queries']
-        
+
         # 2. 搜索日志
         all_logs = []
         for query in queries:
             logs = self.search(query, top_k=5)
             all_logs.extend(logs)
-        
+
         # 3. LLM 基于日志回答问题
         answer_prompt = f"""
 用户问题: {question}
@@ -1195,9 +1195,9 @@ class NaturalLanguageLogSearch:
 """
         for log in all_logs[:20]:  # 最多20条
             answer_prompt += f"\n{log['log']}"
-        
+
         answer_prompt += "\n\n请基于以上日志回答用户问题。如果日志不足以回答,请说明。"
-        
+
         response = openai.ChatCompletion.create(
             model="gpt-4",
             messages=[
@@ -1206,7 +1206,7 @@ class NaturalLanguageLogSearch:
             ],
             temperature=0.3
         )
-        
+
         return response.choices[0].message.content
 
 
@@ -1214,7 +1214,7 @@ class NaturalLanguageLogSearch:
 if __name__ == '__main__':
     # 1. 初始化
     search_engine = NaturalLanguageLogSearch(api_key="sk-...")
-    
+
     # 2. 索引历史日志
     sample_logs = [
         {
@@ -1233,15 +1233,15 @@ if __name__ == '__main__':
         },
         # ... 更多日志
     ]
-    
+
     search_engine.index_logs(sample_logs)
-    
+
     # 3. 自然语言搜索
     results = search_engine.search("支付服务的数据库连接错误")
     print("搜索结果:")
     for r in results:
         print(f"  {r['log']} (相似度: {1-r['distance']:.2f})")
-    
+
     # 4. 直接提问
     answer = search_engine.ask_question("为什么支付服务无法连接数据库?")
     print(f"\n回答:\n{answer}")
@@ -1280,10 +1280,10 @@ from pyvis.network import Network
 
 class LogKnowledgeGraph:
     """从日志构建知识图谱,用于根因分析"""
-    
+
     def __init__(self):
         self.graph = nx.MultiDiGraph()
-    
+
     def add_error_event(
         self,
         service: str,
@@ -1292,9 +1292,9 @@ class LogKnowledgeGraph:
         related_services: List[str] = None
     ):
         """添加错误事件节点"""
-        
+
         error_node = f"{service}_{error_type}_{timestamp}"
-        
+
         self.graph.add_node(
             error_node,
             type="error",
@@ -1303,21 +1303,21 @@ class LogKnowledgeGraph:
             timestamp=timestamp,
             label=f"{service}\n{error_type}"
         )
-        
+
         # 关联服务节点
         if not self.graph.has_node(service):
             self.graph.add_node(service, type="service", label=service)
-        
+
         self.graph.add_edge(error_node, service, relation="occurs_in")
-        
+
         # 关联依赖服务
         if related_services:
             for related in related_services:
                 if not self.graph.has_node(related):
                     self.graph.add_node(related, type="service", label=related)
-                
+
                 self.graph.add_edge(error_node, related, relation="affects")
-    
+
     def add_causal_relation(
         self,
         cause_event: str,
@@ -1325,31 +1325,31 @@ class LogKnowledgeGraph:
         confidence: float = 1.0
     ):
         """添加因果关系"""
-        
+
         self.graph.add_edge(
             cause_event,
             effect_event,
             relation="causes",
             confidence=confidence
         )
-    
+
     def find_root_causes(self, target_error: str) -> List[str]:
         """找到目标错误的所有可能根因"""
-        
+
         # 找到所有前驱节点 (逆向追溯)
         predecessors = list(nx.ancestors(self.graph, target_error))
-        
+
         # 筛选出没有前驱的节点 (根节点)
         root_causes = [
             node for node in predecessors
             if len(list(self.graph.predecessors(node))) == 0
         ]
-        
+
         return root_causes
-    
+
     def find_propagation_path(self, root_cause: str, target_error: str) -> List[List[str]]:
         """找到从根因到目标错误的传播路径"""
-        
+
         try:
             paths = list(nx.all_simple_paths(
                 self.graph,
@@ -1360,12 +1360,12 @@ class LogKnowledgeGraph:
             return paths
         except nx.NetworkXNoPath:
             return []
-    
+
     def visualize(self, output_file: str = "log_knowledge_graph.html"):
         """可视化知识图谱"""
-        
+
         net = Network(height="800px", width="100%", directed=True)
-        
+
         # 添加节点
         for node, attrs in self.graph.nodes(data=True):
             color = "red" if attrs.get('type') == "error" else "lightblue"
@@ -1375,19 +1375,19 @@ class LogKnowledgeGraph:
                 color=color,
                 title=str(attrs)
             )
-        
+
         # 添加边
         for u, v, attrs in self.graph.edges(data=True):
             relation = attrs.get('relation', '')
             net.add_edge(u, v, label=relation)
-        
+
         net.show(output_file)
 
 
 # 使用示例
 if __name__ == '__main__':
     kg = LogKnowledgeGraph()
-    
+
     # 添加错误事件
     kg.add_error_event(
         service="database-service",
@@ -1395,44 +1395,44 @@ if __name__ == '__main__':
         timestamp="10:30:40",
         related_services=["user-service", "payment-service"]
     )
-    
+
     kg.add_error_event(
         service="user-service",
         error_type="QueryTimeout",
         timestamp="10:30:45",
         related_services=["payment-service"]
     )
-    
+
     kg.add_error_event(
         service="payment-service",
         error_type="UserInfoFetchFailed",
         timestamp="10:30:46"
     )
-    
+
     # 添加因果关系
     kg.add_causal_relation(
         "database-service_HighCPU_10:30:40",
         "user-service_QueryTimeout_10:30:45",
         confidence=0.95
     )
-    
+
     kg.add_causal_relation(
         "user-service_QueryTimeout_10:30:45",
         "payment-service_UserInfoFetchFailed_10:30:46",
         confidence=0.98
     )
-    
+
     # 查找根因
     root_causes = kg.find_root_causes("payment-service_UserInfoFetchFailed_10:30:46")
     print(f"根因: {root_causes}")
-    
+
     # 查找传播路径
     paths = kg.find_propagation_path(
         root_causes[0],
         "payment-service_UserInfoFetchFailed_10:30:46"
     )
     print(f"传播路径: {paths}")
-    
+
     # 可视化
     kg.visualize("failure_propagation.html")
 ```
@@ -1448,10 +1448,10 @@ if __name__ == '__main__':
 
 class CostOptimizedLLMAnalyzer:
     """成本优化的 LLM 分析器"""
-    
+
     def __init__(
-        self, 
-        primary_model="gpt-4", 
+        self,
+        primary_model="gpt-4",
         fallback_model="gpt-3.5-turbo",
         rate_limit_calls=50,
         rate_limit_period=60
@@ -1466,17 +1466,17 @@ class CostOptimizedLLMAnalyzer:
         import threading
         from collections import deque
         import time
-        
+
         self.primary_model = primary_model
         self.fallback_model = fallback_model
         self.logger = logging.getLogger(__name__)
-        
+
         # 速率限制
         self.rate_limit_calls = rate_limit_calls
         self.rate_limit_period = rate_limit_period
         self._call_times = deque()
         self._rate_limit_lock = threading.Lock()
-        
+
         # 成本 (美元/1k tokens, 2025年10月价格)
         self.costs = {
             "gpt-4": {"input": 0.03, "output": 0.06},
@@ -1485,23 +1485,23 @@ class CostOptimizedLLMAnalyzer:
             "claude-3-sonnet": {"input": 0.003, "output": 0.015},
             "llama-3-70b": {"input": 0.0008, "output": 0.0008}  # 自托管
         }
-    
+
     def _check_rate_limit(self) -> bool:
         """
         检查是否超过速率限制
-        
+
         Returns:
             True 如果在限制内,False 如果超限
         """
         import time
-        
+
         with self._rate_limit_lock:
             current_time = time.time()
-            
+
             # 移除时间窗口外的调用记录
             while self._call_times and current_time - self._call_times[0] > self.rate_limit_period:
                 self._call_times.popleft()
-            
+
             # 检查是否超限
             if len(self._call_times) >= self.rate_limit_calls:
                 oldest_call = self._call_times[0]
@@ -1511,21 +1511,21 @@ class CostOptimizedLLMAnalyzer:
                     f"wait {wait_time:.1f}s"
                 )
                 return False
-            
+
             # 记录本次调用
             self._call_times.append(current_time)
             return True
-    
+
     def analyze_with_tiered_models(self, logs: List[str]) -> Dict:
         """
         分层分析策略:
         1. 先用便宜模型 (gpt-3.5) 初筛
         2. 如果发现可能异常,再用精准模型 (gpt-4) 详细分析
         """
-        
+
         # 第一层: 快速筛选 (gpt-3.5-turbo)
         quick_result = self._quick_screen(logs, model=self.fallback_model)
-        
+
         if not quick_result.get('is_anomaly'):
             # 正常日志,不需要深入分析
             return {
@@ -1533,10 +1533,10 @@ class CostOptimizedLLMAnalyzer:
                 "cost_usd": self._calculate_cost(quick_result, self.fallback_model),
                 "model": self.fallback_model
             }
-        
+
         # 第二层: 详细分析 (gpt-4)
         detailed_result = self._detailed_analysis(logs, model=self.primary_model)
-        
+
         return {
             **detailed_result,
             "cost_usd": (
@@ -1545,32 +1545,32 @@ class CostOptimizedLLMAnalyzer:
             ),
             "models_used": [self.fallback_model, self.primary_model]
         }
-    
+
     def _quick_screen(self, logs: List[str], model: str) -> Dict:
         """
         快速筛选 (简化 prompt)
-        
+
         Args:
             logs: 日志列表
             model: 模型名称
-        
+
         Returns:
             筛选结果
-        
+
         Raises:
             ValueError: 如果速率限制阻止调用
         """
         import time
-        
+
         # 速率限制检查
         max_wait = 30  # 最多等待30秒
         start_wait = time.time()
-        
+
         while not self._check_rate_limit():
             if time.time() - start_wait > max_wait:
                 raise ValueError(f"Rate limit exceeded, waited {max_wait}s")
             time.sleep(1)
-        
+
         prompt = f"""
 分析以下日志,判断是否有异常 (简要回答):
 
@@ -1583,7 +1583,7 @@ class CostOptimizedLLMAnalyzer:
   "brief_reason": "简要原因"
 }}
 """
-        
+
         try:
             response = openai.ChatCompletion.create(
                 model=model,
@@ -1593,85 +1593,85 @@ class CostOptimizedLLMAnalyzer:
                 request_timeout=30,
                 response_format={"type": "json_object"}
             )
-            
+
             result = json.loads(response.choices[0].message.content)
             result['token_usage'] = response.usage.total_tokens
-            
+
             return result
-        
+
         except Exception as e:
             self.logger.error(f"Quick screen failed: {e}")
             raise
-    
+
     def _detailed_analysis(self, logs: List[str], model: str) -> Dict:
         """详细分析 (完整 prompt)"""
-        
+
         # 使用完整的 prompt (参考第二部分)
         # ...
         pass
-    
+
     def _calculate_cost(self, result: Dict, model: str) -> float:
         """计算成本"""
-        
+
         input_tokens = result.get('token_usage', 0) * 0.7  # 估算
         output_tokens = result.get('token_usage', 0) * 0.3
-        
+
         cost = (
             input_tokens / 1000 * self.costs[model]['input'] +
             output_tokens / 1000 * self.costs[model]['output']
         )
-        
+
         return cost
-    
+
     def analyze_with_caching(
-        self, 
-        logs: List[str], 
+        self,
+        logs: List[str],
         cache_ttl: int = 3600,
         redis_host: str = 'localhost',
         redis_port: int = 6379
     ) -> Dict:
         """
         使用缓存减少重复分析
-        
+
         策略:
         1. 对日志进行哈希
         2. 查询缓存
         3. 缓存未命中才调用 LLM
-        
+
         Args:
             logs: 日志列表
             cache_ttl: 缓存过期时间(秒)
             redis_host: Redis 主机地址
             redis_port: Redis 端口
-        
+
         Returns:
             分析结果,包含 cache_hit 标志
         """
         import hashlib
         import redis
         from redis.exceptions import RedisError
-        
+
         # 计算日志哈希
         log_hash = hashlib.sha256(
             "\n".join(logs).encode('utf-8')
         ).hexdigest()
-        
+
         # 尝试连接 Redis 并查询缓存
         try:
             redis_client = redis.Redis(
-                host=redis_host, 
+                host=redis_host,
                 port=redis_port,
                 socket_connect_timeout=5,
                 socket_timeout=5,
                 decode_responses=True
             )
-            
+
             # 测试连接
             redis_client.ping()
-            
+
             # 查询缓存
             cached_result = redis_client.get(f"log_analysis:{log_hash}")
-            
+
             if cached_result:
                 self.logger.info(f"Cache hit for log hash {log_hash[:8]}")
                 return {
@@ -1679,14 +1679,14 @@ class CostOptimizedLLMAnalyzer:
                     "cache_hit": True,
                     "cost_usd": 0.0  # 缓存命中,无成本
                 }
-        
+
         except RedisError as e:
             self.logger.warning(f"Redis connection failed: {e}, proceeding without cache")
             redis_client = None
-        
+
         # 缓存未命中或 Redis 不可用,调用 LLM
         result = self.analyze_with_tiered_models(logs)
-        
+
         # 尝试存入缓存
         if redis_client:
             try:
@@ -1698,10 +1698,10 @@ class CostOptimizedLLMAnalyzer:
                 self.logger.info(f"Cached result for log hash {log_hash[:8]}")
             except RedisError as e:
                 self.logger.warning(f"Failed to cache result: {e}")
-        
+
         result['cache_hit'] = False
         return result
-    
+
     def analyze_with_sampling(
         self,
         log_stream,
@@ -1709,26 +1709,26 @@ class CostOptimizedLLMAnalyzer:
     ):
         """
         采样分析 (不是所有日志都分析)
-        
+
         适用于高流量场景:
         - 只分析 10% 的日志
         - 如果发现异常,自动提升采样率到 100%
         """
         import random
-        
+
         current_sampling_rate = sampling_rate
         anomaly_detected = False
-        
+
         for log_batch in log_stream:
             # 动态采样
             if random.random() < current_sampling_rate:
                 result = self.analyze_with_tiered_models(log_batch)
-                
+
                 if result.get('is_anomaly'):
                     anomaly_detected = True
                     current_sampling_rate = 1.0  # 提升到 100%
                     yield result
-            
+
             # 如果一段时间没异常,恢复低采样率
             if anomaly_detected:
                 # ... 逻辑省略
@@ -1738,10 +1738,10 @@ class CostOptimizedLLMAnalyzer:
 # 成本对比
 if __name__ == '__main__':
     optimizer = CostOptimizedLLMAnalyzer()
-    
+
     # 场景: 每天分析 100万条日志
     daily_logs = 1_000_000
-    
+
     # 策略 1: 全部用 GPT-4
     avg_tokens_per_log = 50
     total_tokens = daily_logs * avg_tokens_per_log
@@ -1750,17 +1750,17 @@ if __name__ == '__main__':
         total_tokens / 1000 * 0.06    # output
     )
     print(f"策略 1 (全 GPT-4): ${cost_gpt4_only:.2f}/天")
-    
+
     # 策略 2: 分层 (90% gpt-3.5, 10% gpt-4)
     cost_tier1 = daily_logs * 0.9 * avg_tokens_per_log / 1000 * (0.0005 + 0.0015)
     cost_tier2 = daily_logs * 0.1 * avg_tokens_per_log / 1000 * (0.03 + 0.06)
     cost_tiered = cost_tier1 + cost_tier2
     print(f"策略 2 (分层):   ${cost_tiered:.2f}/天 (节省 {(1-cost_tiered/cost_gpt4_only)*100:.1f}%)")
-    
+
     # 策略 3: 分层 + 缓存 (30% 缓存命中率)
     cost_with_cache = cost_tiered * 0.7
     print(f"策略 3 (分层+缓存): ${cost_with_cache:.2f}/天 (节省 {(1-cost_with_cache/cost_gpt4_only)*100:.1f}%)")
-    
+
     # 策略 4: 本地模型 (Llama 3 70B)
     cost_local = daily_logs * avg_tokens_per_log / 1000 * 0.0008 * 2
     print(f"策略 4 (本地模型): ${cost_local:.2f}/天 (节省 {(1-cost_local/cost_gpt4_only)*100:.1f}%)")
@@ -1846,13 +1846,13 @@ import json
 
 class LocalLLMAnalyzer:
     """使用本地 LLM (vLLM / Ollama) 进行日志分析"""
-    
+
     def __init__(self, base_url="http://localhost:8000/v1"):
         self.base_url = base_url
-    
+
     def analyze_logs(self, logs: List[str]) -> Dict:
         """使用本地 Llama 3 分析日志"""
-        
+
         prompt = f"""
 你是系统运维专家。分析以下日志,识别异常。
 
@@ -1861,7 +1861,7 @@ class LocalLLMAnalyzer:
 
 输出 JSON (is_anomaly, severity, root_cause, remediation_steps):
 """
-        
+
         # 调用 vLLM API (兼容 OpenAI 格式)
         response = requests.post(
             f"{self.base_url}/chat/completions",
@@ -1876,23 +1876,23 @@ class LocalLLMAnalyzer:
                 "response_format": {"type": "json_object"}
             }
         )
-        
+
         result = response.json()
         content = result['choices'][0]['message']['content']
-        
+
         return json.loads(content)
 
 
 # 使用 Ollama
 class OllamaAnalyzer:
     """使用 Ollama (更简单)"""
-    
+
     def __init__(self, base_url="http://localhost:11434"):
         self.base_url = base_url
-    
+
     def analyze_logs(self, logs: List[str]) -> Dict:
         prompt = f"分析日志,识别异常:\n{chr(10).join(logs)}"
-        
+
         response = requests.post(
             f"{self.base_url}/api/generate",
             json={
@@ -1902,7 +1902,7 @@ class OllamaAnalyzer:
                 "format": "json"
             }
         )
-        
+
         return response.json()
 ```
 
@@ -1929,17 +1929,17 @@ data:
       primary_model: gpt-4
       fallback_model: gpt-3.5-turbo
       local_model_url: http://vllm-server:8000
-      
+
     optimization:
       enable_caching: true
       cache_ttl: 3600
       enable_tiered_analysis: true
       sampling_rate: 0.1
-      
+
     alerting:
       slack_webhook: https://hooks.slack.com/services/...
       pagerduty_api_key: ...
-      
+
     database:
       host: timescaledb.otlp-aiops.svc.cluster.local
       port: 5432
@@ -2010,7 +2010,7 @@ spec:
             port: 8080
           initialDelaySeconds: 10
           periodSeconds: 5
-      
+
       volumes:
       - name: config
         configMap:
@@ -2140,27 +2140,27 @@ llm_cost = Counter(
 
 class ProductionLogAnalysisSystem:
     """生产级日志分析系统"""
-    
+
     def __init__(self):
         self.logger = structlog.get_logger()
-        
+
         # 初始化组件
         self.llm_analyzer = CostOptimizedLLMAnalyzer(
             primary_model="gpt-4",
             fallback_model="gpt-3.5-turbo"
         )
-        
+
         self.rca_engine = RCAEngine(
             llm_analyzer=self.llm_analyzer,
             db_config=DB_CONFIG
         )
-        
+
         self.search_engine = NaturalLanguageLogSearch(
             api_key=OPENAI_API_KEY
         )
-        
+
         self.alerting = AlertingSystem()
-        
+
         # 统计信息
         self.stats = {
             'total_analyzed': 0,
@@ -2168,12 +2168,12 @@ class ProductionLogAnalysisSystem:
             'false_positives': 0,
             'total_cost_usd': 0.0
         }
-    
+
     async def process_log_stream(self):
         """处理实时日志流"""
-        
+
         from aiokafka import AIOKafkaConsumer
-        
+
         # Kafka 消费者 (读取 OTLP Logs)
         consumer = AIOKafkaConsumer(
             'otlp.logs',
@@ -2181,66 +2181,66 @@ class ProductionLogAnalysisSystem:
             group_id='llm-log-analyzer',
             value_deserializer=lambda m: json.loads(m.decode('utf-8'))
         )
-        
+
         await consumer.start()
-        
+
         try:
             # 滑动窗口缓冲区
             from collections import defaultdict, deque
-            
+
             buffers = defaultdict(lambda: deque(maxlen=100))
             last_analysis = defaultdict(lambda: time.time())
-            
+
             async for msg in consumer:
                 log = msg.value
                 service = log['resource']['service.name']
-                
+
                 # 添加到缓冲区
                 buffers[service].append(log)
-                
+
                 # 每个服务每30秒分析一次
                 if time.time() - last_analysis[service] > 30:
                     await self._analyze_service_logs(service, list(buffers[service]))
                     last_analysis[service] = time.time()
-        
+
         finally:
             await consumer.stop()
-    
+
     async def _analyze_service_logs(self, service: str, logs: List[Dict]):
         """分析单个服务的日志"""
-        
+
         start_time = time.time()
-        
+
         try:
             # 格式化日志
             log_lines = [
                 f"[{log['severity']}] {log['timestamp']} {log['body']}"
                 for log in logs
             ]
-            
+
             # LLM 分析
             result = self.llm_analyzer.analyze_with_caching(log_lines)
-            
+
             # 更新统计
             self.stats['total_analyzed'] += len(logs)
             self.stats['total_cost_usd'] += result.get('cost_usd', 0)
             llm_cost.inc(result.get('cost_usd', 0))
-            
+
             # 记录分析时长
             duration = time.time() - start_time
             analysis_duration.labels(model=result.get('model', 'unknown')).observe(duration)
-            
+
             # 如果检测到异常
             if result.get('is_anomaly'):
                 self.stats['anomalies_detected'] += 1
-                
+
                 anomaly_detected.labels(
                     service=service,
                     severity=result['severity']
                 ).inc()
-                
+
                 await self._handle_anomaly(service, result, logs)
-            
+
             self.logger.info(
                 "log_analysis_completed",
                 service=service,
@@ -2249,14 +2249,14 @@ class ProductionLogAnalysisSystem:
                 duration_seconds=duration,
                 cost_usd=result.get('cost_usd')
             )
-        
+
         except Exception as e:
             self.logger.error(
                 "log_analysis_failed",
                 service=service,
                 error=str(e)
             )
-    
+
     async def _handle_anomaly(
         self,
         service: str,
@@ -2264,23 +2264,23 @@ class ProductionLogAnalysisSystem:
         original_logs: List[Dict]
     ):
         """处理检测到的异常"""
-        
+
         severity = anomaly_result['severity']
-        
+
         # 1. 根因分析
         rca_result = await asyncio.to_thread(
             self.rca_engine.analyze_root_cause,
             anomaly_service=service,
             anomaly_time=datetime.now()
         )
-        
+
         # 2. 构建告警消息
         alert_message = self._build_alert_message(
             service=service,
             anomaly=anomaly_result,
             rca=rca_result
         )
-        
+
         # 3. 发送告警
         if severity in ['Critical', 'High']:
             # 紧急: PagerDuty + Slack
@@ -2289,7 +2289,7 @@ class ProductionLogAnalysisSystem:
         else:
             # 非紧急: 只发 Slack
             await self.alerting.send_slack(alert_message, channel='#alerts')
-        
+
         # 4. 创建工单
         ticket = await self.alerting.create_jira_ticket({
             'summary': f"[{severity}] {service}: {anomaly_result['anomaly_type']}",
@@ -2297,7 +2297,7 @@ class ProductionLogAnalysisSystem:
             'priority': severity,
             'labels': ['auto-detected', 'llm-analysis']
         })
-        
+
         # 5. 存储到知识库
         await self._store_to_knowledge_base(
             service=service,
@@ -2305,7 +2305,7 @@ class ProductionLogAnalysisSystem:
             rca=rca_result,
             ticket_id=ticket['id']
         )
-        
+
         self.logger.warning(
             "anomaly_detected_and_processed",
             service=service,
@@ -2313,7 +2313,7 @@ class ProductionLogAnalysisSystem:
             anomaly_type=anomaly_result['anomaly_type'],
             ticket_id=ticket['id']
         )
-    
+
     def _build_alert_message(
         self,
         service: str,
@@ -2321,7 +2321,7 @@ class ProductionLogAnalysisSystem:
         rca: Dict
     ) -> str:
         """构建告警消息"""
-        
+
         message = f"""
 🚨 **异常检测告警**
 
@@ -2341,10 +2341,10 @@ class ProductionLogAnalysisSystem:
 
 **修复建议**:
 """
-        
+
         for i, step in enumerate(anomaly['remediation_steps'], 1):
             message += f"\n{i}. {step}"
-        
+
         message += f"""
 
 **分析详情**:
@@ -2353,9 +2353,9 @@ class ProductionLogAnalysisSystem:
 **时间**: {datetime.now().isoformat()}
 **模型**: {anomaly.get('model', 'Unknown')}
 """
-        
+
         return message
-    
+
     async def _store_to_knowledge_base(
         self,
         service: str,
@@ -2364,12 +2364,12 @@ class ProductionLogAnalysisSystem:
         ticket_id: str
     ):
         """存储到知识库 (用于未来学习)"""
-        
+
         import psycopg2
-        
+
         conn = psycopg2.connect(**DB_CONFIG)
         cursor = conn.cursor()
-        
+
         cursor.execute("""
             INSERT INTO anomaly_knowledge_base (
                 service,
@@ -2390,7 +2390,7 @@ class ProductionLogAnalysisSystem:
             json.dumps(rca),
             ticket_id
         ))
-        
+
         conn.commit()
         cursor.close()
         conn.close()
@@ -2399,11 +2399,11 @@ class ProductionLogAnalysisSystem:
 # 告警系统
 class AlertingSystem:
     """多渠道告警系统"""
-    
+
     async def send_slack(self, message: str, channel: str):
         """发送 Slack 告警"""
         import httpx
-        
+
         async with httpx.AsyncClient() as client:
             await client.post(
                 SLACK_WEBHOOK_URL,
@@ -2413,11 +2413,11 @@ class AlertingSystem:
                     'username': 'LLM Log Analyzer'
                 }
             )
-    
+
     async def send_pagerduty(self, message: str):
         """触发 PagerDuty 事件"""
         import httpx
-        
+
         async with httpx.AsyncClient() as client:
             await client.post(
                 'https://events.pagerduty.com/v2/enqueue',
@@ -2431,11 +2431,11 @@ class AlertingSystem:
                     }
                 }
             )
-    
+
     async def create_jira_ticket(self, ticket_data: Dict) -> Dict:
         """创建 Jira 工单"""
         import httpx
-        
+
         async with httpx.AsyncClient() as client:
             response = await client.post(
                 f'{JIRA_URL}/rest/api/2/issue',
@@ -2457,7 +2457,7 @@ class AlertingSystem:
 # 主程序
 if __name__ == '__main__':
     system = ProductionLogAnalysisSystem()
-    
+
     # 启动实时处理
     asyncio.run(system.process_log_stream())
 ```
@@ -2506,7 +2506,7 @@ if __name__ == '__main__':
 
 class MultimodalLogAnalyzer:
     """多模态可观测性分析"""
-    
+
     def analyze_with_context(
         self,
         logs: List[str],
@@ -2515,7 +2515,7 @@ class MultimodalLogAnalyzer:
         service_topology: str  # 服务拓扑图
     ) -> Dict:
         """综合分析多种数据源"""
-        
+
         # GPT-4V 可以理解图表
         prompt = """
 分析以下可观测性数据,诊断故障:
@@ -2529,7 +2529,7 @@ Trace 火焰图 (见图片2)
 
 请综合分析,给出根因。
 """
-        
+
         response = openai.ChatCompletion.create(
             model="gpt-4-vision-preview",
             messages=[
@@ -2544,7 +2544,7 @@ Trace 火焰图 (见图片2)
                 }
             ]
         )
-        
+
         return response.choices[0].message.content
 ```
 
@@ -2555,39 +2555,39 @@ Trace 火焰图 (见图片2)
 
 class AutoRemediationSystem:
     """自动修复系统"""
-    
+
     def __init__(self, llm_analyzer, ansible_client):
         self.llm_analyzer = llm_analyzer
         self.ansible = ansible_client
-    
+
     def auto_remediate(self, anomaly: Dict) -> Dict:
         """自动生成并执行修复脚本"""
-        
+
         # 1. LLM 生成修复脚本
         script = self._generate_remediation_script(anomaly)
-        
+
         # 2. 人类审批 (可选)
         if anomaly['severity'] == 'Critical':
             approved = self._request_human_approval(script)
             if not approved:
                 return {"status": "rejected"}
-        
+
         # 3. 执行修复
         result = self._execute_script(script)
-        
+
         # 4. 验证修复效果
         verification = self._verify_fix(anomaly['service'])
-        
+
         return {
             "status": "success",
             "script": script,
             "result": result,
             "verification": verification
         }
-    
+
     def _generate_remediation_script(self, anomaly: Dict) -> str:
         """生成 Ansible / Terraform 修复脚本"""
-        
+
         prompt = f"""
 根据以下异常,生成 Ansible playbook 进行自动修复:
 
@@ -2602,12 +2602,12 @@ class AutoRemediationSystem:
 
 输出 Ansible YAML:
 """
-        
+
         response = openai.ChatCompletion.create(
             model="gpt-4",
             messages=[{"role": "user", "content": prompt}]
         )
-        
+
         return response.choices[0].message.content
 ```
 
@@ -2618,20 +2618,20 @@ class AutoRemediationSystem:
 
 class OpsKnowledgeRAG:
     """运维知识库 RAG 系统"""
-    
+
     def __init__(self):
         # 向量数据库 (存储历史故障案例)
         self.vector_db = ChromaDB()
-        
+
         # 加载历史故障知识库
         self._load_historical_incidents()
-    
+
     def _load_historical_incidents(self):
         """加载历史故障案例"""
-        
+
         conn = psycopg2.connect(**DB_CONFIG)
         cursor = conn.cursor()
-        
+
         cursor.execute("""
             SELECT
                 anomaly_type,
@@ -2642,9 +2642,9 @@ class OpsKnowledgeRAG:
             FROM anomaly_knowledge_base
             WHERE resolved = true
         """)
-        
+
         incidents = cursor.fetchall()
-        
+
         # 索引到向量数据库
         for incident in incidents:
             self.vector_db.add_document(
@@ -2656,22 +2656,22 @@ class OpsKnowledgeRAG:
                     'ticket': incident[4]
                 }
             )
-    
+
     def query_similar_incidents(self, current_anomaly: Dict) -> List[Dict]:
         """查询相似历史故障"""
-        
+
         query = f"{current_anomaly['anomaly_type']}: {current_anomaly['root_cause']}"
-        
+
         results = self.vector_db.search(query, top_k=5)
-        
+
         return results
-    
+
     def enhanced_rca_with_rag(self, anomaly: Dict) -> Dict:
         """结合历史知识的增强根因分析"""
-        
+
         # 1. 查询相似故障
         similar = self.query_similar_incidents(anomaly)
-        
+
         # 2. 构造增强 Prompt
         prompt = f"""
 当前异常:
@@ -2685,15 +2685,15 @@ class OpsKnowledgeRAG:
 - 解决方案: {incident['metadata']['remediation']}
 - 备注: {incident['metadata']['notes']}
 """
-        
+
         prompt += "\n请基于历史经验分析当前故障。"
-        
+
         # 3. LLM 分析
         response = openai.ChatCompletion.create(
             model="gpt-4",
             messages=[{"role": "user", "content": prompt}]
         )
-        
+
         return json.loads(response.choices[0].message.content)
 ```
 
@@ -2769,8 +2769,8 @@ class OpsKnowledgeRAG:
 
 ---
 
-**文档状态**: ✅ P0 任务完成  
-**篇幅**: 2,800+ 行  
+**文档状态**: ✅ P0 任务完成
+**篇幅**: 2,800+ 行
 **覆盖范围**: LLM原理 → 实战代码 → 成本优化 → 生产部署 → 完整案例 → 未来展望
 
 ---

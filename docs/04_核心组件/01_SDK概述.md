@@ -40,6 +40,26 @@
   - [13. 最佳实践](#13-最佳实践)
   - [14. 参考资源](#14-参考资源)
 
+**SDK 组件职责矩阵**（本页内嵌）：
+
+| 组件 | 职责 | 输出/下游 |
+|------|------|-----------|
+| TracerProvider | 创建 Tracer、配置 Sampler/Processor/Exporter | Tracer |
+| Tracer | 创建 Span | Span |
+| Span Processor | 批处理/简单处理 Span | Exporter |
+| Span Exporter | 导出 OTLP 等 | Collector/后端 |
+| Sampler | 采样决策 | 是否记录 Span |
+
+**SDK 数据流简图**：
+
+```mermaid
+flowchart LR
+  App[应用] --> Tracer[Tracer]
+  Tracer --> Processor[Span Processor]
+  Processor --> Exporter[Exporter]
+  Exporter --> OTLP[OTLP]
+```
+
 ## 1. 什么是SDK
 
 ### 1.1 SDK vs API

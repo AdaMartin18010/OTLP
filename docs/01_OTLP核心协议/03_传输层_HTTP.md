@@ -61,6 +61,29 @@
   - [13. 与gRPC对比](#13-与grpc对比)
   - [14. 参考资源](#14-参考资源)
 
+**OTLP 传输选型决策树**（HTTP vs gRPC，详见 [02_传输层_gRPC](./02_传输层_gRPC.md) 对比）：
+
+```mermaid
+flowchart TD
+  Start[选择 OTLP 传输] --> Q1{代理/浏览器/调试?}
+  Q1 -->|是| HTTP[HTTP 4318 本文档]
+  Q1 -->|否| Q2{吞吐与延迟优先?}
+  Q2 -->|是| gRPC[gRPC 4317]
+  Q2 -->|否| HTTP
+  HTTP --> Doc1[本文档]
+  gRPC --> Doc2[02_传输层_gRPC]
+```
+
+**HTTP vs gRPC 多维对比矩阵**：
+
+| 维度 | HTTP (本文档) | gRPC ([02_传输层_gRPC](./02_传输层_gRPC.md)) |
+|------|----------------|---------------------------------------------|
+| 默认端口 | 4318 | 4317 |
+| 底层协议 | HTTP/1.1 | HTTP/2 |
+| 编码 | application/x-protobuf 或 application/json | Protocol Buffers |
+| 适用场景 | 代理、CORS、curl 调试 | 服务间高性能、流式 |
+| 连接 | 无状态、可复用 Keep-Alive | 长连接、多路复用 |
+
 ## 1. 概念定义
 
 ### 1.1 正式定义

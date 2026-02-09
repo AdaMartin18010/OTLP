@@ -51,7 +51,22 @@
     - [官方文档](#官方文档)
     - [核心Processor文档](#核心processor文档)
 
+**Processor 类型与职责矩阵**（本页内嵌）：
+
+| Processor | 职责 | 典型用途 |
+|-----------|------|----------|
+| batch | 批处理 | 降低导出频率 |
+| memory_limiter | 内存限制 | 防 OOM |
+| attributes | 属性增删改 | 脱敏、标准化 |
+| resource | 资源属性 | 统一 Resource |
+| filter | 过滤 | 按条件丢弃 |
+| transform | OTTL 转换 | 复杂转换 |
+| tail_sampling | 尾采样 | 错误/延迟采样 |
+
+**Pipeline 位置**：`Receiver → Processor(s) → Exporter`（Processor 为中间链）。
+
 ---
+
 
 ## 1. 概述
 
