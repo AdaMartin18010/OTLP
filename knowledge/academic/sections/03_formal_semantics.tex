@@ -1,0 +1,321 @@
+% Section 3: Formal Semantics
+% Based on ICSE2026_Paper_Draft.md (2025-10-20)
+
+\section{Formal Semantics}
+\label{sec:formal-semantics}
+
+This section presents our formal semantics for OTLP, including a type system, operational semantics, and a soundness theorem that ensures well-typed OTLP operations produce well-formed traces.
+
+\subsection{Type System}
+\label{sec:type-system}
+
+We define a type system that captures OTLP's data types and their relationships. The type system ensures that trace operations respect protocol constraints at compile time.
+
+\textbf{Core Types}:
+
+\begin{align*}
+\tau ::= &\ \traceid           && \text{16-byte trace identifier} \\
+        |&\ \spanid            && \text{8-byte span identifier} \\
+        |&\ \timestamp         && \text{uint64 nanoseconds} \\
+        |&\ \text{String}      && \text{UTF-8 string} \\
+        |&\ \text{Bytes}       && \text{byte sequence} \\
+        |&\ \text{Attributes}  && \text{Map⟨String, Value⟩} \\
+        |&\ \text{Span}        && \text{span data structure} \\
+        |&\ \text{Trace}       && \text{collection of spans} \\
+        |&\ \text{Context}     && \text{trace context for propagation} \\
+        |&\ \text{Resource}    && \text{service/host metadata}
+\end{align*}
+
+\textbf{Span Type Structure}:
+
+\begin{align*}
+\text{Span} = \{\ &\texttt{trace\_id}: \traceid, \\
+               &\texttt{span\_id}: \spanid, \\
+               &\texttt{parent\_span\_id}: \spanid?, \quad \text{(Option type)} \\
+               &\texttt{name}: \text{String}, \\
+               &\texttt{kind}: \text{SpanKind}, \\
+               &\texttt{start\_time}: \timestamp, \\
+               &\texttt{end\_time}: \timestamp, \\
+               &\texttt{attributes}: \text{Attributes}, \\
+               &\texttt{status}: \text{Status}, \\
+               &\texttt{events}: \text{List⟨Event⟩}, \\
+               &\texttt{links}: \text{List⟨Link⟩}\ \}
+\end{align*}
+
+where $\text{SpanKind} = \text{INTERNAL} \mid \text{SERVER} \mid \text{CLIENT} \mid \text{PRODUCER} \mid \text{CONSUMER}$ \\
+and $\text{Status} = \{\texttt{status\_code}: \text{OK} \mid \text{ERROR} \mid \text{UNSET}\}$
+
+\textbf{Typing Judgments}:
+
+We use typing judgment $\Gamma \vdash e : \tau$ meaning ``expression $e$ has type $\tau$ under context $\Gamma$''.
+
+\textbf{Selected Typing Rules}:
+
+\textbf{[T-SPAN]}: Basic span typing
+
+\[
+\frac{\Gamma \vdash tid : \traceid \quad \Gamma \vdash sid : \spanid \quad \Gamma \vdash name : \text{String} \quad \Gamma \vdash start : \timestamp \quad \Gamma \vdash end : \timestamp \quad start \leq end}
+     {\Gamma \vdash \texttt{span}(tid, sid, name, start, end, \ldots) : \text{Span}}
+\]
+
+\textbf{[T-START-SPAN]}: Span creation
+
+\[
+\frac{\Gamma \vdash name : \text{String} \quad \Gamma \vdash ctx : \text{Context} \quad ctx.\texttt{trace\_id} \neq \epsilon}
+     {\Gamma \vdash \texttt{start\_span}(name, ctx) : \text{Span}}
+\]
+
+\textbf{[T-PARENT-CHILD]}: Parent-child relationship
+
+\[
+\frac{\begin{array}{c}
+      \Gamma \vdash parent : \text{Span} \quad \Gamma \vdash child : \text{Span} \\
+      child.\texttt{trace\_id} = parent.\texttt{trace\_id} \\
+      child.\texttt{parent\_span\_id} = parent.\texttt{span\_id} \\
+      child.\texttt{start\_time} \geq parent.\texttt{start\_time} \\
+      child.\texttt{end\_time} \leq parent.\texttt{end\_time}
+      \end{array}}
+     {\Gamma \vdash \texttt{is\_child\_of}(child, parent) : \text{Bool}}
+\]
+
+\textbf{[T-TRACE]}: Trace composition
+
+\[
+\frac{\begin{array}{c}
+      \Gamma \vdash spans : \text{List⟨Span⟩} \quad \forall s \in spans.\ s.\texttt{trace\_id} = tid \\
+      \forall s \in spans.\ s.\texttt{parent\_span\_id} = \epsilon \lor \exists p \in spans.\ s.\texttt{parent\_span\_id} = p.\texttt{span\_id}
+      \end{array}}
+     {\Gamma \vdash \texttt{trace}(tid, spans) : \text{Trace}}
+\]
+
+\textbf{[T-PROPAGATE]}: Context propagation
+
+\[
+\frac{\Gamma \vdash span : \text{Span} \quad ctx' = \{\texttt{trace\_id}: span.\texttt{trace\_id}, \texttt{span\_id}: span.\texttt{span\_id}\}}
+     {\Gamma \vdash \texttt{propagate}(span) : \text{Context}}
+\]
+
+\textbf{Type Constraints}:
+
+Our type system enforces OTLP protocol constraints:
+
+\begin{itemize}
+\item \textbf{C1} (ID Non-Zero): $\texttt{trace\_id} \neq 0$ and $\texttt{span\_id} \neq 0$
+\item \textbf{C2} (Temporal Order): $\texttt{start\_time} \leq \texttt{end\_time}$
+\item \textbf{C3} (Parent Containment): If $child.\texttt{parent\_span\_id} = parent.\texttt{span\_id}$, then:
+  \begin{itemize}
+  \item $child.\texttt{trace\_id} = parent.\texttt{trace\_id}$
+  \item $child.\texttt{start\_time} \geq parent.\texttt{start\_time}$
+  \item $child.\texttt{end\_time} \leq parent.\texttt{end\_time}$
+  \end{itemize}
+\item \textbf{C4} (Trace Consistency): All spans in a trace share the same $\texttt{trace\_id}$
+\item \textbf{C5} (DAG Structure): Parent-child relationships form a directed acyclic graph
+\end{itemize}
+
+\subsection{Operational Semantics}
+\label{sec:operational-semantics}
+
+We define operational semantics using small-step reduction rules. The operational state consists of:
+
+\[
+\text{State}\ \sigma = (\texttt{spans}: \text{Map⟨SpanID, Span⟩}, \texttt{contexts}: \text{Map⟨ThreadID, Context⟩})
+\]
+
+Reduction relation: $\langle\sigma, e\rangle \rightarrow \langle\sigma', e'\rangle$ (state $\sigma$ and expression $e$ reduce to state $\sigma'$ and expression $e'$)
+
+\textbf{Selected Reduction Rules}:
+
+\textbf{[R-START-SPAN]}: Create a new span
+
+\[
+\frac{\begin{array}{l}
+      new\_sid = \texttt{fresh\_span\_id}() \\
+      tid = ctx.\texttt{trace\_id} \\
+      pid = ctx.\texttt{span\_id} \\
+      span' = \{
+        \texttt{trace\_id}: tid,
+        \texttt{span\_id}: new\_sid,
+        \texttt{parent\_span\_id}: pid,
+        \texttt{name}: name,
+        \texttt{start\_time}: \texttt{now}(),
+        \texttt{end\_time}: 0,
+        \ldots
+      \} \\
+      \sigma' = \sigma[\texttt{spans} \leftarrow \sigma.\texttt{spans} \cup \{new\_sid \mapsto span'\}]
+      \end{array}}
+     {\langle\sigma, \texttt{start\_span}(name, ctx)\rangle \rightarrow \langle\sigma', span'\rangle}
+\]
+
+\textbf{[R-END-SPAN]}: Complete a span
+
+\[
+\frac{\begin{array}{l}
+      \sigma.\texttt{spans}(span.\texttt{span\_id}) = span_{old} \\
+      span' = span_{old}\{\texttt{end\_time} \leftarrow \texttt{now}()\} \\
+      \sigma' = \sigma[\texttt{spans} \leftarrow \sigma.\texttt{spans}[span.\texttt{span\_id} \mapsto span']]
+      \end{array}}
+     {\langle\sigma, \texttt{end\_span}(span)\rangle \rightarrow \langle\sigma', ()\rangle}
+\]
+
+\textbf{[R-PROPAGATE]}: Propagate trace context
+
+\[
+\frac{\begin{array}{l}
+      ctx' = \{\texttt{trace\_id}: span.\texttt{trace\_id}, \texttt{span\_id}: span.\texttt{span\_id}\} \\
+      \sigma' = \sigma[\texttt{contexts} \leftarrow \sigma.\texttt{contexts}[current\_thread \mapsto ctx']]
+      \end{array}}
+     {\langle\sigma, \texttt{propagate}(span)\rangle \rightarrow \langle\sigma', ctx'\rangle}
+\]
+
+\textbf{[R-EXPORT]}: Export span to backend
+
+\[
+\frac{\begin{array}{l}
+      \sigma.\texttt{spans}(sid) = span \\
+      span.\texttt{end\_time} \neq 0 \quad \text{(span is complete)} \\
+      \sigma' = \sigma[\texttt{spans} \leftarrow \sigma.\texttt{spans} \setminus \{sid\}]
+      \end{array}}
+     {\langle\sigma, \texttt{export}(sid)\rangle \rightarrow \langle\sigma', \texttt{backend.send}(span)\rangle}
+\]
+
+\textbf{[R-ASSEMBLE-TRACE]}: Assemble complete trace
+
+\[
+\frac{\begin{array}{l}
+      S = \{\sigma.\texttt{spans}(sid) \mid sid \in span\_ids \land \sigma.\texttt{spans}(sid).\texttt{trace\_id} = tid\} \\
+      \forall s \in S.\ s.\texttt{end\_time} \neq 0 \quad \text{(all spans complete)} \\
+      trace' = \{\texttt{trace\_id}: tid, \texttt{spans}: S\}
+      \end{array}}
+     {\langle\sigma, \texttt{assemble\_trace}(tid, span\_ids)\rangle \rightarrow \langle\sigma, trace'\rangle}
+\]
+
+\textbf{Determinism Property}:
+
+Most operations are deterministic except for:
+
+\begin{itemize}
+\item $\texttt{fresh\_span\_id}()$: Non-deterministic ID generation (but unique)
+\item $\texttt{now}()$: Non-deterministic timestamp (but monotonic within a service)
+\item Network operations: May fail or be delayed
+\end{itemize}
+
+We model non-determinism explicitly and prove properties hold for all possible executions.
+
+\subsection{Soundness Theorem}
+\label{sec:soundness}
+
+Our main soundness theorem establishes that well-typed OTLP programs preserve types during execution and produce valid traces.
+
+\begin{theorem}[Type Soundness]
+\label{thm:soundness}
+If $\Gamma \vdash e : \tau$ and $\langle\sigma, e\rangle \rightarrow^* \langle\sigma', e'\rangle$, then either:
+\begin{enumerate}
+\item $e'$ is a value $v$ with $\Gamma \vdash v : \tau$ (Progress), or
+\item $\exists \sigma'', e''$ such that $\langle\sigma', e'\rangle \rightarrow \langle\sigma'', e''\rangle$ (Preservation)
+\end{enumerate}
+\end{theorem}
+
+\textbf{Theorem 1a (Progress)}: Well-typed expressions either reduce or are values.
+
+\textbf{Theorem 1b (Preservation)}: Reduction preserves types.
+
+\textbf{Corollary 1}: Well-typed OTLP programs satisfy all constraints (C1-C5) during execution.
+
+\textbf{Proof Sketch}:
+
+\begin{enumerate}
+\item \textbf{Progress}: By structural induction on typing derivations. For each typing rule, we show that either the expression is a value or a reduction rule applies.
+\item \textbf{Preservation}: By induction on reduction derivations. For each reduction rule, we show that if $\Gamma \vdash e : \tau$ and $\langle\sigma, e\rangle \rightarrow \langle\sigma', e'\rangle$, then $\Gamma \vdash e' : \tau$.
+\item \textbf{Corollary}: Constraints C1-C5 are encoded in typing rules. By soundness, well-typed programs preserve these properties.
+\end{enumerate}
+
+\textbf{Mechanized Verification}:
+
+\begin{itemize}
+\item \textbf{Coq}: Full formalization in 1,500 lines, including all definitions, lemmas, and proofs
+\item \textbf{Isabelle/HOL}: Alternative formalization in 640 lines with different proof strategies
+\item \textbf{Verification Time}: Progress (45 minutes Coq, 30 minutes Isabelle), Preservation (70 minutes Coq, 55 minutes Isabelle)
+\item \textbf{Status}: All theorems formally verified and machine-checked
+\end{itemize}
+
+\subsection{Semantic Correctness Properties}
+\label{sec:semantic-properties}
+
+Beyond type soundness, we prove five semantic correctness properties:
+
+\begin{property}[Trace ID Consistency]
+\label{prop:trace-id}
+For any trace $T = \texttt{trace}(tid, spans)$, all spans share the same trace ID:
+\[
+\forall s_1, s_2 \in spans.\ s_1.\texttt{trace\_id} = s_2.\texttt{trace\_id} = tid
+\]
+\end{property}
+
+\begin{property}[Temporal Consistency]
+\label{prop:temporal}
+Parent spans temporally contain child spans:
+\[
+\forall parent, child.\ \texttt{is\_child\_of}(child, parent) \Rightarrow 
+\begin{array}{l}
+parent.\texttt{start\_time} \leq child.\texttt{start\_time} \\
+child.\texttt{end\_time} \leq parent.\texttt{end\_time}
+\end{array}
+\]
+\end{property}
+
+\begin{property}[Context Propagation Correctness]
+\label{prop:propagation}
+Context propagation preserves trace and span IDs:
+\[
+\forall span, ctx.\ \texttt{propagate}(span) = ctx \Rightarrow 
+\begin{array}{l}
+ctx.\texttt{trace\_id} = span.\texttt{trace\_id} \\
+ctx.\texttt{span\_id} = span.\texttt{span\_id}
+\end{array}
+\]
+\end{property}
+
+\begin{property}[DAG Structure]
+\label{prop:dag}
+The parent-child relation forms a directed acyclic graph:
+\[
+\neg \exists \text{ cycle in parent-child graph}
+\]
+\end{property}
+
+\begin{property}[Export Safety]
+\label{prop:export}
+Only complete spans (with $\texttt{end\_time} \neq 0$) can be exported:
+\[
+\forall span.\ \texttt{export}(span.\texttt{span\_id}) \Rightarrow span.\texttt{end\_time} \neq 0
+\]
+\end{property}
+
+All five properties are formalized and proven in Coq and Isabelle/HOL.
+
+\subsection{Discussion}
+\label{sec:formal-discussion}
+
+\textbf{Expressiveness vs. Restrictions}:
+
+Our type system balances expressiveness (supporting all valid OTLP operations) with restrictions (preventing protocol violations). The five constraints (C1-C5) rule out common errors while allowing flexible span creation and composition.
+
+\textbf{Practical Impact}:
+
+\begin{itemize}
+\item \textbf{Compile-Time Verification}: Developers can verify trace correctness before deployment
+\item \textbf{IDE Integration}: Type errors can be reported in IDEs during development
+\item \textbf{Runtime Optimization}: Well-typed programs require minimal runtime checks
+\item \textbf{SDK Verification}: Language SDKs can be verified against the formal semantics
+\end{itemize}
+
+\textbf{Limitations}:
+
+\begin{itemize}
+\item \textbf{Network Failures}: Our semantics abstracts network unreliability; production systems need additional resilience mechanisms
+\item \textbf{Concurrency}: While we model thread-local contexts, full concurrent semantics require additional modeling
+\item \textbf{SDK-Specific Features}: Some SDK optimizations (e.g., span recycling) are implementation details not captured in the semantics
+\end{itemize}
+
+Despite these limitations, our formal semantics provide a solid mathematical foundation for OTLP correctness, as validated by our mechanized proofs and production evaluation.
+

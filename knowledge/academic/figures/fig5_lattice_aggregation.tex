@@ -1,0 +1,94 @@
+% Figure 5: Trace Aggregation Lattice
+% Purpose: Illustrate lattice structure for trace aggregation
+% Location: Section 3.3 (Algebraic Structures)
+% Size: Single column width
+
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}[
+    node distance=1.2cm and 1.5cm,
+    trace/.style={
+        circle,
+        draw=black,
+        thick,
+        minimum size=1.8cm,
+        text centered,
+        font=\footnotesize,
+        fill=blue!15
+    },
+    top/.style={
+        circle,
+        draw=black,
+        very thick,
+        minimum size=1.8cm,
+        text centered,
+        font=\footnotesize,
+        fill=green!20
+    },
+    bottom/.style={
+        circle,
+        draw=black,
+        very thick,
+        minimum size=1.8cm,
+        text centered,
+        font=\footnotesize,
+        fill=red!20
+    },
+    join/.style={->, thick, >=stealth, blue},
+    meet/.style={->, thick, >=stealth, red}
+]
+
+% Top element
+\node[top] (top) at (0, 0) {$\top$\\[4pt]{\tiny Complete}\\{\tiny Trace}};
+
+% Middle level - partial traces
+\node[trace, below left=of top] (t1) {$T_1$\\[4pt]{\tiny Spans}\\{\tiny 1,2,3}};
+\node[trace, below right=of top] (t2) {$T_2$\\[4pt]{\tiny Spans}\\{\tiny 3,4,5}};
+
+% Lower middle level - smaller partial traces
+\node[trace, below left=of t1] (t12) {$T_{12}$\\[4pt]{\tiny Spans}\\{\tiny 1,2}};
+\node[trace, below right=of t1, xshift=-0.8cm] (t23) {$T_{23}$\\[4pt]{\tiny Spans}\\{\tiny 2,3}};
+\node[trace, below left=of t2, xshift=0.8cm] (t34) {$T_{34}$\\[4pt]{\tiny Spans}\\{\tiny 3,4}};
+\node[trace, below right=of t2] (t45) {$T_{45}$\\[4pt]{\tiny Spans}\\{\tiny 4,5}};
+
+% Bottom element
+\node[bottom, below=2.5cm of t23, xshift=0.8cm] (bottom) {$\bot$\\[4pt]{\tiny Empty}\\{\tiny Trace}};
+
+% Join arrows (going up, blue)
+\draw[join] (t1) -- (top) node[midway, left, font=\tiny] {$\sqcup$};
+\draw[join] (t2) -- (top);
+
+\draw[join] (t12) -- (t1);
+\draw[join] (t23) -- (t1);
+\draw[join] (t23) -- (t2);
+\draw[join] (t34) -- (t2);
+
+\draw[join] (t12) -- (t23);
+\draw[join] (t23) -- (t34);
+\draw[join] (t34) -- (t45);
+
+\draw[join] (bottom) -- (t12);
+\draw[join] (bottom) -- (t23);
+\draw[join] (bottom) -- (t34);
+\draw[join] (bottom) -- (t45);
+
+% Annotations
+\node[font=\tiny, text=blue, right=1.5cm of t1, align=left] {Join ($\sqcup$):\\Union of spans};
+\node[font=\tiny, text=red, right=1.5cm of t12, align=left] {Meet ($\sqcap$):\\Intersection};
+
+% Legend box
+\node[draw=black, rectangle, rounded corners=2pt, thick,
+      below=0.3cm of bottom, minimum width=4cm, minimum height=1.3cm,
+      fill=white] (legend) {};
+\node[font=\tiny, above=0.05cm of legend.north] {\textbf{Lattice Properties}};
+\node[font=\tiny, align=left] at (legend.center) {
+    $T_1 \sqcup T_2 = \top$ (join)\\
+    $T_1 \sqcap T_2 = T_{23}$ (meet)\\
+    $T \sqcup \bot = T$ (identity)
+};
+
+\end{tikzpicture}
+\caption{Trace Aggregation Lattice $(T, \sqcup, \sqcap)$. The lattice structure enables compositional trace aggregation from distributed sources. Join operation ($\sqcup$) merges spans from different trace fragments, while meet operation ($\sqcap$) computes common spans. Top element ($\top$) represents the complete trace, bottom element ($\bot$) represents the empty trace. This structure guarantees that trace aggregation is order-independent and supports incremental trace construction.}
+\label{fig:lattice-aggregation}
+\end{figure}
+

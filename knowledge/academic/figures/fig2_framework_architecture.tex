@@ -1,0 +1,90 @@
+% Figure 2: Formal Verification Framework Architecture
+% Purpose: Show the layered architecture of our verification framework
+% Location: Section 3.1 (Framework Overview)
+% Size: Double column width (figure*)
+
+\begin{figure*}[t]
+\centering
+\begin{tikzpicture}[
+    node distance=0.8cm,
+    >=stealth',
+    component/.style={rectangle, rounded corners=3pt,
+        minimum width=2.8cm, minimum height=1.2cm,
+        text centered, draw=black, very thick, fill=blue!20, font=\small},
+    subcomp/.style={rectangle, rounded corners=2pt,
+        minimum width=2.5cm, minimum height=0.7cm,
+        text centered, draw=black, thick, fill=cyan!15, font=\footnotesize},
+    layer/.style={rectangle, rounded corners=3pt,
+        minimum width=13.5cm, minimum height=0.8cm,
+        text centered, draw=black!70, very thick, fill=gray!15, font=\footnotesize\bfseries},
+    algebra/.style={rectangle, rounded corners=2pt,
+        minimum width=4cm, minimum height=1cm,
+        text centered, draw=black, thick, fill=yellow!20, font=\footnotesize},
+    proof/.style={rectangle, rounded corners=2pt,
+        minimum width=2.5cm, minimum height=1cm,
+        text centered, draw=black, thick, fill=green!20, font=\footnotesize},
+    arrow/.style={->, very thick, >=stealth},
+    dasharrow/.style={->, thick, dashed, >=stealth}
+]
+
+% Top Layer: Verification Components
+\node[layer] (layer1) at (0,0) {Layer 1: Verification Components};
+
+\node[component, below=0.4cm of layer1, xshift=-4.5cm] (type-sys) {Type System};
+\node[subcomp, below=0.15cm of type-sys] (dep-type) {Dependent\\Types};
+\node[subcomp, below=0.05cm of dep-type] (ref-type) {Refinement\\Types};
+
+\node[component, below=0.4cm of layer1] (flow-analysis) {Flow Analysis};
+\node[subcomp, below=0.15cm of flow-analysis, xshift=-0.9cm] (cfa) {Control};
+\node[subcomp, below=0.15cm of flow-analysis, xshift=0cm] (dfa) {Data};
+\node[subcomp, below=0.15cm of flow-analysis, xshift=0.9cm] (efa) {Execution};
+
+\node[component, below=0.4cm of layer1, xshift=4.5cm] (temporal) {Temporal Logic};
+\node[subcomp, below=0.15cm of temporal] (ltl) {LTL};
+\node[subcomp, below=0.05cm of ltl] (ctl) {CTL};
+
+% Middle Layer: Core Engine (Algebraic Structures)
+\node[layer, below=4.3cm of layer1] (layer2) {Layer 2: Core Engine (Algebraic Structures)};
+
+\node[algebra, below=0.4cm of layer2, xshift=-4.5cm] (monoid) {Monoid\\{\footnotesize Span Composition}\\$(S, \oplus, \varepsilon)$};
+\node[algebra, below=0.4cm of layer2] (lattice) {Lattice\\{\footnotesize Trace Aggregation}\\$(T, \sqcup, \sqcap)$};
+\node[algebra, below=0.4cm of layer2, xshift=4.5cm] (category) {Category\\{\footnotesize Interoperability}\\Functors};
+
+% Bottom Layer: Formal Proofs
+\node[layer, below=2.8cm of layer2] (layer3) {Layer 3: Formal Proof Layer};
+
+\node[proof, below=0.4cm of layer3, xshift=-3cm] (coq) {Coq\\{\footnotesize 2,500 lines}\\Type Soundness};
+\node[proof, below=0.4cm of layer3, xshift=3cm] (isabelle) {Isabelle/HOL\\{\footnotesize 1,800 lines}\\Algebraic Props};
+
+% Arrows: Layer 1 to Layer 2
+\draw[arrow] (type-sys) -- (monoid);
+\draw[arrow] (flow-analysis) -- (lattice);
+\draw[arrow] (temporal) -- (category);
+
+% Arrows: Layer 2 to Layer 3
+\draw[arrow] (monoid) -- (coq);
+\draw[arrow] (lattice) -- (isabelle);
+\draw[arrow] (category) -- (isabelle);
+
+% Cross-layer dependencies (dashed)
+\draw[dasharrow, bend right=15] (type-sys.south) to node[left, font=\tiny] {checks} (coq.north);
+\draw[dasharrow, bend left=15] (temporal.south) to node[right, font=\tiny] {verifies} (isabelle.north);
+
+% Side annotations
+\node[font=\tiny, text=gray, align=left] at (-7, -0.8) {Runtime\\Verification};
+\node[font=\tiny, text=gray, align=left] at (-7, -4.3) {Compositional\\Reasoning};
+\node[font=\tiny, text=gray, align=left] at (-7, -7.5) {Machine-Checked\\Proofs};
+
+% Legend box
+\node[draw=black, thick, rectangle, rounded corners=3pt,
+      minimum width=3cm, minimum height=1.5cm,
+      below=0.5cm of coq, xshift=3cm, fill=white] (legend) {};
+\node[font=\tiny, above=0.05cm of legend.north] {\textbf{Data Flow}};
+\draw[arrow, line width=2pt] ([xshift=-1cm, yshift=0.3cm]legend.center) -- ++(0.8cm, 0) node[right, font=\tiny] {Direct};
+\draw[dasharrow, line width=1.5pt] ([xshift=-1cm, yshift=-0.1cm]legend.center) -- ++(0.8cm, 0) node[right, font=\tiny] {Validation};
+
+\end{tikzpicture}
+\caption{Architecture of Our Formal Verification Framework. The framework consists of three layers: (1) verification components implementing type checking, flow analysis, and temporal logic verification; (2) core engine using algebraic structures for compositional reasoning; (3) formal proof layer with machine-checked proofs in Coq and Isabelle/HOL. Solid arrows indicate direct data flow, while dashed arrows show validation relationships.}
+\label{fig:framework-architecture}
+\end{figure*}
+

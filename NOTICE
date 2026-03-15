@@ -1,0 +1,64 @@
+OTLP Formal Verification Framework
+Copyright 2025-2026 OTLP Project Team
+
+This product includes software developed by the OpenTelemetry Community.
+
+Third-Party Dependencies:
+========================
+
+OpenTelemetry
+-------------
+Copyright The OpenTelemetry Authors
+License: Apache License 2.0
+URL: https://opentelemetry.io/
+
+LaTeX ACM Template
+------------------
+Copyright Association for Computing Machinery
+License: ACM Copyright Policy (for academic use)
+URL: https://www.acm.org/publications/proceedings-template
+
+Coq Proof Assistant
+-------------------
+Copyright INRIA
+License: LGPL-2.1
+URL: https://coq.inria.fr/
+
+Isabelle/HOL
+------------
+Copyright University of Cambridge
+License: BSD-3-Clause
+URL: https://isabelle.in.tum.de/
+
+Rust
+----
+Copyright The Rust Project Developers
+License: MIT/Apache-2.0
+URL: https://www.rust-lang.org/
+
+Haskell
+-------
+Copyright Glasgow Haskell Team
+License: BSD-3-Clause
+URL: https://www.haskell.org/
+
+Academic References:
+===================
+This project includes academic research and references to published papers.
+Please cite appropriately when using this work in academic contexts.
+
+Suggested Citation:
+-------------------
+@misc{otlp-formal-verification-2025,
+  title={A Comprehensive Formal Verification Framework for OTLP},
+  author={OTLP Project Team},
+  year={2025},
+  howpublished={\url{https://github.com/...}},
+  note={ICSE 2026 Submission}
+}
+
+Contact:
+========
+For licensing questions, please contact the project maintainers.
+
+For academic collaboration, please refer to the academic/ directory.

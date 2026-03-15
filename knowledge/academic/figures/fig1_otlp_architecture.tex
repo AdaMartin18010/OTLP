@@ -1,0 +1,91 @@
+% Figure 1: OTLP Architecture Overview
+% Purpose: Illustrate the complete OTLP ecosystem from SDK to backend
+% Location: Section 2.1 (Background)
+% Size: Single column width
+
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}[
+    node distance=1.2cm,
+    >=stealth',
+    component/.style={rectangle, rounded corners=2pt, 
+        minimum width=2.2cm, minimum height=0.8cm,
+        text centered, draw=black, thick, fill=blue!15, font=\small},
+    layer/.style={rectangle, rounded corners=2pt,
+        minimum width=7cm, minimum height=0.6cm,
+        text centered, draw=black!60, thick, fill=gray!10, font=\footnotesize},
+    sdk/.style={rectangle, rounded corners=2pt,
+        minimum width=1.8cm, minimum height=0.6cm,
+        text centered, draw=black, fill=green!20, font=\footnotesize},
+    protocol/.style={rectangle, rounded corners=2pt,
+        minimum width=1.5cm, minimum height=0.6cm,
+        text centered, draw=black, fill=orange!20, font=\footnotesize},
+    backend/.style={rectangle, rounded corners=2pt,
+        minimum width=1.8cm, minimum height=0.6cm,
+        text centered, draw=black, fill=purple!15, font=\footnotesize},
+    arrow/.style={->, thick, >=stealth, shorten >=1pt}
+]
+
+% Layer 1: Application Layer
+\node[layer] (app-layer) at (0,0) {Application Layer};
+
+\node[sdk, below=0.3cm of app-layer, xshift=-2.2cm] (sdk-a) {Service A\\SDK};
+\node[sdk, below=0.3cm of app-layer] (sdk-b) {Service B\\SDK};
+\node[sdk, below=0.3cm of app-layer, xshift=2.2cm] (sdk-c) {Service C\\SDK};
+
+% Layer 2: OTLP Protocol
+\node[layer, below=1.2cm of sdk-b] (protocol-layer) {OTLP Protocol Layer};
+
+\node[protocol, below=0.3cm of protocol-layer, xshift=-1.5cm] (grpc) {gRPC};
+\node[protocol, below=0.3cm of protocol-layer, xshift=1.5cm] (http) {HTTP/JSON};
+
+% Layer 3: Collector
+\node[layer, below=1.2cm of protocol-layer] (collector-layer) {OpenTelemetry Collector};
+
+\node[component, below=0.3cm of collector-layer, xshift=-2.2cm] (receiver) {Receiver};
+\node[component, below=0.3cm of collector-layer] (processor) {Processor};
+\node[component, below=0.3cm of collector-layer, xshift=2.2cm] (exporter) {Exporter};
+
+% Layer 4: Backend
+\node[layer, below=1.2cm of processor] (backend-layer) {Backend Systems};
+
+\node[backend, below=0.3cm of backend-layer, xshift=-2.2cm] (jaeger) {Jaeger};
+\node[backend, below=0.3cm of backend-layer] (tempo) {Tempo};
+\node[backend, below=0.3cm of backend-layer, xshift=2.2cm] (prom) {Prometheus};
+
+% Arrows: SDKs to Protocol
+\draw[arrow] (sdk-a) -- (grpc);
+\draw[arrow] (sdk-b) -- (grpc);
+\draw[arrow] (sdk-c) -- (http);
+
+% Arrows: Protocol to Collector
+\draw[arrow] (grpc) -- (receiver);
+\draw[arrow] (http) -- (receiver);
+
+% Arrows: Within Collector
+\draw[arrow] (receiver) -- (processor);
+\draw[arrow] (processor) -- (exporter);
+
+% Arrows: Collector to Backends
+\draw[arrow] (exporter) -- (jaeger);
+\draw[arrow] (exporter) -- (tempo);
+\draw[arrow] (exporter) -- (prom);
+
+% Labels
+\node[font=\tiny, text=gray] at (-3.5, -0.5) {Instrumentation};
+\node[font=\tiny, text=gray] at (-3.5, -2.1) {Wire Format};
+\node[font=\tiny, text=gray] at (-3.5, -4.3) {Processing};
+\node[font=\tiny, text=gray] at (-3.5, -6.5) {Storage};
+
+% Verification point indicator (our framework)
+\node[draw=red, thick, dashed, rectangle, rounded corners=2pt,
+      minimum width=2.5cm, minimum height=1.0cm,
+      below=0.1cm of processor, xshift=0cm] (verification) {};
+\node[font=\tiny, text=red, above=0.05cm of verification] {\textbf{Our Framework}};
+\node[font=\tiny, text=red] at (verification.center) {Verification\\Layer};
+
+\end{tikzpicture}
+\caption{OTLP Architecture Overview. Our verification framework is deployed as a processor in the OpenTelemetry Collector, enabling passive monitoring of all telemetry data flowing through the system.}
+\label{fig:otlp-architecture}
+\end{figure}
+

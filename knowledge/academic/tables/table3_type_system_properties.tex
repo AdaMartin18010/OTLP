@@ -1,0 +1,38 @@
+% Table 3: Type System Properties
+
+\begin{table}[t]
+\centering
+\caption{\textbf{Type System Properties and Constraints.} Our type system enforces 15 key properties across three categories, formalized in 1,500 lines of Coq with machine-checked proofs.}
+\label{tab:typesystem}
+\small
+\begin{tabular}{@{}llp{4.5cm}@{}}
+\toprule
+\textbf{Category} & \textbf{Property} & \textbf{Constraint/Description} \\
+\midrule
+\multirow{5}{*}{\textbf{Identity}} 
+& P1 & TraceID uniqueness within scope \\
+& P2 & SpanID uniqueness within trace \\
+& P3 & Parent-child relationship validity \\
+& P4 & No cyclic dependencies \\
+& P5 & Root span existence \\
+\midrule
+\multirow{5}{*}{\textbf{Temporal}} 
+& P6 & $t_{\text{start}} < t_{\text{end}}$ for all spans \\
+& P7 & Parent contains child temporally \\
+& P8 & Sibling spans can overlap \\
+& P9 & Causal order preservation \\
+& P10 & Monotonic timestamp progression \\
+\midrule
+\multirow{5}{*}{\textbf{Semantic}} 
+& P11 & Required attributes present \\
+& P12 & Attribute types match schema \\
+& P13 & Context propagation correctness \\
+& P14 & Resource attribution validity \\
+& P15 & Service name consistency \\
+\midrule
+\multicolumn{3}{@{}l@{}}{\textbf{Soundness Theorem:} If $\Gamma \vdash t : \text{Trace}$, then:} \\
+\multicolumn{3}{@{}l@{}}{\quad \textbf{Progress:} $t$ is value or $t \rightarrow t'$} \\
+\multicolumn{3}{@{}l@{}}{\quad \textbf{Preservation:} $t \rightarrow t' \Rightarrow \Gamma \vdash t' : \text{Trace}$} \\
+\bottomrule
+\end{tabular}
+\end{table}

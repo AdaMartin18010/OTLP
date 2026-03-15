@@ -1,0 +1,101 @@
+% Figure 1: OTLP Formal Verification Framework Architecture
+% Three-layer architecture showing the complete framework
+
+\begin{figure*}[t]
+\centering
+\begin{tikzpicture}[
+    node distance=0.8cm and 1.2cm,
+    layer/.style={rectangle, draw=black!80, fill=blue!10, thick, minimum width=18cm, minimum height=2cm, rounded corners},
+    component/.style={rectangle, draw=black!70, fill=white, thick, minimum width=3.5cm, minimum height=1.2cm, rounded corners, font=\small},
+    theory/.style={rectangle, draw=black!70, fill=green!15, thick, minimum width=3.5cm, minimum height=1.2cm, rounded corners, font=\small},
+    tool/.style={rectangle, draw=black!70, fill=yellow!20, thick, minimum width=3.5cm, minimum height=1.2cm, rounded corners, font=\small},
+    arrow/.style={->, >=stealth, thick},
+    bidiarrow/.style={<->, >=stealth, thick}
+]
+
+% Layer 1: Formal Foundation
+\node[layer] (layer1) at (0,0) {};
+\node[anchor=north west, font=\bfseries] at (layer1.north west) {\textbf{Formal Foundation Layer}};
+
+\node[theory] (typesys) at (-6, -0.3) {Type System\\{\footnotesize Coq (1,500 LOC)}};
+\node[theory] (opsem) at (-1.5, -0.3) {Operational\\Semantics};
+\node[theory] (monoid) at (3, -0.3) {Monoid\\Structure};
+\node[theory] (lattice) at (7.5, -0.3) {Lattice\\Properties};
+
+% Layer 2: Analysis Framework
+\node[layer] (layer2) at (0,-3.8) {};
+\node[anchor=north west, font=\bfseries] at (layer2.north west) {\textbf{Analysis Framework Layer}};
+
+\node[component] (cfg) at (-6, -4.1) {Control Flow\\Analysis};
+\node[component] (dfa) at (-1.5, -4.1) {Data Flow\\Analysis};
+\node[component] (efa) at (3, -4.1) {Execution Flow\\Analysis};
+\node[component] (integrated) at (7.5, -4.1) {Integrated\\Analysis};
+
+% Layer 3: Implementation & Validation
+\node[layer] (layer3) at (0,-7.6) {};
+\node[anchor=north west, font=\bfseries] at (layer3.north west) {\textbf{Implementation \& Validation Layer}};
+
+\node[tool] (rust) at (-6, -7.9) {Rust\\Impl (5K LOC)};
+\node[tool] (haskell) at (-1.5, -7.9) {Haskell\\Spec (2.8K LOC)};
+\node[tool] (quickcheck) at (3, -7.9) {QuickCheck\\(500+ props)};
+\node[tool] (production) at (7.5, -7.9) {Production\\Traces (9.3M)};
+
+% Connections between layers
+\draw[arrow] (typesys) -- (cfg);
+\draw[arrow] (opsem) -- (dfa);
+\draw[arrow] (monoid) -- (efa);
+\draw[arrow] (lattice) -- (integrated);
+
+\draw[arrow] (cfg) -- (rust);
+\draw[arrow] (dfa) -- (haskell);
+\draw[arrow] (efa) -- (quickcheck);
+\draw[arrow] (integrated) -- (production);
+
+% Horizontal connections in Layer 1
+\draw[bidiarrow] (typesys) -- (opsem);
+\draw[bidiarrow] (opsem) -- (monoid);
+\draw[bidiarrow] (monoid) -- (lattice);
+
+% Horizontal connections in Layer 2
+\draw[bidiarrow] (cfg) -- (dfa);
+\draw[bidiarrow] (dfa) -- (efa);
+\draw[bidiarrow] (efa) -- (integrated);
+
+% Key results boxes
+\node[draw=black!70, fill=red!10, thick, text width=3.2cm, rounded corners, font=\footnotesize, below=0.3cm of rust] (result1) {
+    \textbf{Result:}\\
+    Type Soundness\\
+    Progress + Preservation
+};
+
+\node[draw=black!70, fill=red!10, thick, text width=3.2cm, rounded corners, font=\footnotesize, below=0.3cm of haskell] (result2) {
+    \textbf{Result:}\\
+    Algebraic Laws\\
+    Verified
+};
+
+\node[draw=black!70, fill=red!10, thick, text width=3.2cm, rounded corners, font=\footnotesize, below=0.3cm of quickcheck] (result3) {
+    \textbf{Result:}\\
+    500+ Props\\
+    All Pass
+};
+
+\node[draw=black!70, fill=red!10, thick, text width=3.2cm, rounded corners, font=\footnotesize, below=0.3cm of production] (result4) {
+    \textbf{Result:}\\
+    255K Violations\\
+    Detected (2.74\%)
+};
+
+% Legend
+\node[anchor=south west, font=\footnotesize] at (-9, -10.5) {
+    \begin{tabular}{ll}
+        \tikz\draw[fill=green!15] (0,0) rectangle (0.3,0.2); & Formal Theory \\
+        \tikz\draw[fill=white] (0,0) rectangle (0.3,0.2); & Analysis Methods \\
+        \tikz\draw[fill=yellow!20] (0,0) rectangle (0.3,0.2); & Implementation/Tools
+    \end{tabular}
+};
+
+\end{tikzpicture}
+\caption{\textbf{OTLP Formal Verification Framework Architecture.} Our three-layer architecture integrates formal theory (Layer 1), multi-perspective analysis (Layer 2), and practical validation (Layer 3). The framework spans from type-theoretic foundations (Coq/Isabelle) through algebraic structures (Haskell/QuickCheck) to production-scale validation (9.3M traces). Each layer builds upon the previous, with bidirectional arrows indicating mutual refinement between components.}
+\label{fig:framework}
+\end{figure*}

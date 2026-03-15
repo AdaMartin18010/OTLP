@@ -1,0 +1,91 @@
+% Figure 4: Span Composition Monoid
+% Purpose: Illustrate monoid properties for span composition
+% Location: Section 3.3 (Algebraic Structures)
+% Size: Single column width
+
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}[
+    node distance=1.5cm,
+    span/.style={
+        rectangle, rounded corners=3pt,
+        draw=black, thick,
+        minimum width=2.5cm,
+        minimum height=0.8cm,
+        text centered,
+        font=\footnotesize,
+        fill=blue!20
+    },
+    identity/.style={
+        rectangle, rounded corners=3pt,
+        draw=black, thick,
+        minimum width=1.8cm,
+        minimum height=0.6cm,
+        text centered,
+        font=\footnotesize,
+        fill=gray!20
+    },
+    operation/.style={
+        circle,
+        draw=black,
+        thick,
+        minimum size=0.8cm,
+        text centered,
+        font=\large,
+        fill=yellow!30
+    }
+]
+
+% Top: Associativity demonstration
+\node[font=\small\bfseries] at (0, 0) {Associativity: $(s_1 \oplus s_2) \oplus s_3 = s_1 \oplus (s_2 \oplus s_3)$};
+
+% Left side: (s1 ⊕ s2) ⊕ s3
+\node[span, below=0.8cm of {(0,0)}, xshift=-3.5cm] (s1-left) {$s_1$\\[2pt]{\tiny [t1, t2]}};
+\node[operation, right=0.3cm of s1-left] (op1-left) {$\oplus$};
+\node[span, right=0.3cm of op1-left] (s2-left) {$s_2$\\[2pt]{\tiny [t2, t3]}};
+\node[operation, right=0.3cm of s2-left] (op2-left) {$\oplus$};
+\node[span, right=0.3cm of op2-left] (s3-left) {$s_3$\\[2pt]{\tiny [t3, t4]}};
+
+% Brackets for left grouping
+\draw[thick, gray] ([yshift=-0.5cm]s1-left.south west) -- ([yshift=-0.5cm]s1-left.south east);
+\draw[thick, gray] ([yshift=-0.5cm]s1-left.south west) -- ([yshift=-0.7cm]s1-left.south west);
+\draw[thick, gray] ([yshift=-0.5cm]s2-left.south east) -- ([yshift=-0.5cm]s2-left.south west);
+\draw[thick, gray] ([yshift=-0.5cm]s2-left.south east) -- ([yshift=-0.7cm]s2-left.south east);
+
+% Right side: s1 ⊕ (s2 ⊕ s3)
+\node[span, below=0.8cm of {(0,0)}, xshift=3.5cm] (s1-right) {$s_1$\\[2pt]{\tiny [t1, t2]}};
+\node[operation, right=0.3cm of s1-right] (op1-right) {$\oplus$};
+\node[span, right=0.3cm of op1-right] (s2-right) {$s_2$\\[2pt]{\tiny [t2, t3]}};
+\node[operation, right=0.3cm of s2-right] (op2-right) {$\oplus$};
+\node[span, right=0.3cm of op2-right] (s3-right) {$s_3$\\[2pt]{\tiny [t3, t4]}};
+
+% Brackets for right grouping
+\draw[thick, gray] ([yshift=-0.5cm]s2-right.south west) -- ([yshift=-0.5cm]s2-right.south east);
+\draw[thick, gray] ([yshift=-0.5cm]s2-right.south west) -- ([yshift=-0.7cm]s2-right.south west);
+\draw[thick, gray] ([yshift=-0.5cm]s3-right.south east) -- ([yshift=-0.5cm]s3-right.south west);
+\draw[thick, gray] ([yshift=-0.5cm]s3-right.south east) -- ([yshift=-0.7cm]s3-right.south east);
+
+% Result for both
+\node[span, below=1.5cm of s2-left, xshift=-3cm, minimum width=3.5cm] (result-left) {$s_1 \oplus s_2 \oplus s_3$\\[2pt]{\tiny [t1, t4]}};
+\node[span, below=1.5cm of s2-right, xshift=3cm, minimum width=3.5cm] (result-right) {$s_1 \oplus s_2 \oplus s_3$\\[2pt]{\tiny [t1, t4]}};
+
+\draw[->, very thick] ([yshift=-0.8cm]s2-left.south) -- (result-left.north);
+\draw[->, very thick] ([yshift=-0.8cm]s2-right.south) -- (result-right.north);
+
+% Equals sign
+\node[font=\Large] at (0, -3.8) {$=$};
+
+% Bottom: Identity element
+\node[font=\small\bfseries, below=3.5cm of result-left] (id-title) {Identity: $s \oplus \varepsilon = \varepsilon \oplus s = s$};
+
+\node[span, below=0.5cm of id-title, xshift=-2.5cm] (s-id) {$s$\\[2pt]{\tiny [t1, t2]}};
+\node[operation, right=0.3cm of s-id] (op-id) {$\oplus$};
+\node[identity, right=0.3cm of op-id] (epsilon) {$\varepsilon$\\[2pt]{\tiny (empty)}};
+\node[font=\Large, right=0.5cm of epsilon] (eq-id) {$=$};
+\node[span, right=0.5cm of eq-id] (s-result) {$s$\\[2pt]{\tiny [t1, t2]}};
+
+\end{tikzpicture}
+\caption{Span Composition Monoid $(S, \oplus, \varepsilon)$. Top: Associativity property ensures that sequential composition of spans is order-independent when grouped. Bottom: Identity element $\varepsilon$ (empty span) acts as a neutral element. These properties enable compositional reasoning about trace construction and allow parallel span aggregation without coordination.}
+\label{fig:monoid-composition}
+\end{figure}
+
