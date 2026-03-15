@@ -1,7 +1,7 @@
 # ☸️ OTLP Kubernetes部署完整指南
 
-> **目标**: 帮助用户在Kubernetes集群中部署生产级OTLP环境  
-> **适用场景**: 生产环境、大规模部署  
+> **目标**: 帮助用户在Kubernetes集群中部署生产级OTLP环境
+> **适用场景**: 生产环境、大规模部署
 > **更新时间**: 2025年10月20日
 
 ---
@@ -133,40 +133,40 @@ data:
             endpoint: 0.0.0.0:4317
           http:
             endpoint: 0.0.0.0:4318
-    
+
     processors:
       memory_limiter:
         check_interval: 1s
         limit_mib: 2048
         spike_limit_mib: 512
-      
+
       batch:
         timeout: 1s
         send_batch_size: 512
-      
+
       resourcedetection:
         detectors: [env, system, docker]
         timeout: 5s
-    
+
     exporters:
       jaeger:
         endpoint: jaeger-collector.observability.svc.cluster.local:14250
         tls:
           insecure: true
-      
+
       prometheus:
         endpoint: 0.0.0.0:8889
-      
+
       logging:
         loglevel: info
-    
+
     extensions:
       health_check:
         endpoint: 0.0.0.0:13133
-      
+
       pprof:
         endpoint: 0.0.0.0:1777
-    
+
     service:
       extensions: [health_check, pprof]
       pipelines:
@@ -174,7 +174,7 @@ data:
           receivers: [otlp]
           processors: [memory_limiter, resourcedetection, batch]
           exporters: [jaeger, logging]
-        
+
         metrics:
           receivers: [otlp]
           processors: [memory_limiter, batch]
@@ -220,7 +220,7 @@ spec:
         - containerPort: 8889
           name: prometheus
           protocol: TCP
-        
+
         env:
         - name: POD_NAME
           valueFrom:
@@ -230,7 +230,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-        
+
         resources:
           requests:
             memory: "1Gi"
@@ -238,25 +238,25 @@ spec:
           limits:
             memory: "2Gi"
             cpu: "1000m"
-        
+
         livenessProbe:
           httpGet:
             path: /
             port: 13133
           initialDelaySeconds: 30
           periodSeconds: 10
-        
+
         readinessProbe:
           httpGet:
             path: /
             port: 13133
           initialDelaySeconds: 10
           periodSeconds: 5
-        
+
         volumeMounts:
         - name: config
           mountPath: /conf
-      
+
       volumes:
       - name: config
         configMap:
@@ -435,7 +435,7 @@ spec:
         - containerPort: 6831
           name: thrift
           protocol: UDP
-        
+
         resources:
           requests:
             memory: "512Mi"
@@ -443,11 +443,11 @@ spec:
           limits:
             memory: "1Gi"
             cpu: "500m"
-        
+
         volumeMounts:
         - name: badger-data
           mountPath: /badger
-      
+
       volumes:
       - name: badger-data
         persistentVolumeClaim:
@@ -565,11 +565,11 @@ kubectl apply -k k8s/overlays/prod
 opentelemetry-collector:
   mode: deployment
   replicaCount: 3
-  
+
   image:
     repository: otel/opentelemetry-collector-contrib
     tag: latest
-  
+
   resources:
     requests:
       cpu: 500m
@@ -577,7 +577,7 @@ opentelemetry-collector:
     limits:
       cpu: 1000m
       memory: 2Gi
-  
+
   config:
     receivers:
       otlp:
@@ -586,26 +586,26 @@ opentelemetry-collector:
             endpoint: 0.0.0.0:4317
           http:
             endpoint: 0.0.0.0:4318
-    
+
     processors:
       memory_limiter:
         limit_mib: 2048
       batch:
         timeout: 1s
-    
+
     exporters:
       jaeger:
         endpoint: jaeger-collector:14250
         tls:
           insecure: true
-    
+
     service:
       pipelines:
         traces:
           receivers: [otlp]
           processors: [memory_limiter, batch]
           exporters: [jaeger]
-  
+
   autoscaling:
     enabled: true
     minReplicas: 2
@@ -661,7 +661,7 @@ spec:
           limits:
             memory: "512Mi"
             cpu: "200m"
-      
+
       volumes:
       - name: config
         configMap:
@@ -696,7 +696,7 @@ spec:
         volumeMounts:
         - name: data
           mountPath: /data
-  
+
   volumeClaimTemplates:
   - metadata:
       name: data
@@ -893,7 +893,7 @@ affinity:
           operator: In
           values:
           - "true"
-  
+
   podAntiAffinity:
     preferredDuringSchedulingIgnoredDuringExecution:
     - weight: 100
@@ -965,8 +965,8 @@ spec:
 
 ---
 
-**更新时间**: 2025年10月20日  
-**版本**: v1.0.0  
+**更新时间**: 2025年10月20日
+**版本**: v1.0.0
 **维护者**: OTLP项目团队
 
 ---
