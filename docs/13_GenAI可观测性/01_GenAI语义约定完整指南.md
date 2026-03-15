@@ -60,6 +60,12 @@
     - [Q3: 是否支持流式响应？](#q3-是否支持流式响应)
     - [Q4: 如何处理函数调用/工具调用？](#q4-如何处理函数调用工具调用)
   - [8. 参考资源](#8-参考资源)
+  - [6. Agent语义约定 (v1.40 Draft)](#6-agent语义约定-v140-draft)
+    - [6.1 概述](#61-概述)
+    - [6.2 Agent核心属性](#62-agent核心属性)
+    - [6.3 Agent Span类型](#63-agent-span类型)
+    - [6.4 Agent语义约定状态](#64-agent语义约定状态)
+    - [6.5 参考资源](#65-参考资源)
 
 ---
 
@@ -865,3 +871,71 @@ span.set_attribute("gen_ai.tool.arguments", json.dumps({"location": "NYC"}))
 **文档版本**: v1.0
 **更新日期**: 2026年3月15日
 **维护者**: OTLP项目团队
+
+---
+
+## 6. Agent语义约定 (v1.40 Draft)
+
+> **状态**: Draft (草案阶段)
+> **版本**: Semantic Conventions v1.40.0+
+> **来源**: 基于Google AI Agent白皮书
+
+### 6.1 概述
+
+AI Agent是新兴的GenAI应用形态，具有自主决策、工具调用、多轮交互等特性。OTel v1.40新增了Agent语义约定草案。
+
+### 6.2 Agent核心属性
+
+| 属性名 | 类型 | 描述 | 示例 |
+|:-------|:----:|:-----|:-----|
+| gen_ai.agent.id | string | Agent唯一标识 | agent-001 |
+| gen_ai.agent.name | string | Agent名称 | CustomerServiceAgent |
+| gen_ai.agent.version | string | Agent版本 | 1.0.0 |
+| gen_ai.agent.system | string | Agent框架 | langchain, llamaindex, autogen |
+| gen_ai.agent.invocation.id | string | 调用ID | inv-12345 |
+| gen_ai.agent.invocation.type | string | 调用类型 | synchronous, streaming |
+
+### 6.3 Agent Span类型
+
+**Agent创建Span**:
+`python
+with tracer.start_as_current_span("gen_ai.agent.create") as span:
+    span.set_attribute("gen_ai.agent.id", "agent-001")
+    span.set_attribute("gen_ai.agent.name", "ServiceAgent")
+    span.set_attribute("gen_ai.agent.system", "langchain")
+`
+
+**Agent调用Span**:
+`python
+with tracer.start_as_current_span("gen_ai.agent.invoke") as span:
+    span.set_attribute("gen_ai.agent.id", "agent-001")
+    span.set_attribute("gen_ai.agent.invocation.type", "synchronous")
+    # 调用Agent...
+`
+
+**Agent工具调用Span**:
+`python
+with tracer.start_as_current_span("gen_ai.agent.tool") as span:
+    span.set_attribute("gen_ai.agent.tool.name", "search_database")
+    # 执行工具...
+`
+
+### 6.4 Agent语义约定状态
+
+| 约定领域 | 状态 | 说明 |
+|:---------|:----:|:-----|
+| LLM Spans | Development | 持续演进 |
+| Agent Spans | **Draft** | v1.40新增草案 |
+| Agent Tasks | Proposal | 提案阶段 |
+| Agent Memory | Proposal | 提案阶段 |
+
+### 6.5 参考资源
+
+- [Google AI Agent Whitepaper](https://www.kaggle.com/whitepaper-agents)
+- [OpenTelemetry GenAI Conventions](https://opentelemetry.io/docs/specs/semconv/gen-ai/)
+
+---
+
+**文档版本**: v1.1
+**更新日期**: 2026年3月16日
+**状态**: 已对齐OpenTelemetry Semantic Conventions v1.40.0
