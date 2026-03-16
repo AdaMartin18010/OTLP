@@ -1,4 +1,19 @@
-# 📊 概率论在OTLP中的应用
+﻿---
+title: 概率论在OTLP中的应用
+description: 概率论在OTLP中的应用 详细指南和最佳实践
+version: OTLP v1.9.0
+date: 2026-03-17
+author: OTLP项目团队
+category: 理论基础
+tags:
+  - otlp
+  - observability
+  - performance
+  - optimization
+  - sampling
+status: published
+---
+# 概率论在OTLP中的应用
 
 > **文档版本**: v1.0
 > **创建日期**: 2025年12月
@@ -11,10 +26,10 @@
 
 ---
 
-## 📋 目录
+## 目录
 
-- [📊 概率论在OTLP中的应用](#-概率论在otlp中的应用)
-  - [📋 目录](#-目录)
+- [概率论在OTLP中的应用](#概率论在otlp中的应用)
+  - [目录](#目录)
   - [第一部分: 概率论基础](#第一部分-概率论基础)
     - [1.1 概率空间](#11-概率空间)
       - [概率空间定义](#概率空间定义)

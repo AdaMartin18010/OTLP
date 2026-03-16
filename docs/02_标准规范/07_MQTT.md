@@ -1,3 +1,17 @@
+﻿---
+title: MQTT语义约定详解
+description: MQTT语义约定详解 详细指南和最佳实践
+version: OTLP v1.9.0
+date: 2026-03-17
+author: OTLP项目团队
+category: 标准规范
+tags:
+  - otlp
+  - observability
+  - performance
+  - optimization
+status: published
+---
 # MQTT语义约定详解
 
 > **IoT消息协议**: MQTT Tracing与Metrics完整规范

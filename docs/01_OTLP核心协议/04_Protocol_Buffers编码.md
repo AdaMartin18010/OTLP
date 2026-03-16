@@ -1,3 +1,19 @@
+﻿---
+title: Protocol Buffers编码详解
+description: Protocol Buffers编码详解 详细指南和最佳实践
+version: OTLP v1.9.0
+date: 2026-03-17
+author: OTLP项目团队
+category: 标准规范
+tags:
+  - otlp
+  - observability
+  - performance
+  - optimization
+  - security
+  - compliance
+status: published
+---
 # Protocol Buffers编码详解
 
 > **Protocol Buffers版本**: v3
@@ -6,10 +22,10 @@
 
 ---
 
-## 📋 目录
+## 目录
 
 - [Protocol Buffers编码详解](#protocol-buffers编码详解)
-  - [📋 目录](#-目录)
+  - [目录](#目录)
   - [1. 概念定义](#1-概念定义)
     - [1.1 正式定义](#11-正式定义)
     - [1.2 为什么选择Protocol Buffers](#12-为什么选择protocol-buffers)

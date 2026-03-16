@@ -1,3 +1,20 @@
+﻿---
+title: AgentSight：AI驱动的智能可观测性平台（2025）
+description: AgentSight：AI驱动的智能可观测性平台（2025） 详细指南和最佳实践
+version: OTLP v1.9.0
+date: 2026-03-17
+author: OTLP项目团队
+category: 前沿技术
+tags:
+  - otlp
+  - observability
+  - performance
+  - optimization
+  - deployment
+  - kubernetes
+  - docker
+status: published
+---
 # AgentSight：AI驱动的智能可观测性平台（2025）
 
 > **概念来源**: 2025年AIOps领域新兴趋势
@@ -8,7 +25,7 @@
 
 ---
 
-## 📋 执行摘要
+## 执行摘要
 
 **什么是AgentSight？**
 
@@ -34,7 +51,7 @@ MTTR降低: 70-90%
 
 ---
 
-## 🎯 核心概念
+## 核心概念
 
 ### 传统监控 vs. AgentSight
 
@@ -75,7 +92,7 @@ AgentSight架构:
 
 ---
 
-## 🏗️ 技术架构
+## � 技术架构
 
 ### 整体架构
 
@@ -167,7 +184,7 @@ AgentSight架构:
 
 ---
 
-## 💻 核心模块实现
+## � 核心模块实现
 
 ### 1. 感知模块：异常检测
 
@@ -1024,7 +1041,7 @@ for i, action in enumerate(result['actions'], 1):
 
 ---
 
-## 📊 实际应用案例
+## 实际应用案例
 
 ### 案例1：电商订单服务延迟
 
@@ -1101,7 +1118,7 @@ Day 4 (立即): 预防性修复
 
 ---
 
-## 🎯 AgentSight vs. 传统APM
+## AgentSight vs. 传统APM
 
 ### 完整对比
 
@@ -1138,7 +1155,7 @@ AgentSight成本:
 
 ---
 
-## 🔮 未来发展
+## � 未来发展
 
 ### 2025-2026路线图
 
@@ -1187,7 +1204,7 @@ AgentSight成本:
 
 ---
 
-## 📚 参考资源
+## 参考资源
 
 ### 学术论文
 
@@ -1217,7 +1234,7 @@ AgentSight成本:
 
 ---
 
-## 📝 变更日志
+## 变更日志
 
 - **2025-10-18**: 初始版本
   - 完整的AgentSight概念介绍

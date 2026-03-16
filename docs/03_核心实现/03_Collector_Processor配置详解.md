@@ -1,3 +1,21 @@
+﻿---
+title: Collector Processor 配置详解
+description: Collector Processor 配置详解 详细指南和最佳实践
+version: OTLP v1.9.0
+date: 2026-03-17
+author: OTLP项目团队
+category: 核心实现
+tags:
+  - otlp
+  - observability
+  - performance
+  - optimization
+  - sampling
+  - deployment
+  - kubernetes
+  - docker
+status: published
+---
 # Collector Processor 配置详解
 
 > **标准版本**: v1.27.0
@@ -66,7 +84,6 @@
 **Pipeline 位置**：`Receiver → Processor(s) → Exporter`（Processor 为中间链）。
 
 ---
-
 
 ## 1. 概述
 
@@ -616,7 +633,7 @@ processors:
 ### 9.2 性能优化
 
 ```yaml
-# ✅ 好的配置
+#  好的配置
 processors:
   memory_limiter:    # 第一位
     limit_mib: 1024

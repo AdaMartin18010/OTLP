@@ -1,3 +1,23 @@
+﻿---
+title: OTLP/HTTP JSON编码详解
+description: OTLP/HTTP JSON编码详解 详细指南和最佳实践
+version: OTLP v1.9.0
+date: 2026-03-17
+author: OTLP项目团队
+category: 标准规范
+tags:
+  - otlp
+  - observability
+  - performance
+  - optimization
+  - sampling
+  - security
+  - compliance
+  - deployment
+  - kubernetes
+  - docker
+status: published
+---
 # OTLP/HTTP JSON编码详解
 
 > **标准版本**: v1.3.0 (JSON支持自v1.1.0)
@@ -7,10 +27,10 @@
 
 ---
 
-## 📋 目录
+## 目录
 
 - [OTLP/HTTP JSON编码详解](#otlphttp-json编码详解)
-  - [📋 目录](#-目录)
+  - [目录](#目录)
   - [1. 概述](#1-概述)
     - [1.1 JSON编码的历史](#11-json编码的历史)
     - [1.2 为什么需要JSON编码](#12-为什么需要json编码)
@@ -2399,7 +2419,7 @@ service:
 docker logs -f otel-collector 2>&1 | grep -i "error\|warn\|trace"
 
 # 常见日志模式
-# ✅ 成功
+#  成功
 "Traces", "service.name": "my-app", "trace.id": "5b8ef...", "span.count": 10
 
 # ❌ 失败
@@ -2823,7 +2843,6 @@ class OTLPJSONExporter:
         """关闭并刷新"""
         self.flush()
 
-
 class Span:
     """Span上下文管理器"""
     def __init__(
@@ -2883,7 +2902,6 @@ class Span:
         self.exporter.add_span(otlp_span)
 
         return False  # 不抑制异常
-
 
 # ============ 使用示例 ============
 

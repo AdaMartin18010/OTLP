@@ -1,3 +1,23 @@
+﻿---
+title: OpenTelemetry SDK 概述
+description: OpenTelemetry SDK 概述 详细指南和最佳实践
+version: OTLP v1.9.0
+date: 2026-03-17
+author: OTLP项目团队
+category: 核心实现
+tags:
+  - otlp
+  - observability
+  - performance
+  - optimization
+  - sampling
+  - security
+  - compliance
+  - deployment
+  - kubernetes
+  - docker
+status: published
+---
 # OpenTelemetry SDK 概述
 
 > **SDK版本**: v1.20+ (各语言实现)
@@ -5,10 +25,10 @@
 
 ---
 
-## 📋 目录
+## 目录
 
 - [OpenTelemetry SDK 概述](#opentelemetry-sdk-概述)
-  - [📋 目录](#-目录)
+  - [目录](#目录)
   - [1. 什么是SDK](#1-什么是sdk)
     - [1.1 SDK vs API](#11-sdk-vs-api)
     - [1.2 SDK职责](#12-sdk职责)

@@ -1,4 +1,4 @@
-# OpenTelemetry 2025 Knowledge Consolidation and Validation Project
+﻿# OpenTelemetry 2025 Knowledge Consolidation and Validation Project
 
 > **Project Positioning**: Knowledge Consolidation + Formal Proof + Academic Research
 > **Base Standard**: International 2025 Latest Standards
@@ -9,7 +9,7 @@
 
 ---
 
-## 📊 Project Overview
+## Project Overview
 
 This project aims to **systematically consolidate, formally prove, and academically research** OpenTelemetry and OTLP protocol knowledge, based on the latest international standards as of 2025.
 
@@ -34,7 +34,7 @@ This project aims to **systematically consolidate, formally prove, and academica
 
 ---
 
-## 🎯 Project Structure
+## Project Structure
 
 ### Core Document System (10 Major Categories)
 
@@ -67,7 +67,7 @@ examples/
 
 ---
 
-## 🌟 Key Features
+## � Key Features
 
 ### 1. Latest Standards (2025)
 
@@ -108,7 +108,7 @@ examples/
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Recommended Learning Path
 
@@ -132,7 +132,7 @@ examples/
 
 ---
 
-## 📚 Core Documents
+## Core Documents
 
 ### 1. Latest Technologies (2025)
 
@@ -187,7 +187,7 @@ examples/
 
 ---
 
-## 🎓 Project Quality Assessment
+## � Project Quality Assessment
 
 ### Overall Score: **7.5/10** (Good to Excellent)
 
@@ -216,7 +216,7 @@ examples/
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 We welcome contributions of all kinds! Please read our [Contributing Guide](../../CONTRIBUTING.md).
 
@@ -237,7 +237,7 @@ We welcome contributions of all kinds! Please read our [Contributing Guide](../.
 
 ---
 
-## 📞 Contact & Support
+## � Contact & Support
 
 - **GitHub Issues**: [Issues](../../issues)
 - **GitHub Discussions**: [Discussions](../../discussions)
@@ -246,13 +246,13 @@ We welcome contributions of all kinds! Please read our [Contributing Guide](../.
 
 ---
 
-## 📄 License
+## � License
 
 MIT License
 
 ---
 
-## 🙏 Acknowledgments
+## � Acknowledgments
 
 - OpenTelemetry Community
 - All Contributors

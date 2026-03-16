@@ -1,10 +1,10 @@
-# OTLP标准版本自动监控系统
+﻿# OTLP标准版本自动监控系统
 
 > **目标**: 自动追踪OpenTelemetry标准的最新版本,确保文档始终与最新标准保持同步
 
 ---
 
-## 📋 系统概述
+## 系统概述
 
 本系统通过GitHub Actions自动化监控以下OpenTelemetry核心组件的版本更新:
 
@@ -16,7 +16,7 @@
 
 ---
 
-## 📚 权威文档清单（三条内容范围）
+## 权威文档清单（三条内容范围）
 
 本项目内容范围对应以下权威来源，建议按检查频率定期核对版本与变更：
 
@@ -51,7 +51,7 @@
 
 ---
 
-## 🔧 工作流程
+## 工作流程
 
 ```text
 ┌─────────────────────────────────────────────────────────────┐
@@ -91,7 +91,7 @@
 
 ---
 
-## 📂 文件结构
+## � 文件结构
 
 ```text
 version-tracking/
@@ -109,7 +109,7 @@ version-tracking/
 
 ---
 
-## 🚀 使用指南
+## 使用指南
 
 ### 自动监控
 
@@ -152,11 +152,11 @@ gh workflow run otlp-version-monitor.yml
 
 ---
 
-## 📊 版本更新处理流程
+## 版本更新处理流程
 
 当收到版本更新Issue时:
 
-### 1. 审查变更 (⏱️ 30分钟)
+### 1. 审查变更 (⏱ 30分钟)
 
 ```bash
 # 查看Release Notes
@@ -173,7 +173,7 @@ open "https://github.com/open-telemetry/opentelemetry-proto/compare/vOLD...vNEW"
 - Deprecations (废弃功能)
 - Bug Fixes (bug修复)
 
-### 2. 评估影响 (⏱️ 1小时)
+### 2. 评估影响 (⏱ 1小时)
 
 根据变更类型,识别需要更新的文档:
 
@@ -187,7 +187,7 @@ open "https://github.com/open-telemetry/opentelemetry-proto/compare/vOLD...vNEW"
 | **废弃功能** | 添加废弃标记 | P2 |
 | **Bug修复** | 更新说明/示例 | P2 |
 
-### 3. 更新文档 (⏱️ 2-8小时)
+### 3. 更新文档 (⏱ 2-8小时)
 
 **标准更新模板**:
 
@@ -198,12 +198,12 @@ open "https://github.com/open-telemetry/opentelemetry-proto/compare/vOLD...vNEW"
 > **最后更新**: YYYY-MM-DD
 > **变更追踪**: vOLD → vNEW
 
-## 🆕 vX.Y.Z 新增特性 (YYYY-MM-DD)
+## � vX.Y.Z 新增特性 (YYYY-MM-DD)
 
 - [新特性1]: 详细说明
 - [新特性2]: 详细说明
 
-## ⚠️ Breaking Changes
+## ⚠ Breaking Changes
 
 - [变更1]: 迁移指南
 - [变更2]: 迁移指南
@@ -213,7 +213,7 @@ open "https://github.com/open-telemetry/opentelemetry-proto/compare/vOLD...vNEW"
 - [废弃功能]: 将在vFUTURE移除,请使用[替代方案]
 ```
 
-### 4. 验证更新 (⏱️ 1-2小时)
+### 4. 验证更新 (⏱ 1-2小时)
 
 ```bash
 # 1. 检查链接有效性
@@ -230,7 +230,7 @@ npm test           # Node.js示例
 markdownlint **/*.md
 ```
 
-### 5. 提交PR (⏱️ 30分钟)
+### 5. 提交PR (⏱ 30分钟)
 
 ```bash
 # 创建分支
@@ -271,7 +271,7 @@ PR合并后,在Issue中添加评论:
 
 ---
 
-## 📈 监控指标
+## 监控指标
 
 系统会追踪以下指标:
 
@@ -296,7 +296,7 @@ yq '.version_history[:5]' current-versions.yml
 
 ---
 
-## 🔧 配置说明
+## 配置说明
 
 ### 修改监控频率
 
@@ -330,7 +330,7 @@ monitoring_config:
 
 ---
 
-## 🐛 故障排查
+## � 故障排查
 
 ### 问题1: Workflow执行失败
 
@@ -382,7 +382,7 @@ vim version-tracking/current-versions.yml
 
 ---
 
-## 📚 相关资源
+## 相关资源
 
 ### OpenTelemetry官方
 
@@ -405,7 +405,7 @@ vim version-tracking/current-versions.yml
 
 ---
 
-## 🤝 贡献指南
+## 贡献指南
 
 ### 改进监控系统
 
@@ -443,7 +443,7 @@ gh pr create --title "feat: improve version monitor"
 
 ---
 
-## 📞 联系与支持
+## � 联系与支持
 
 - **Issue**: 遇到问题请创建Issue
 - **Discussion**: 功能建议请在Discussions中讨论
@@ -451,7 +451,7 @@ gh pr create --title "feat: improve version monitor"
 
 ---
 
-## 📜 变更日志
+## � 变更日志
 
 | 日期 | 版本 | 变更 |
 |-----|------|------|

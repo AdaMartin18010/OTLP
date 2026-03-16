@@ -1,3 +1,21 @@
+﻿---
+title: GenAI语义约定完整指南
+description: GenAI语义约定完整指南 详细指南和最佳实践
+version: OTLP v1.9.0
+date: 2026-03-17
+author: OTLP项目团队
+category: 前沿技术
+tags:
+  - otlp
+  - observability
+  - performance
+  - optimization
+  - sampling
+  - genai
+  - llm
+  - ai
+status: published
+---
 # GenAI语义约定完整指南
 
 > **文档版本**: v1.0 (基于OpenTelemetry Semantic Conventions v1.37+)
@@ -7,10 +25,10 @@
 
 ---
 
-## 📋 目录
+## 目录
 
 - [GenAI语义约定完整指南](#genai语义约定完整指南)
-  - [📋 目录](#-目录)
+  - [目录](#目录)
   - [1. 概述](#1-概述)
     - [1.1 什么是GenAI语义约定](#11-什么是genai语义约定)
     - [1.2 为什么需要GenAI语义约定](#12-为什么需要genai语义约定)

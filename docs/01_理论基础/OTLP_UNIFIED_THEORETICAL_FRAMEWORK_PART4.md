@@ -1,3 +1,15 @@
+﻿---
+title: OTLP 统一理论框架 - 第四部分
+description: OTLP 统一理论框架 - 第四部分 详细指南和最佳实践
+version: OTLP v1.9.0
+date: 2026-03-17
+author: OTLP项目团队
+category: 理论基础
+tags:
+  - otlp
+  - observability
+status: published
+---
 # OTLP 统一理论框架 - 第四部分
 
 > **版本**: 2.0.0
@@ -10,10 +22,10 @@
 
 ---
 
-## 📋 目录
+## 目录
 
 - [OTLP 统一理论框架 - 第四部分](#otlp-统一理论框架---第四部分)
-  - [📋 目录](#-目录)
+  - [目录](#目录)
   - [第六部分: Rust异步/并发模型与OTLP的转换关系](#第六部分-rust异步并发模型与otlp的转换关系)
     - [6.1 Future语义与Span的对应](#61-future语义与span的对应)
       - [6.1.1 Future的形式化语义](#611-future的形式化语义)

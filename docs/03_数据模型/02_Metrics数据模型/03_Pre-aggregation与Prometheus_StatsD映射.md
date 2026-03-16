@@ -1,3 +1,17 @@
+﻿---
+title: Pre-aggregation 与 Prometheus/StatsD 双向映射
+description: Pre-aggregation 与 Prometheus/StatsD 双向映射 详细指南和最佳实践
+version: OTLP v1.9.0
+date: 2026-03-17
+author: OTLP项目团队
+category: 核心实现
+tags:
+  - otlp
+  - observability
+  - sampling
+  - performance
+status: published
+---
 # Pre-aggregation 与 Prometheus/StatsD 双向映射
 
 > **覆盖范围**: OTLP Metrics Data Model（pre-aggregated 时序、与 Prometheus/StatsD 双向映射）

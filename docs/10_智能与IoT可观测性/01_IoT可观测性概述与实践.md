@@ -1,3 +1,22 @@
+﻿---
+title: IoT可观测性概述与实践
+description: IoT可观测性概述与实践 详细指南和最佳实践
+version: OTLP v1.9.0
+date: 2026-03-17
+author: OTLP项目团队
+category: 前沿技术
+tags:
+  - otlp
+  - observability
+  - sampling
+  - performance
+  - security
+  - compliance
+  - deployment
+  - kubernetes
+  - docker
+status: published
+---
 # IoT可观测性概述与实践
 
 > **标准版本**: v1.27.0
@@ -6,10 +25,10 @@
 
 ---
 
-## 📋 目录
+## 目录
 
 - [IoT可观测性概述与实践](#iot可观测性概述与实践)
-  - [📋 目录](#-目录)
+  - [目录](#目录)
   - [1. 概述](#1-概述)
   - [2. IoT可观测性特点](#2-iot可观测性特点)
     - [2.1 核心挑战](#21-核心挑战)

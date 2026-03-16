@@ -1,4 +1,17 @@
-# 📘 OpenTelemetry Collector配置速查手册
+﻿---
+title: 📘 OpenTelemetry Collector配置速查手册
+description: 📘 OpenTelemetry Collector配置速查手册
+ 详细指南
+version: OTLP v1.9.0
+date: 2026-03-17
+author: OTLP项目团队
+category: 参考资料
+tags:
+  - otlp
+  - observability
+status: published
+---
+# � OpenTelemetry Collector配置速查手册
 
 > **Collector版本**: v0.113.0
 > **最后更新**: 2025年10月9日
@@ -6,21 +19,21 @@
 
 ---
 
-## 🎯 速查目录
+## 速查目录
 
-- [📘 OpenTelemetry Collector配置速查手册](#-opentelemetry-collector配置速查手册)
-  - [🎯 速查目录](#-速查目录)
-  - [📋 配置结构](#-配置结构)
+- [� OpenTelemetry Collector配置速查手册](#-opentelemetry-collector配置速查手册)
+  - [速查目录](#速查目录)
+  - [配置结构](#配置结构)
     - [基本结构](#基本结构)
     - [配置优先级](#配置优先级)
-  - [📥 Receivers](#-receivers)
+  - [� Receivers](#-receivers)
     - [OTLP Receiver (推荐)](#otlp-receiver-推荐)
     - [Prometheus Receiver](#prometheus-receiver)
     - [Jaeger Receiver](#jaeger-receiver)
     - [File Log Receiver](#file-log-receiver)
     - [Journald Receiver (Linux系统日志)](#journald-receiver-linux系统日志)
     - [Kafka Receiver](#kafka-receiver)
-  - [⚙️ Processors](#️-processors)
+  - [⚙ Processors](#-processors)
     - [Batch Processor (必备)](#batch-processor-必备)
     - [Memory Limiter (推荐)](#memory-limiter-推荐)
     - [Resource Processor](#resource-processor)
@@ -28,7 +41,7 @@
     - [Tail Sampling Processor](#tail-sampling-processor)
     - [Filter Processor](#filter-processor)
     - [Transform Processor (v0.80.0+)](#transform-processor-v0800)
-  - [📤 Exporters](#-exporters)
+  - [� Exporters](#-exporters)
     - [OTLP Exporter](#otlp-exporter)
     - [OTLP/HTTP Exporter](#otlphttp-exporter)
     - [Prometheus Exporter](#prometheus-exporter)
@@ -36,34 +49,34 @@
     - [File Exporter](#file-exporter)
     - [Kafka Exporter](#kafka-exporter)
     - [Loki Exporter (Logs)](#loki-exporter-logs)
-  - [🔌 Extensions](#-extensions)
+  - [� Extensions](#-extensions)
     - [Health Check](#health-check)
     - [PProf (性能分析)](#pprof-性能分析)
     - [zPages (调试页面)](#zpages-调试页面)
     - [File Storage](#file-storage)
-  - [🔄 Service Pipeline](#-service-pipeline)
+  - [Service Pipeline](#service-pipeline)
     - [完整Pipeline示例](#完整pipeline示例)
-  - [📝 常用配置模板](#-常用配置模板)
+  - [常用配置模板](#常用配置模板)
     - [1. 简单网关模式](#1-简单网关模式)
     - [2. 生产级配置 (带采样和过滤)](#2-生产级配置-带采样和过滤)
     - [3. Kubernetes DaemonSet模式](#3-kubernetes-daemonset模式)
     - [4. 多后端导出](#4-多后端导出)
-  - [🏗️ 部署模式](#️-部署模式)
+  - [� 部署模式](#-部署模式)
     - [1. Agent模式 (应用侧边车)](#1-agent模式-应用侧边车)
     - [2. Gateway模式 (集中式)](#2-gateway模式-集中式)
     - [3. 混合模式 (推荐生产环境)](#3-混合模式-推荐生产环境)
-  - [🔍 配置验证](#-配置验证)
+  - [配置验证](#配置验证)
     - [验证配置文件](#验证配置文件)
     - [测试连通性](#测试连通性)
-  - [📊 性能调优](#-性能调优)
+  - [性能调优](#性能调优)
     - [调优参数速查](#调优参数速查)
     - [资源配置建议](#资源配置建议)
-  - [🎯 最佳实践](#-最佳实践)
-  - [📚 参考资源](#-参考资源)
+  - [最佳实践](#最佳实践)
+  - [参考资源](#参考资源)
 
 ---
 
-## 📋 配置结构
+## 配置结构
 
 ### 基本结构
 
@@ -111,7 +124,7 @@ service:          # 服务: 组装Pipeline
 
 ---
 
-## 📥 Receivers
+## � Receivers
 
 ### OTLP Receiver (推荐)
 
@@ -205,7 +218,7 @@ receivers:
 
 ---
 
-## ⚙️ Processors
+## ⚙ Processors
 
 ### Batch Processor (必备)
 
@@ -320,7 +333,7 @@ processors:
 
 ---
 
-## 📤 Exporters
+## � Exporters
 
 ### OTLP Exporter
 
@@ -417,7 +430,7 @@ exporters:
 
 ---
 
-## 🔌 Extensions
+## � Extensions
 
 ### Health Check
 
@@ -455,7 +468,7 @@ extensions:
 
 ---
 
-## 🔄 Service Pipeline
+## Service Pipeline
 
 ### 完整Pipeline示例
 
@@ -506,7 +519,7 @@ service:
 
 ---
 
-## 📝 常用配置模板
+## 常用配置模板
 
 ### 1. 简单网关模式
 
@@ -765,7 +778,7 @@ service:
 
 ---
 
-## 🏗️ 部署模式
+## � 部署模式
 
 ### 1. Agent模式 (应用侧边车)
 
@@ -824,7 +837,7 @@ Gateway配置:
 
 ---
 
-## 🔍 配置验证
+## 配置验证
 
 ### 验证配置文件
 
@@ -853,7 +866,7 @@ curl http://localhost:13133/health
 
 ---
 
-## 📊 性能调优
+## 性能调优
 
 ### 调优参数速查
 
@@ -894,7 +907,7 @@ sending_queue:
 
 ---
 
-## 🎯 最佳实践
+## 最佳实践
 
 ```text
 ✅ 始终使用memory_limiter防止OOM
@@ -911,7 +924,7 @@ sending_queue:
 
 ---
 
-## 📚 参考资源
+## 参考资源
 
 | 资源 | 链接 |
 |------|------|

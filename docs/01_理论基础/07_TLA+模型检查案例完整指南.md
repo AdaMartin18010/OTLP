@@ -1,4 +1,21 @@
-# 🔍 TLA+模型检查案例完整指南
+﻿---
+title: TLA+模型检查案例完整指南
+description: TLA+模型检查案例完整指南 详细指南和最佳实践
+version: OTLP v1.9.0
+date: 2026-03-17
+author: OTLP项目团队
+category: 理论基础
+tags:
+  - otlp
+  - observability
+  - performance
+  - optimization
+  - sampling
+  - security
+  - compliance
+status: published
+---
+# TLA+模型检查案例完整指南
 
 > **文档版本**: v1.0
 > **创建日期**: 2025年12月
@@ -9,10 +26,10 @@
 
 ---
 
-## 📋 目录
+## 目录
 
-- [🔍 TLA+模型检查案例完整指南](#-tla模型检查案例完整指南)
-  - [📋 目录](#-目录)
+- [TLA+模型检查案例完整指南](#tla模型检查案例完整指南)
+  - [目录](#目录)
   - [第一部分: TLA+基础](#第一部分-tla基础)
     - [1.1 TLA+概述](#11-tla概述)
       - [TLA+简介](#tla简介)

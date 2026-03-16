@@ -1,4 +1,27 @@
-# 🤖 OTLP 自主运维能力完整架构 - AIOps 平台设计
+﻿---
+title: OTLP 自主运维能力完整架构 - AIOps 平台设计
+description: OTLP 自主运维能力完整架构 - AIOps 平台设计 详细指南和最佳实践
+version: OTLP v1.9.0
+date: 2026-03-17
+author: OTLP项目团队
+category: 参考资料
+tags:
+  - otlp
+  - observability
+  - ebpf
+  - performance
+  - optimization
+  - case-study
+  - production
+  - sampling
+  - security
+  - compliance
+  - deployment
+  - kubernetes
+  - docker
+status: published
+---
+# OTLP 自主运维能力完整架构 - AIOps 平台设计
 
 > **文档版本**: v1.0
 > **创建日期**: 2025年10月9日
@@ -9,10 +32,10 @@
 
 ---
 
-## 📋 目录
+## 目录
 
-- [🤖 OTLP 自主运维能力完整架构 - AIOps 平台设计](#-otlp-自主运维能力完整架构---aiops-平台设计)
-  - [📋 目录](#-目录)
+- [OTLP 自主运维能力完整架构 - AIOps 平台设计](#otlp-自主运维能力完整架构---aiops-平台设计)
+  - [目录](#目录)
   - [第一部分: 架构概述与愿景](#第一部分-架构概述与愿景)
     - [1.1 为什么需要 AIOps?](#11-为什么需要-aiops)
       - [传统运维的困境](#传统运维的困境)
@@ -77,7 +100,7 @@
     - [8.1 短期路线图 (2026 Q1-Q2)](#81-短期路线图-2026-q1-q2)
     - [8.2 中期路线图 (2026 Q3-2027)](#82-中期路线图-2026-q3-2027)
     - [8.3 长期愿景 (2027-2029)](#83-长期愿景-2027-2029)
-  - [📚 相关文档](#-相关文档)
+  - [相关文档](#相关文档)
     - [核心集成 ⭐⭐⭐](#核心集成-)
     - [性能与分析 ⭐⭐⭐](#性能与分析-)
     - [自动化工作流 ⭐⭐](#自动化工作流-)
@@ -1143,7 +1166,6 @@ class TimeSeriesDataset(Dataset):
     def __getitem__(self, idx):
         return self.X[idx], self.y[idx]
 
-
 class LSTMAnomalyDetector(nn.Module):
     """LSTM 异常检测模型"""
 
@@ -1175,7 +1197,6 @@ class LSTMAnomalyDetector(nn.Module):
         out = self.sigmoid(out)  # 输出异常概率 (0-1)
 
         return out.squeeze()
-
 
 def train_lstm_detector(train_df, val_df, epochs=50):
     """训练 LSTM 异常检测模型"""
@@ -1248,7 +1269,6 @@ def train_lstm_detector(train_df, val_df, epochs=50):
             }, 'models/lstm_anomaly_detector_best.pth')
 
     return model
-
 
 # 使用示例
 if __name__ == '__main__':
@@ -1407,7 +1427,6 @@ class LSTMInferenceEngine:
                 predictions.extend(probs)
 
         return np.array(predictions)
-
 
 # Flink ProcessFunction 集成
 class LSTMAnomalyDetectionFunction(ProcessFunction):
@@ -1577,7 +1596,6 @@ class CausalRCAEngine:
 
         return explanations.get(root_cause, f"⚠️ {root_cause} 异常")
 
-
 # 使用示例
 if __name__ == '__main__':
     # 1. 检测到异常
@@ -1694,7 +1712,6 @@ class ServiceGraphRCAModel(torch.nn.Module):
 
         return torch.sigmoid(x).squeeze()  # (num_nodes,) - 每个节点的根因概率
 
-
 def prepare_service_graph_data(service_graph, features):
     """准备 PyTorch Geometric 数据"""
 
@@ -1730,7 +1747,6 @@ def prepare_service_graph_data(service_graph, features):
                      dtype=torch.float)
 
     return Data(x=x, edge_index=edge_index, y=y), node_names
-
 
 def train_gnn_rca_model(training_graphs, epochs=100):
     """训练 GNN 根因分析模型"""
@@ -1771,7 +1787,6 @@ def train_gnn_rca_model(training_graphs, epochs=100):
 
     return model
 
-
 # 使用示例: 在线根因分析
 def online_gnn_rca(model, current_service_graph, current_features):
     """在线 GNN 根因分析"""
@@ -1796,7 +1811,6 @@ def online_gnn_rca(model, current_service_graph, current_features):
         print(f"  {service}: {prob:.2%}")
 
     return results
-
 
 # 示例
 if __name__ == '__main__':
@@ -1846,7 +1860,6 @@ class ActionType(Enum):
     CIRCUIT_BREAK = "circuit_break"  # 熔断
     RATE_LIMIT = "rate_limit"    # 限流
     MANUAL_INTERVENTION = "manual_intervention"  # 人工介入
-
 
 class DecisionEngine:
     """智能决策引擎"""
@@ -2076,7 +2089,6 @@ class DecisionEngine:
 
         return similar[-10:]  # 返回最近10个相似案例
 
-
 # 规则配置示例 (JSON)
 RULE_CONFIG_EXAMPLE = """
 {
@@ -2141,7 +2153,6 @@ class ApprovalStatus(Enum):
     REJECTED = "rejected"
     TIMEOUT = "timeout"
     AUTO_APPROVED = "auto_approved"
-
 
 class ApprovalWorkflow:
     """审批工作流"""
@@ -3974,7 +3985,7 @@ data:
 
 ---
 
-## 📚 相关文档
+## 相关文档
 
 ### 核心集成 ⭐⭐⭐
 

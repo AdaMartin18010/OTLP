@@ -1,3 +1,17 @@
+﻿---
+title: OTLP Protocol Buffers v1.9.0 更新说明
+description: OTLP Protocol Buffers v1.9.0 更新说明 详细指南和最佳实践
+version: OTLP v1.9.0
+date: 2026-03-17
+author: OTLP项目团队
+category: 标准规范
+tags:
+  - otlp
+  - observability
+  - performance
+  - optimization
+status: published
+---
 # OTLP Protocol Buffers v1.9.0 更新说明
 
 > **更新时间**: 2026年3月15日
@@ -6,7 +20,7 @@
 
 ---
 
-## 📊 更新概览
+## 更新概览
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -24,7 +38,7 @@
 
 ---
 
-## 🆕 一、新增内容
+## � 一、新增内容
 
 ### 1.1 Profiles信号支持 (v1.9.0)
 
@@ -99,7 +113,7 @@ message ProfileContainer {
 
 ---
 
-## ⚠️ 二、重大变更
+## ⚠ 二、重大变更
 
 ### 2.1 Metrics数据点批处理 (v1.5.0)
 
@@ -187,7 +201,7 @@ message AnyValue {
 
 ---
 
-## 🔧 三、实现细节变更
+## 三、实现细节变更
 
 ### 3.1 时间戳精度 (v1.8.0)
 
@@ -266,7 +280,7 @@ message Span {
 
 ---
 
-## 📊 四、性能改进详情
+## 四、性能改进详情
 
 ### 4.1 内存布局优化 (v1.7.0)
 
@@ -305,7 +319,7 @@ exporters:
 
 ---
 
-## 🔄 五、向后兼容性
+## 五、向后兼容性
 
 ### 5.1 兼容性矩阵
 
@@ -331,7 +345,7 @@ exporters:
 
 ---
 
-## 🎯 六、项目更新任务
+## 六、项目更新任务
 
 ### 6.1 需要更新的文档
 
@@ -349,7 +363,7 @@ exporters:
 
 ---
 
-## 📚 七、参考资源
+## 七、参考资源
 
 - [OTLP Protobuf Repository](https://github.com/open-telemetry/opentelemetry-proto)
 - [OTLP v1.9.0 Release Notes](https://github.com/open-telemetry/opentelemetry-proto/releases/tag/v1.9.0)

@@ -1,3 +1,18 @@
+﻿---
+title: Metrics数据模型概述
+description: Metrics数据模型概述 详细指南和最佳实践
+version: OTLP v1.9.0
+date: 2026-03-17
+author: OTLP项目团队
+category: 核心实现
+tags:
+  - otlp
+  - observability
+  - performance
+  - optimization
+  - sampling
+status: published
+---
 # Metrics数据模型概述
 
 > **OTLP版本**: v1.0.0 (Stable)

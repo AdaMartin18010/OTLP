@@ -1,4 +1,20 @@
-# 📊 OTLP 架构图表与可视化指南 - Mermaid 完整版
+﻿---
+title: OTLP 架构图表与可视化指南 - Mermaid 完整版
+description: OTLP 架构图表与可视化指南 - Mermaid 完整版 详细指南和最佳实践
+version: OTLP v1.9.0
+date: 2026-03-17
+author: OTLP项目团队
+category: 参考资料
+tags:
+  - otlp
+  - observability
+  - ebpf
+  - performance
+  - optimization
+  - sampling
+status: published
+---
+# OTLP 架构图表与可视化指南 - Mermaid 完整版
 
 > **版本**: v1.0
 > **日期**: 2025年10月9日
@@ -6,10 +22,10 @@
 
 ---
 
-## 📋 目录
+## 目录
 
-- [📊 OTLP 架构图表与可视化指南 - Mermaid 完整版](#-otlp-架构图表与可视化指南---mermaid-完整版)
-  - [📋 目录](#-目录)
+- [OTLP 架构图表与可视化指南 - Mermaid 完整版](#otlp-架构图表与可视化指南---mermaid-完整版)
+  - [目录](#目录)
   - [1. AIOps 平台架构](#1-aiops-平台架构)
     - [1.1 整体架构图](#11-整体架构图)
     - [1.2 LSTM 异常检测流程](#12-lstm-异常检测流程)
@@ -43,7 +59,7 @@
   - [10. 端到端追踪流程](#10-端到端追踪流程)
     - [10.1 完整调用链](#101-完整调用链)
     - [10.2 Trace Context 传播](#102-trace-context-传播)
-  - [📚 使用指南](#-使用指南)
+  - [使用指南](#使用指南)
     - [如何在文档中引用这些图表](#如何在文档中引用这些图表)
     - [Mermaid 渲染支持](#mermaid-渲染支持)
 
@@ -972,7 +988,7 @@ graph TB
 
 ---
 
-## 📚 使用指南
+## 使用指南
 
 ### 如何在文档中引用这些图表
 

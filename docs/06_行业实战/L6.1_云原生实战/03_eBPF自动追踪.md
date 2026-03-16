@@ -1,3 +1,26 @@
+﻿---
+title: eBPF自动追踪实战
+description: eBPF自动追踪实战 详细指南和最佳实践
+version: OTLP v1.9.0
+date: 2026-03-17
+author: OTLP项目团队
+category: 行业实战
+tags:
+  - otlp
+  - observability
+  - ebpf
+  - performance
+  - optimization
+  - case-study
+  - production
+  - sampling
+  - security
+  - compliance
+  - deployment
+  - kubernetes
+  - docker
+status: published
+---
 # eBPF自动追踪实战
 
 > **最后更新**: 2025年10月8日
@@ -6,10 +29,10 @@
 
 ---
 
-## 📋 目录
+## 目录
 
 - [eBPF自动追踪实战](#ebpf自动追踪实战)
-  - [📋 目录](#-目录)
+  - [目录](#目录)
   - [1. eBPF追踪概述](#1-ebpf追踪概述)
   - [2. 零侵入追踪原理](#2-零侵入追踪原理)
   - [3. Kubernetes自动注入](#3-kubernetes自动注入)

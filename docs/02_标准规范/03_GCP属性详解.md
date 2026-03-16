@@ -1,3 +1,18 @@
+﻿---
+title: GCP云平台属性详解
+description: GCP云平台属性详解 详细指南和最佳实践
+version: OTLP v1.9.0
+date: 2026-03-17
+author: OTLP项目团队
+category: 标准规范
+tags:
+  - otlp
+  - observability
+  - performance
+  - optimization
+  - sampling
+status: published
+---
 # GCP云平台属性详解
 
 > **Google Cloud Platform**: Resource与Span完整语义约定规范

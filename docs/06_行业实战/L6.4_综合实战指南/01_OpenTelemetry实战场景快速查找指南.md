@@ -1,3 +1,26 @@
+﻿---
+title: OpenTelemetry实战场景快速查找指南
+description: OpenTelemetry实战场景快速查找指南 详细指南和最佳实践
+version: OTLP v1.9.0
+date: 2026-03-17
+author: OTLP项目团队
+category: 行业实战
+tags:
+  - otlp
+  - observability
+  - ebpf
+  - performance
+  - optimization
+  - case-study
+  - production
+  - sampling
+  - security
+  - compliance
+  - deployment
+  - kubernetes
+  - docker
+status: published
+---
 # OpenTelemetry实战场景快速查找指南
 
 > **目标**: 根据实际场景快速找到对应的配置、代码和最佳实践
@@ -6,11 +29,11 @@
 
 ---
 
-## 📋 目录
+## 目录
 
 - [OpenTelemetry实战场景快速查找指南](#opentelemetry实战场景快速查找指南)
-  - [📋 目录](#-目录)
-  - [🚀 快速导航](#-快速导航)
+  - [目录](#目录)
+  - [快速导航](#快速导航)
     - [我想](#我想)
   - [1. 按开发语言查找](#1-按开发语言查找)
     - [1.1 Go语言](#11-go语言)
@@ -62,7 +85,7 @@
 
 ---
 
-## 🚀 快速导航
+## 快速导航
 
 ### 我想
 

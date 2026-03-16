@@ -1,16 +1,37 @@
-# 📊 OpenTelemetry Profiling信号追踪
+﻿---
+title: OpenTelemetry Profiling信号追踪
+description: OpenTelemetry Profiling信号追踪 详细指南和最佳实践
+version: OTLP v1.9.0
+date: 2026-03-17
+author: OTLP项目团队
+category: 项目管理
+tags:
+  - otlp
+  - observability
+  - ebpf
+  - performance
+  - optimization
+  - case-study
+  - production
+  - sampling
+  - deployment
+  - kubernetes
+  - docker
+status: published
+---
+# OpenTelemetry Profiling信号追踪
 
-**创建日期**: 2025-10-10  
-**更新频率**: 季度更新  
+**创建日期**: 2025-10-10
+**更新频率**: 季度更新
 **负责人**: OTLP项目组 - 标准追踪小组
 
 ---
 
-## 📋 目录
+## 目录
 
-- [📊 OpenTelemetry Profiling信号追踪](#-opentelemetry-profiling信号追踪)
-  - [📋 目录](#-目录)
-  - [📋 执行摘要](#-执行摘要)
+- [OpenTelemetry Profiling信号追踪](#opentelemetry-profiling信号追踪)
+  - [目录](#目录)
+  - [执行摘要](#执行摘要)
     - [当前状态 (2025-10)](#当前状态-2025-10)
     - [关键趋势](#关键趋势)
   - [1. OpenTelemetry Profiling规范演进](#1-opentelemetry-profiling规范演进)
@@ -62,7 +83,7 @@
   - [10. 行动建议](#10-行动建议)
     - [对于本项目](#对于本项目)
 
-## 📋 执行摘要
+## 执行摘要
 
 **Profiling**正式成为OpenTelemetry的**第四大信号** (Traces/Metrics/Logs/Profiles),标志着可观测性进入**代码级性能分析**时代。
 
@@ -106,23 +127,23 @@
 message Profile {
   // Profile唯一标识
   bytes profile_id = 1;
-  
+
   // 时间范围
   fixed64 start_time_unix_nano = 2;
   fixed64 end_time_unix_nano = 3;
-  
+
   // Profile类型
   ProfileType profile_type = 4;
-  
+
   // 采样信息
   repeated Sample samples = 5;
-  
+
   // 函数映射
   repeated Function functions = 6;
-  
+
   // 位置信息 (文件:行号)
   repeated Location locations = 7;
-  
+
   // 关联Trace
   bytes trace_id = 8;
   bytes span_id = 9;
@@ -131,10 +152,10 @@ message Profile {
 message ProfileType {
   // 类型: "cpu", "memory", "goroutine", "mutex", "block"
   string type = 1;
-  
+
   // 单位: "samples", "bytes", "nanoseconds"
   string unit = 2;
-  
+
   // 采样周期 (如每10ms采样一次)
   int64 period = 3;
 }
@@ -142,10 +163,10 @@ message ProfileType {
 message Sample {
   // 调用栈 (location_id数组,从叶子到根)
   repeated uint64 location_ids = 1;
-  
+
   // 值 (如CPU时间10ms,分配内存1024bytes)
   repeated int64 values = 2;
-  
+
   // 属性 (如thread_id, user_id)
   repeated KeyValue attributes = 3;
 }
@@ -180,7 +201,7 @@ message Function {
 
 ### 2.1 Grafana Pyroscope
 
-**项目**: [github.com/grafana/pyroscope](https://github.com/grafana/pyroscope)  
+**项目**: [github.com/grafana/pyroscope](https://github.com/grafana/pyroscope)
 **定位**: 开源连续性能剖析平台,2023年被Grafana Labs收购
 
 #### 最新进展 (2025-Q4)
@@ -200,7 +221,7 @@ scrape_configs:
     targets:
       - 'app-server:4040'
     profile_path: '/debug/pprof/profile'
-    
+
     # OTel集成
     otlp:
       enabled: true
@@ -244,7 +265,7 @@ pyroscope top \
 
 ### 2.2 Polar Signals Cloud
 
-**项目**: [polarsignals.com](https://polarsignals.com)  
+**项目**: [polarsignals.com](https://polarsignals.com)
 **定位**: 基于eBPF的商业Profiling平台
 
 #### 独特优势
@@ -287,7 +308,7 @@ pyroscope top \
 
 ### 2.3 Parca
 
-**项目**: [github.com/parca-dev/parca](https://github.com/parca-dev/parca)  
+**项目**: [github.com/parca-dev/parca](https://github.com/parca-dev/parca)
 **定位**: CNCF沙箱项目,开源eBPF Profiling
 
 #### 特色
@@ -312,7 +333,7 @@ open http://localhost:7070
 
 ### 2.4 Google Cloud Profiler
 
-**产品**: [cloud.google.com/profiler](https://cloud.google.com/profiler)  
+**产品**: [cloud.google.com/profiler](https://cloud.google.com/profiler)
 **定位**: GCP托管Profiling服务
 
 #### 特点
@@ -357,13 +378,13 @@ open http://localhost:7070
 ```text
 场景1: 初创公司 (预算有限)
   推荐: Grafana Pyroscope (开源,功能全)
-  
+
 场景2: 大型企业 (追求零侵入)
   推荐: Polar Signals (eBPF最优,商业支持)
-  
+
 场景3: GCP重度用户
   推荐: Google Cloud Profiler (无缝集成)
-  
+
 场景4: 云原生践行者
   推荐: Parca (CNCF项目,未来潜力大)
 ```
@@ -411,7 +432,7 @@ import (
 
 func slowFunction(ctx context.Context) {
     span := trace.SpanFromContext(ctx)
-    
+
     // 将TraceID注入到Profile标签
     pprof.Do(ctx, pprof.Labels(
         "trace_id", span.SpanContext().TraceID().String(),
@@ -427,7 +448,7 @@ func slowFunction(ctx context.Context) {
 
 ```sql
 -- 查询某个Span期间的Profile样本
-SELECT 
+SELECT
 f.name AS function_name,
 SUM(s.value) AS total_cpu_ms
 FROM profiles p
@@ -688,6 +709,6 @@ saveToDatabase() - 1850ms
 
 ---
 
-**文档维护者**: OTLP项目组 - 标准追踪小组  
-**最后更新**: 2025-10-10  
+**文档维护者**: OTLP项目组 - 标准追踪小组
+**最后更新**: 2025-10-10
 **下次评审**: 2026-01-15 (OTel Profiling GA预期时间)

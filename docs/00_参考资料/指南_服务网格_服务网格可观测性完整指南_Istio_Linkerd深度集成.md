@@ -1,4 +1,27 @@
-# 🕸️ 服务网格可观测性完整指南 - Istio & Linkerd 深度集成
+﻿---
+title: 服务网格可观测性完整指南 - Istio & Linkerd 深度集成
+description: 服务网格可观测性完整指南 - Istio & Linkerd 深度集成 详细指南和最佳实践
+version: OTLP v1.9.0
+date: 2026-03-17
+author: OTLP项目团队
+category: 参考资料
+tags:
+  - otlp
+  - observability
+  - ebpf
+  - performance
+  - optimization
+  - case-study
+  - production
+  - sampling
+  - security
+  - compliance
+  - deployment
+  - kubernetes
+  - docker
+status: published
+---
+# 服务网格可观测性完整指南 - Istio & Linkerd 深度集成
 
 > **文档版本**: v1.0
 > **创建日期**: 2025年10月9日
@@ -10,10 +33,10 @@
 
 ---
 
-## 📋 目录
+## 目录
 
-- [🕸️ 服务网格可观测性完整指南 - Istio \& Linkerd 深度集成](#️-服务网格可观测性完整指南---istio--linkerd-深度集成)
-  - [📋 目录](#-目录)
+- [服务网格可观测性完整指南 - Istio \& Linkerd 深度集成](#服务网格可观测性完整指南---istio--linkerd-深度集成)
+  - [目录](#目录)
   - [第一部分: 服务网格可观测性概述](#第一部分-服务网格可观测性概述)
     - [1.1 为什么需要服务网格可观测性?](#11-为什么需要服务网格可观测性)
       - [微服务架构的挑战](#微服务架构的挑战)
@@ -82,7 +105,7 @@
     - [服务网格 + OTLP 核心价值](#服务网格--otlp-核心价值)
     - [适用场景](#适用场景)
     - [参考资源](#参考资源)
-  - [📚 相关文档](#-相关文档)
+  - [相关文档](#相关文档)
     - [核心集成 ⭐⭐⭐](#核心集成-)
     - [架构可视化 ⭐⭐⭐](#架构可视化-)
     - [工具链支持 ⭐⭐](#工具链支持-)
@@ -1993,7 +2016,7 @@ kubectl cp <pod-name>:/tmp/capture.pcap ./capture.pcap -c istio-proxy
 
 ---
 
-## 📚 相关文档
+## 相关文档
 
 ### 核心集成 ⭐⭐⭐
 

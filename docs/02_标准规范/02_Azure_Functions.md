@@ -1,3 +1,18 @@
+﻿---
+title: Azure Functions语义约定详解
+description: Azure Functions语义约定详解 详细指南和最佳实践
+version: OTLP v1.9.0
+date: 2026-03-17
+author: OTLP项目团队
+category: 标准规范
+tags:
+  - otlp
+  - observability
+  - deployment
+  - kubernetes
+  - docker
+status: published
+---
 # Azure Functions语义约定详解
 
 > **Serverless计算**: Azure Functions完整Tracing与Metrics规范

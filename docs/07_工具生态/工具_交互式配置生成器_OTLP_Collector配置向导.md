@@ -1,4 +1,25 @@
-# 🛠️ 交互式配置生成器 - OTLP Collector 配置向导
+﻿---
+title: 交互式配置生成器 - OTLP Collector 配置向导
+description: 交互式配置生成器 - OTLP Collector 配置向导 详细指南和最佳实践
+version: OTLP v1.9.0
+date: 2026-03-17
+author: OTLP项目团队
+category: 工具生态
+tags:
+  - otlp
+  - observability
+  - otlp-arrow
+  - performance
+  - optimization
+  - sampling
+  - security
+  - compliance
+  - deployment
+  - kubernetes
+  - docker
+status: published
+---
+# 交互式配置生成器 - OTLP Collector 配置向导
 
 > **文档版本**: v1.0
 > **创建日期**: 2025年10月9日
@@ -7,10 +28,10 @@
 
 ---
 
-## 📋 目录
+## 目录
 
-- [🛠️ 交互式配置生成器 - OTLP Collector 配置向导](#️-交互式配置生成器---otlp-collector-配置向导)
-  - [📋 目录](#-目录)
+- [交互式配置生成器 - OTLP Collector 配置向导](#交互式配置生成器---otlp-collector-配置向导)
+  - [目录](#目录)
   - [项目概述](#项目概述)
     - [核心功能](#核心功能)
     - [技术栈](#技术栈)

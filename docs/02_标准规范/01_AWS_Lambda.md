@@ -1,3 +1,20 @@
+﻿---
+title: AWS Lambda语义约定详解
+description: AWS Lambda语义约定详解 详细指南和最佳实践
+version: OTLP v1.9.0
+date: 2026-03-17
+author: OTLP项目团队
+category: 标准规范
+tags:
+  - otlp
+  - observability
+  - performance
+  - optimization
+  - deployment
+  - kubernetes
+  - docker
+status: published
+---
 # AWS Lambda语义约定详解
 
 > **Serverless计算**: AWS Lambda完整Tracing与Metrics规范

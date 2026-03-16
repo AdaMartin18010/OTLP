@@ -1,3 +1,17 @@
+﻿---
+title: AWS SQS/SNS语义约定详解
+description: AWS SQS/SNS语义约定详解 详细指南和最佳实践
+version: OTLP v1.9.0
+date: 2026-03-17
+author: OTLP项目团队
+category: 标准规范
+tags:
+  - otlp
+  - observability
+  - performance
+  - optimization
+status: published
+---
 # AWS SQS/SNS语义约定详解
 
 > **云原生消息服务**: AWS SQS与SNS Tracing与Metrics完整规范

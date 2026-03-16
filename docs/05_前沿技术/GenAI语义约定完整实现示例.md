@@ -1,3 +1,21 @@
+﻿---
+title: GenAI语义约定完整实现示例
+description: GenAI语义约定完整实现示例 详细指南和最佳实践
+version: OTLP v1.9.0
+date: 2026-03-17
+author: OTLP项目团队
+category: 前沿技术
+tags:
+  - otlp
+  - observability
+  - genai
+  - llm
+  - ai
+  - deployment
+  - kubernetes
+  - docker
+status: published
+---
 # GenAI语义约定完整实现示例
 
 > **规范版本**: Semantic Conventions v1.40.0

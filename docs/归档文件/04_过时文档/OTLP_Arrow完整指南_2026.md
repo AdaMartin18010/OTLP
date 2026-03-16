@@ -1,3 +1,21 @@
+﻿---
+title: OTLP Arrow 完整指南 (2026最新)
+description: OTLP Arrow 完整指南 (2026最新) 详细指南和最佳实践
+version: OTLP v1.9.0
+date: 2026-03-17
+author: OTLP项目团队
+category: 其他
+tags:
+  - otlp
+  - observability
+  - otlp-arrow
+  - performance
+  - optimization
+  - deployment
+  - kubernetes
+  - docker
+status: published
+---
 # OTLP Arrow 完整指南 (2026最新)
 
 > **文档状态**: 新增文档
@@ -7,7 +25,7 @@
 
 ---
 
-## 🎯 什么是 OTLP Arrow?
+## 什么是 OTLP Arrow?
 
 ### 核心概念
 
@@ -44,7 +62,7 @@
 
 ---
 
-## 🏗️ 架构设计
+## � 架构设计
 
 ### 系统架构
 
@@ -123,7 +141,7 @@ message ArrowStatus {
 
 ---
 
-## 📊 Arrow 格式优势
+## Arrow 格式优势
 
 ### 列式存储 vs 行式存储
 
@@ -165,7 +183,7 @@ Trace数据示例:
 
 ---
 
-## 🚀 使用场景
+## 使用场景
 
 ### 场景1: 大规模遥测收集
 
@@ -237,7 +255,7 @@ message ArrowTelemetry {
 
 ---
 
-## 🛠️ 部署配置
+## 部署配置
 
 ### Docker Compose 示例
 
@@ -348,7 +366,7 @@ service:
 
 ---
 
-## 📈 性能调优
+## 性能调优
 
 ### 批处理优化
 
@@ -411,7 +429,7 @@ exporters:
 
 ---
 
-## 🔬 实验性功能
+## 实验性功能
 
 ### Arrow Flight SQL 集成
 
@@ -463,7 +481,7 @@ func aggregateSpans(batch arrow.Record) {
 
 ---
 
-## 📚 参考资源
+## 参考资源
 
 ### 官方资源
 
@@ -479,7 +497,7 @@ func aggregateSpans(batch arrow.Record) {
 
 ---
 
-## ⚠️ 注意事项
+## ⚠ 注意事项
 
 ### 当前限制
 

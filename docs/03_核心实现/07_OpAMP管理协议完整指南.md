@@ -1,4 +1,23 @@
-# 🔧 OpAMP管理协议完整指南
+﻿---
+title: OpAMP管理协议完整指南
+description: OpAMP管理协议完整指南 详细指南和最佳实践
+version: OTLP v1.9.0
+date: 2026-03-17
+author: OTLP项目团队
+category: 核心实现
+tags:
+  - otlp
+  - observability
+  - performance
+  - optimization
+  - security
+  - compliance
+  - deployment
+  - kubernetes
+  - docker
+status: published
+---
+# OpAMP管理协议完整指南
 
 > **文档版本**: v1.0
 > **创建日期**: 2025年12月
@@ -9,10 +28,10 @@
 
 ---
 
-## 📋 目录
+## 目录
 
-- [🔧 OpAMP管理协议完整指南](#-opamp管理协议完整指南)
-  - [📋 目录](#-目录)
+- [OpAMP管理协议完整指南](#opamp管理协议完整指南)
+  - [目录](#目录)
   - [第一部分: OpAMP概述](#第一部分-opamp概述)
     - [1.1 什么是OpAMP](#11-什么是opamp)
     - [1.2 为什么需要OpAMP](#12-为什么需要opamp)

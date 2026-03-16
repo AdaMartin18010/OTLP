@@ -1,3 +1,23 @@
+﻿---
+title: GenAI Observability: 生成式AI可观测性
+description: GenAI Observability: 生成式AI可观测性 详细指南和最佳实践
+version: OTLP v1.9.0
+date: 2026-03-17
+author: OTLP项目团队
+category: 前沿技术
+tags:
+  - otlp
+  - observability
+  - performance
+  - optimization
+  - sampling
+  - security
+  - compliance
+  - genai
+  - llm
+  - ai
+status: published
+---
 # GenAI Observability: 生成式AI可观测性
 
 > **规范版本**: v1.30.0 (Experimental)
@@ -5,10 +25,10 @@
 
 ---
 
-## 📋 目录
+## 目录
 
 - [GenAI Observability: 生成式AI可观测性](#genai-observability-生成式ai可观测性)
-  - [📋 目录](#-目录)
+  - [目录](#目录)
   - [1. 概述](#1-概述)
     - [1.1 为什么需要GenAI可观测性](#11-为什么需要genai可观测性)
     - [1.2 特殊挑战](#12-特殊挑战)

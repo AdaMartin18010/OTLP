@@ -1,3 +1,19 @@
+﻿---
+title: OTLP传输层 - HTTP详解
+description: OTLP传输层 - HTTP详解 详细指南和最佳实践
+version: OTLP v1.9.0
+date: 2026-03-17
+author: OTLP项目团队
+category: 标准规范
+tags:
+  - otlp
+  - observability
+  - performance
+  - optimization
+  - security
+  - compliance
+status: published
+---
 # OTLP传输层 - HTTP详解
 
 > **协议版本**: HTTP/1.1
@@ -7,10 +23,10 @@
 
 ---
 
-## 📋 目录
+## 目录
 
 - [OTLP传输层 - HTTP详解](#otlp传输层---http详解)
-  - [📋 目录](#-目录)
+  - [目录](#目录)
   - [1. 概念定义](#1-概念定义)
     - [1.1 正式定义](#11-正式定义)
     - [1.2 HTTP核心特性](#12-http核心特性)

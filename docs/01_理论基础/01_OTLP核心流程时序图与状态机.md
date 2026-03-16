@@ -1,3 +1,18 @@
+﻿---
+title: OTLP核心流程时序图与状态机
+description: OTLP核心流程时序图与状态机 详细指南和最佳实践
+version: OTLP v1.9.0
+date: 2026-03-17
+author: OTLP项目团队
+category: 理论基础
+tags:
+  - otlp
+  - observability
+  - performance
+  - optimization
+  - sampling
+status: published
+---
 # OTLP核心流程时序图与状态机
 
 > **可视化指南**: OpenTelemetry关键流程的时序图与状态机
@@ -5,10 +20,10 @@
 
 ---
 
-## 📋 目录
+## 目录
 
 - [OTLP核心流程时序图与状态机](#otlp核心流程时序图与状态机)
-  - [📋 目录](#-目录)
+  - [目录](#目录)
   - [1. 数据采集与导出时序图](#1-数据采集与导出时序图)
     - [1.1 完整Trace采集流程](#11-完整trace采集流程)
     - [1.2 批处理导出流程](#12-批处理导出流程)

@@ -1,10 +1,25 @@
+﻿---
+title: 语义模型与流分析快速参考
+description: 语义模型与流分析快速参考 详细指南和最佳实践
+version: OTLP v1.9.0
+date: 2026-03-17
+author: OTLP项目团队
+category: 理论基础
+tags:
+  - otlp
+  - observability
+  - performance
+  - optimization
+  - sampling
+status: published
+---
 # 语义模型与流分析快速参考
 
 > 快速查找语义模型、执行流、控制流、数据流的关键概念和实现
 
 ---
 
-## 🚀 快速导航
+## 快速导航
 
 | 主题 | 核心概念 | 关键实现 | 应用场景 |
 |------|---------|---------|---------|
@@ -16,7 +31,7 @@
 
 ---
 
-## 📚 核心数据结构速查
+## 核心数据结构速查
 
 ### 系统状态 (SystemState)
 
@@ -71,7 +86,7 @@ pub struct Metrics {
 
 ---
 
-## 🔄 状态转换速查
+## 状态转换速查
 
 ### 基本转换
 
@@ -92,7 +107,7 @@ let new_state = StateTransitionFunction::apply(&old_state, &event);
 
 ---
 
-## 🎯 决策模式速查
+## 决策模式速查
 
 ### 决策树结构
 
@@ -133,7 +148,7 @@ CPU > 80% ?
 
 ---
 
-## 📊 数据流模式速查
+## 数据流模式速查
 
 ### 流式管道
 
@@ -166,7 +181,7 @@ let stats = window.compute_statistics();
 
 ---
 
-## 🎛️ 控制算法速查
+## � 控制算法速查
 
 ### PID控制器
 
@@ -203,7 +218,7 @@ hpa.reconcile(&metrics).await;
 
 ---
 
-## 🔗 依赖关系分析速查
+## � 依赖关系分析速查
 
 ### 拓扑排序
 
@@ -231,7 +246,7 @@ let affected = graph.find_affected_components(&failed_component);
 
 ---
 
-## 🧩 行为树模式速查
+## � 行为树模式速查
 
 ### 节点类型
 
@@ -266,7 +281,7 @@ BehaviorNode::Decorator {
 
 ---
 
-## 🎨 状态机模式速查
+## 状态机模式速查
 
 ### 服务生命周期
 
@@ -299,7 +314,7 @@ fsm.process_event(ServiceEvent::Start)?;
 
 ---
 
-## 🔍 常见问题快速解决
+## 常见问题快速解决
 
 ### Q: 如何检测系统异常？
 
@@ -359,7 +374,7 @@ let result = circuit_breaker.call(async {
 
 ---
 
-## 📖 性能优化建议
+## 性能优化建议
 
 ### 1. 状态管理优化
 
@@ -387,30 +402,30 @@ let result = circuit_breaker.call(async {
 
 ---
 
-## 🎯 最佳实践清单
+## 最佳实践清单
 
-### ✅ 状态管理
+### 状态管理
 
 - [ ] 所有状态变更通过 `StateTransitionFunction`
 - [ ] 定义并检查系统不变式
 - [ ] 记录状态变更历史用于审计
 - [ ] 实现状态快照用于恢复
 
-### ✅ 决策系统
+### 决策系统
 
 - [ ] 决策逻辑与执行逻辑分离
 - [ ] 支持决策回滚机制
 - [ ] 记录决策理由用于调试
 - [ ] 定期评估决策效果
 
-### ✅ 数据流
+### 数据流
 
 - [ ] 实现背压机制避免过载
 - [ ] 使用时间窗口聚合指标
 - [ ] 追踪数据血缘保证可追溯
 - [ ] 定期清理过期数据
 
-### ✅ 控制循环
+### 控制循环
 
 - [ ] 设置合理的控制周期
 - [ ] 避免控制动作过于频繁
@@ -419,7 +434,7 @@ let result = circuit_breaker.call(async {
 
 ---
 
-## 🔗 相关文档
+## � 相关文档
 
 - [完整理论文档](./SEMANTIC_MODELS_AND_FLOW_ANALYSIS.md) - 2600+行深度分析
 - [实现总结](./SEMANTIC_MODELS_ANALYSIS_SUMMARY.md) - 项目总结报告
@@ -427,7 +442,7 @@ let result = circuit_breaker.call(async {
 
 ---
 
-## 🆘 获取帮助
+## � 获取帮助
 
 遇到问题？查看以下资源：
 

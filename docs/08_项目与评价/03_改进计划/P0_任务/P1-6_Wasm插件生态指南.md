@@ -1,17 +1,39 @@
-# 🔌 Wasm插件生态可观测性指南
+﻿---
+title: � Wasm插件生态可观测性指南
+description: � Wasm插件生态可观测性指南 详细指南和最佳实践
+version: OTLP v1.9.0
+date: 2026-03-17
+author: OTLP项目团队
+category: 项目管理
+tags:
+  - otlp
+  - observability
+  - performance
+  - optimization
+  - case-study
+  - production
+  - sampling
+  - security
+  - compliance
+  - deployment
+  - kubernetes
+  - docker
+status: published
+---
+# � Wasm插件生态可观测性指南
 
-**创建日期**: 2025-10-10  
-**任务编号**: P1-6  
-**优先级**: 🟡 P1 (重要)  
-**状态**: ✅ 已完成  
+**创建日期**: 2025-10-10
+**任务编号**: P1-6
+**优先级**: 🟡 P1 (重要)
+**状态**: ✅ 已完成
 **预计工期**: 2周 (2025-11-27 至 2025-12-10)
 
 ---
 
-## 📋 目录
+## 目录
 
-- [🔌 Wasm插件生态可观测性指南](#-wasm插件生态可观测性指南)
-  - [📋 目录](#-目录)
+- [� Wasm插件生态可观测性指南](#-wasm插件生态可观测性指南)
+  - [目录](#目录)
   - [执行摘要](#执行摘要)
     - [核心目标](#核心目标)
     - [关键指标](#关键指标)
@@ -90,7 +112,7 @@
     - [10.3 与现有方案对比](#103-与现有方案对比)
     - [10.4 局限性](#104-局限性)
     - [10.5 未来展望](#105-未来展望)
-  - [📚 参考资料](#-参考资料)
+  - [参考资料](#参考资料)
     - [官方文档](#官方文档)
     - [教程与示例](#教程与示例)
     - [书籍与论文](#书籍与论文)
@@ -425,15 +447,15 @@ impl HttpContext for OtlpSamplerFilter {
         // 1. 读取当前Trace采样状态
         let sampled = self.get_http_request_header("x-b3-sampled")
             .unwrap_or_else(|| "0".to_string());
-        
+
         // 2. 如果已采样,跳过
         if sampled == "1" {
             return Action::Continue;
         }
-        
+
         // 3. 动态采样决策
         let should_sample = self.should_sample();
-        
+
         // 4. 设置采样标志
         if should_sample {
             self.set_http_request_header("x-b3-sampled", Some("1"));
@@ -441,10 +463,10 @@ impl HttpContext for OtlpSamplerFilter {
         } else {
             self.set_http_request_header("x-b3-sampled", Some("0"));
         }
-        
+
         Action::Continue
     }
-    
+
     fn on_http_response_headers(&mut self, _num_headers: usize, _end_of_stream: bool) -> Action {
         // 记录采样指标
         let status = self.get_http_response_header(":status").unwrap_or_default();
@@ -453,7 +475,7 @@ impl HttpContext for OtlpSamplerFilter {
             self.set_http_request_header("x-b3-sampled", Some("1"));
             info!("Forced sampling due to 5xx error");
         }
-        
+
         Action::Continue
     }
 }
@@ -521,7 +543,7 @@ static_resources:
           "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
           stat_prefix: ingress_http
           http_filters:
-          
+
           # 🔥 加载Wasm插件
           - name: envoy.filters.http.wasm
             typed_config:
@@ -529,7 +551,7 @@ static_resources:
               config:
                 name: "otlp_sampler"
                 root_id: "otlp_sampler_root"
-                
+
                 # 插件配置 (传给on_configure)
                 configuration:
                   "@type": type.googleapis.com/google.protobuf.StringValue
@@ -537,19 +559,19 @@ static_resources:
                     {
                       "sampling_rate": 0.05
                     }
-                
+
                 # Wasm模块
                 vm_config:
                   runtime: "envoy.wasm.runtime.v8"  # 或 "wasmtime"
                   code:
                     local:
                       filename: "/etc/envoy/wasm/sampler_optimized.wasm"
-          
+
           # 标准路由
           - name: envoy.filters.http.router
             typed_config:
               "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
-          
+
           route_config:
             name: local_route
             virtual_hosts:
@@ -668,18 +690,18 @@ impl HttpContext for DataMaskingFilter {
         if !end_of_stream {
             return Action::Pause;  // 等待完整Body
         }
-        
+
         // 读取Body
         if let Some(body_bytes) = self.get_http_request_body(0, body_size) {
             if let Ok(body_str) = String::from_utf8(body_bytes) {
                 // 脱敏
                 let masked_body = self.mask_sensitive_data(&body_str);
-                
+
                 // 替换Body
                 self.set_http_request_body(0, body_size, masked_body.as_bytes());
             }
         }
-        
+
         Action::Continue
     }
 }
@@ -687,19 +709,19 @@ impl HttpContext for DataMaskingFilter {
 impl DataMaskingFilter {
     fn mask_sensitive_data(&self, text: &str) -> String {
         let mut masked = text.to_string();
-        
+
         // 1. 脱敏信用卡号: 4111-1111-1111-1111 → 4111-****-****-1111
         masked = CREDIT_CARD.replace_all(&masked, |caps: &regex::Captures| {
             let full = caps.get(0).unwrap().as_str();
             format!("{}****-****-****{}", &full[..4], &full[full.len()-4..])
         }).to_string();
-        
+
         // 2. 脱敏手机号: 13812345678 → 138****5678
         masked = PHONE.replace_all(&masked, |caps: &regex::Captures| {
             let full = caps.get(0).unwrap().as_str();
             format!("{}****{}", &full[..3], &full[7..])
         }).to_string();
-        
+
         // 3. 脱敏邮箱: user@example.com → u***@example.com
         masked = EMAIL.replace_all(&masked, |caps: &regex::Captures| {
             let email = caps.get(0).unwrap().as_str();
@@ -716,7 +738,7 @@ impl DataMaskingFilter {
                 email.to_string()
             }
         }).to_string();
-        
+
         masked
     }
 }
@@ -804,29 +826,29 @@ pub extern "C" fn process_span(span_json_ptr: *const u8, span_json_len: usize) -
     let span_json = unsafe {
         std::slice::from_raw_parts(span_json_ptr, span_json_len)
     };
-    
+
     let mut span: Span = serde_json::from_slice(span_json).unwrap();
-    
+
     // 2. 添加云元数据
     span.attributes.push(KeyValue {
         key: "cloud.provider".to_string(),
         value: "aws".to_string(),
     });
-    
+
     span.attributes.push(KeyValue {
         key: "cloud.region".to_string(),
         value: get_aws_region(),
     });
-    
+
     span.attributes.push(KeyValue {
         key: "cloud.availability_zone".to_string(),
         value: get_aws_az(),
     });
-    
+
     // 3. 返回修改后的Span (序列化为JSON)
     let output_json = serde_json::to_string(&span).unwrap();
     let output_bytes = output_json.as_bytes();
-    
+
     // 分配内存并返回指针
     let ptr = output_bytes.as_ptr();
     std::mem::forget(output_bytes);  // 防止释放
@@ -860,7 +882,7 @@ processors:
   wasm:
     module_path: /etc/otelcol/processors/cloud_metadata.wasm
     function_name: process_span
-  
+
   batch:
     timeout: 10s
     send_batch_size: 1024
@@ -900,16 +922,16 @@ spec:
   selector:
     matchLabels:
       app: backend
-  
+
   # Wasm模块来源
   url: oci://ghcr.io/your-org/envoy-wasm-otlp-sampler:v1.0
   # 或本地文件: file:///etc/istio/wasm/sampler.wasm
-  
+
   # 插件配置
   pluginConfig:
     sampling_rate: 0.05  # 5%
     force_sample_on_error: true
-  
+
   # 插件阶段 (在哪个阶段执行)
   phase: AUTHN  # AUTHN / AUTHZ / STATS
 ```
@@ -1018,11 +1040,11 @@ impl HttpContext for LazyFilter {
         if self.expensive_config.is_none() {
             self.expensive_config = Some(self.load_config());
         }
-        
+
         // 使用缓存的配置
         let config = self.expensive_config.as_ref().unwrap();
         // ...
-        
+
         Action::Continue
     }
 }
@@ -1085,7 +1107,7 @@ stats_sinks:
 
 ```promql
 # Wasm插件P99延迟
-histogram_quantile(0.99, 
+histogram_quantile(0.99,
   rate(wasm_filter_processing_time_ms_bucket[5m])
 )
 
@@ -1153,10 +1175,10 @@ impl HttpContext for AuditLogger {
         self.request_start_time = self.get_current_time().as_nanos();
         Action::Continue
     }
-    
+
     fn on_http_response_headers(&mut self, _: usize, _: bool) -> Action {
         let duration_ms = (self.get_current_time().as_nanos() - self.request_start_time) / 1_000_000;
-        
+
         let audit_log = serde_json::json!({
             "timestamp": self.get_current_time().as_secs(),
             "method": self.get_http_request_header(":method").unwrap(),
@@ -1166,7 +1188,7 @@ impl HttpContext for AuditLogger {
             "user_id": self.get_http_request_header("x-user-id").unwrap(),
             "client_ip": self.get_http_request_header("x-forwarded-for").unwrap(),
         });
-        
+
         // 发送到审计日志系统
         self.dispatch_http_call(
             "audit_log_service",
@@ -1179,7 +1201,7 @@ impl HttpContext for AuditLogger {
             vec![],
             Duration::from_secs(5),
         ).unwrap();
-        
+
         Action::Continue
     }
 }
@@ -1210,29 +1232,29 @@ impl HttpContext for RateLimiter {
     fn on_http_request_headers(&mut self, _: usize, _: bool) -> Action {
         let user_id = self.get_http_request_header("x-user-id").unwrap_or_default();
         let user_tier = self.get_http_request_header("x-user-tier").unwrap_or_else(|| "free".to_string());
-        
+
         // 获取限流配置
         let limit = match user_tier.as_str() {
             "vip" => 1000,
             "pro" => 500,
             _ => 100,
         };
-        
+
         // 检查限流
         let mut counters = self.counters.lock().unwrap();
         let now = self.get_current_time().as_secs();
-        
+
         let (count, window_start) = counters.entry(user_id.clone())
             .or_insert((0, now));
-        
+
         // 时间窗口重置 (每秒)
         if now > *window_start {
             *count = 0;
             *window_start = now;
         }
-        
+
         *count += 1;
-        
+
         if *count > limit {
             // 超过限流
             self.send_http_response(
@@ -1242,7 +1264,7 @@ impl HttpContext for RateLimiter {
             );
             return Action::Pause;
         }
-        
+
         Action::Continue
     }
 }
@@ -1264,24 +1286,24 @@ impl HttpContext for RateLimiter {
 impl HttpContext for ABTestRouter {
     fn on_http_request_headers(&mut self, _: usize, _: bool) -> Action {
         let user_id = self.get_http_request_header("x-user-id").unwrap_or_default();
-        
+
         // 哈希分桶 (稳定分配)
         let hash = self.hash_user_id(&user_id);
         let bucket = hash % 100;
-        
+
         // 10%流量到v2, 90%到v1
         let version = if bucket < 10 { "v2" } else { "v1" };
-        
+
         // 设置路由Header
         self.set_http_request_header("x-backend-version", Some(version));
-        
+
         Action::Continue
     }
-    
+
     fn hash_user_id(&self, user_id: &str) -> u32 {
         use std::collections::hash_map::DefaultHasher;
         use std::hash::{Hash, Hasher};
-        
+
         let mut hasher = DefaultHasher::new();
         user_id.hash(&mut hasher);
         hasher.finish() as u32
@@ -1343,7 +1365,7 @@ impl HttpContext for ABTestRouter {
 
 ---
 
-## 📚 参考资料
+## 参考资料
 
 ### 官方文档
 
@@ -1372,7 +1394,7 @@ impl HttpContext for ABTestRouter {
 
 ---
 
-**文档作者**: OTLP项目组 - Service Mesh小组  
-**完成日期**: 2025-10-10  
-**文档版本**: v1.0  
+**文档作者**: OTLP项目组 - Service Mesh小组
+**完成日期**: 2025-10-10
+**文档版本**: v1.0
 **下次更新**: 2026-01-01 (跟进OTel Collector Wasm支持)

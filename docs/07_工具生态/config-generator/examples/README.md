@@ -1,10 +1,10 @@
-# 📚 配置生成器示例
+﻿# 配置生成器示例
 
 本目录包含使用配置生成器生成的典型配置示例,供参考和学习使用。
 
 ---
 
-## 📋 示例列表
+## 示例列表
 
 ### 1. Kubernetes Agent模式 (`01-kubernetes-agent.yaml`)
 
@@ -339,7 +339,7 @@ open http://localhost:55679/debug/tracez
 
 ---
 
-## 🎯 选择合适的示例
+## 选择合适的示例
 
 | 场景 | 推荐示例 | 资源需求 | 复杂度 |
 |------|----------|----------|--------|
@@ -350,7 +350,7 @@ open http://localhost:55679/debug/tracez
 
 ---
 
-## 🔧 自定义配置
+## 自定义配置
 
 这些示例可作为起点,根据实际需求调整:
 
@@ -380,7 +380,7 @@ tail_sampling:
 receivers:
   otlp:
     # ...
-  
+
   prometheus:
     config:
       scrape_configs:
@@ -391,7 +391,7 @@ receivers:
 
 ---
 
-## 📊 性能基准
+## 性能基准
 
 基于这些配置的性能测试结果:
 
@@ -404,7 +404,7 @@ receivers:
 
 ---
 
-## 🐛 故障排查
+## � 故障排查
 
 ### 配置无法启动
 
@@ -443,7 +443,7 @@ tail_sampling:
 
 ---
 
-## 📚 相关文档
+## 相关文档
 
 - [配置生成器README](../README.md)
 - [Collector配置速查手册](../../../速查手册/03_Collector配置速查手册.md)

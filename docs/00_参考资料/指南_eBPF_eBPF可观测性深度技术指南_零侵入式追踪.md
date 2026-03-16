@@ -1,4 +1,27 @@
-# 🐝 eBPF 可观测性深度技术指南 - 零侵入式追踪
+﻿---
+title: eBPF 可观测性深度技术指南 - 零侵入式追踪
+description: eBPF 可观测性深度技术指南 - 零侵入式追踪 详细指南和最佳实践
+version: OTLP v1.9.0
+date: 2026-03-17
+author: OTLP项目团队
+category: 参考资料
+tags:
+  - otlp
+  - observability
+  - ebpf
+  - performance
+  - optimization
+  - case-study
+  - production
+  - sampling
+  - security
+  - compliance
+  - deployment
+  - kubernetes
+  - docker
+status: published
+---
+# eBPF 可观测性深度技术指南 - 零侵入式追踪
 
 > **文档版本**: v1.0
 > **创建日期**: 2025年10月9日
@@ -9,10 +32,10 @@
 
 ---
 
-## 📋 目录
+## 目录
 
-- [🐝 eBPF 可观测性深度技术指南 - 零侵入式追踪](#-ebpf-可观测性深度技术指南---零侵入式追踪)
-  - [📋 目录](#-目录)
+- [eBPF 可观测性深度技术指南 - 零侵入式追踪](#ebpf-可观测性深度技术指南---零侵入式追踪)
+  - [目录](#目录)
   - [第一部分: eBPF 基础原理](#第一部分-ebpf-基础原理)
     - [1.1 什么是 eBPF?](#11-什么是-ebpf)
       - [eBPF vs 传统方法对比](#ebpf-vs-传统方法对比)
@@ -73,7 +96,7 @@
     - [eBPF + OTLP 核心价值](#ebpf--otlp-核心价值)
     - [适用场景](#适用场景)
     - [参考资源](#参考资源)
-  - [📚 相关文档](#-相关文档)
+  - [相关文档](#相关文档)
     - [核心集成 ⭐⭐⭐](#核心集成-)
     - [架构可视化 ⭐⭐⭐](#架构可视化-)
     - [工具链支持 ⭐⭐](#工具链支持-)
@@ -2817,7 +2840,7 @@ sudo trace-cmd report
 
 ---
 
-## 📚 相关文档
+## 相关文档
 
 ### 核心集成 ⭐⭐⭐
 

@@ -1,3 +1,22 @@
+﻿---
+title: OpenTelemetry Resource 模型详解
+description: OpenTelemetry Resource 模型详解 详细指南和最佳实践
+version: OTLP v1.9.0
+date: 2026-03-17
+author: OTLP项目团队
+category: 核心实现
+tags:
+  - otlp
+  - observability
+  - case-study
+  - production
+  - security
+  - compliance
+  - deployment
+  - kubernetes
+  - docker
+status: published
+---
 # OpenTelemetry Resource 模型详解
 
 > **规范版本**: v1.30.0

@@ -1,68 +1,91 @@
-# 🛠️ eBPF实战部署指南 - Pixie/Beyla/Tetragon/Parca
+﻿---
+title: eBPF实战部署指南 - Pixie/Beyla/Tetragon/Parca
+description: eBPF实战部署指南 - Pixie/Beyla/Tetragon/Parca 详细指南和最佳实践
+version: OTLP v1.9.0
+date: 2026-03-17
+author: OTLP项目团队
+category: 项目管理
+tags:
+  - otlp
+  - observability
+  - ebpf
+  - performance
+  - optimization
+  - case-study
+  - production
+  - sampling
+  - security
+  - compliance
+  - deployment
+  - kubernetes
+  - docker
+status: published
+---
+# eBPF实战部署指南 - Pixie/Beyla/Tetragon/Parca
 
-**文档版本**: v1.0  
-**创建日期**: 2025-10-09  
-**状态**: 🟡 进行中 (P0-3任务)  
+**文档版本**: v1.0
+**创建日期**: 2025-10-09
+**状态**: 🟡 进行中 (P0-3任务)
 **目标**: 提供完整的eBPF可观测性工具部署与实战指南
 
 ---
 
-## 📋 目录
+## 目录
 
-- [🛠️ eBPF实战部署指南 - Pixie/Beyla/Tetragon/Parca](#️-ebpf实战部署指南---pixiebeylatetragonparca)
-  - [📋 目录](#-目录)
-  - [📊 执行摘要](#-执行摘要)
-  - [🎯 为什么选择eBPF可观测性?](#-为什么选择ebpf可观测性)
+- [eBPF实战部署指南 - Pixie/Beyla/Tetragon/Parca](#ebpf实战部署指南---pixiebeylatetragonparca)
+  - [目录](#目录)
+  - [执行摘要](#执行摘要)
+  - [为什么选择eBPF可观测性?](#为什么选择ebpf可观测性)
     - [eBPF vs 传统APM对比](#ebpf-vs-传统apm对比)
     - [技术选型决策树](#技术选型决策树)
-  - [🔷 Pixie - Kubernetes原生可观测性平台](#-pixie---kubernetes原生可观测性平台)
+  - [� Pixie - Kubernetes原生可观测性平台](#-pixie---kubernetes原生可观测性平台)
     - [1.1 核心特性](#11-核心特性)
     - [1.2 快速部署 (5分钟上手)](#12-快速部署-5分钟上手)
     - [1.3 实战案例: HTTP追踪](#13-实战案例-http追踪)
     - [1.4 实战案例: MySQL查询分析](#14-实战案例-mysql查询分析)
     - [1.5 与OTLP集成](#15-与otlp集成)
     - [1.6 生产部署最佳实践](#16-生产部署最佳实践)
-  - [🔶 Grafana Beyla - 零代码HTTP/gRPC追踪](#-grafana-beyla---零代码httpgrpc追踪)
+  - [� Grafana Beyla - 零代码HTTP/gRPC追踪](#-grafana-beyla---零代码httpgrpc追踪)
     - [2.1 核心特性](#21-核心特性)
     - [2.2 快速部署](#22-快速部署)
     - [2.3 实战案例: Go服务追踪](#23-实战案例-go服务追踪)
     - [2.4 实战案例: Python Flask应用](#24-实战案例-python-flask应用)
     - [2.5 OTLP导出配置](#25-otlp导出配置)
     - [2.6 与Grafana Cloud集成](#26-与grafana-cloud集成)
-  - [🔷 Cilium Tetragon - 安全可观测性与运行时加固](#-cilium-tetragon---安全可观测性与运行时加固)
+  - [� Cilium Tetragon - 安全可观测性与运行时加固](#-cilium-tetragon---安全可观测性与运行时加固)
     - [3.1 核心特性](#31-核心特性)
     - [3.2 快速部署](#32-快速部署)
     - [3.3 实战案例: 检测敏感文件访问](#33-实战案例-检测敏感文件访问)
     - [3.4 实战案例: 网络连接监控](#34-实战案例-网络连接监控)
     - [3.5 运行时策略强制执行](#35-运行时策略强制执行)
     - [3.6 与Falco对比](#36-与falco对比)
-  - [🔶 Parca - 持续性能剖析 (Continuous Profiling)](#-parca---持续性能剖析-continuous-profiling)
+  - [� Parca - 持续性能剖析 (Continuous Profiling)](#-parca---持续性能剖析-continuous-profiling)
     - [4.1 核心特性](#41-核心特性)
     - [4.2 快速部署](#42-快速部署)
     - [4.3 实战案例: CPU性能分析](#43-实战案例-cpu性能分析)
     - [4.4 实战案例: 内存泄漏定位](#44-实战案例-内存泄漏定位)
     - [4.5 Flame Graph解读](#45-flame-graph解读)
     - [4.6 与Pyroscope对比](#46-与pyroscope对比)
-  - [🎯 综合实战: 完整可观测性栈](#-综合实战-完整可观测性栈)
+  - [综合实战: 完整可观测性栈](#综合实战-完整可观测性栈)
     - [架构设计](#架构设计)
     - [部署清单](#部署清单)
     - [统一数据流](#统一数据流)
-  - [🔧 故障排查与调优](#-故障排查与调优)
+  - [故障排查与调优](#故障排查与调优)
     - [常见问题](#常见问题)
     - [性能调优](#性能调优)
-  - [📊 性能开销对比](#-性能开销对比)
-  - [🆚 工具选型建议](#-工具选型建议)
-  - [📚 相关文档](#-相关文档)
-  - [💼 企业落地路线图](#-企业落地路线图)
+  - [性能开销对比](#性能开销对比)
+  - [� 工具选型建议](#-工具选型建议)
+  - [相关文档](#相关文档)
+  - [� 企业落地路线图](#-企业落地路线图)
     - [阶段1: PoC验证 (Week 1-2)](#阶段1-poc验证-week-1-2)
     - [阶段2: 试点上线 (Week 3-6)](#阶段2-试点上线-week-3-6)
     - [阶段3: 全面推广 (Week 7-12)](#阶段3-全面推广-week-7-12)
     - [阶段4: 持续优化 (Ongoing)](#阶段4-持续优化-ongoing)
-  - [🎯 完成总结与后续展望](#-完成总结与后续展望)
+  - [完成总结与后续展望](#完成总结与后续展望)
 
 ---
 
-## 📊 执行摘要
+## 执行摘要
 
 本指南提供4个主流eBPF可观测性工具的完整部署与实战教程:
 
@@ -89,7 +112,7 @@
 
 ---
 
-## 🎯 为什么选择eBPF可观测性?
+## 为什么选择eBPF可观测性?
 
 ### eBPF vs 传统APM对比
 
@@ -100,7 +123,7 @@ graph LR
         A2 -->|大量数据| A3[APM后端]
         A1 -->|性能开销3-10%| A4[影响生产]
     end
-    
+
     subgraph "eBPF方案"
         B1[应用代码] -->|零侵入| B2[内核eBPF]
         B2 -->|内核聚合| B3[用户态Agent]
@@ -139,7 +162,7 @@ graph LR
 
 ---
 
-## 🔷 Pixie - Kubernetes原生可观测性平台
+## � Pixie - Kubernetes原生可观测性平台
 
 ### 1.1 核心特性
 
@@ -257,8 +280,8 @@ import px
 df = px.DataFrame('http_events', start_time='-5m')
 
 # 选择字段
-df = df[['time_', 'upid', 'remote_addr', 'req_method', 
-         'req_path', 'resp_status', 'resp_latency_ms', 
+df = df[['time_', 'upid', 'remote_addr', 'req_method',
+         'req_path', 'resp_status', 'resp_latency_ms',
          'resp_body_size']]
 
 # 添加元数据
@@ -322,7 +345,7 @@ import px
 df = px.DataFrame('mysql_events', start_time='-10m')
 
 # 选择字段
-df = df[['time_', 'pod', 'req_cmd', 'req_body', 
+df = df[['time_', 'pod', 'req_cmd', 'req_body',
          'resp_status', 'latency_ms']]
 
 # 过滤慢查询 (>100ms)
@@ -370,12 +393,12 @@ data:
       otlp:
         endpoint: "otel-collector.observability:4317"
         insecure: true
-    
+
     processors:
       batch:
         timeout: 10s
         send_batch_size: 1024
-    
+
     receivers:
       pixie:
         # 从Pixie导出追踪数据
@@ -402,7 +425,7 @@ data:
                 )
               ]
             ))
-    
+
     service:
       pipelines:
         traces:
@@ -437,13 +460,13 @@ pem:
     limits:
       memory: "2Gi"
       cpu: "2000m"
-  
+
   # 数据保留策略 (本地短期存储)
   dataRetention: "15m"
-  
+
   # 采样率 (高流量环境降低采样)
   samplingRate: 0.1  # 10%采样
-  
+
   # 协议解析优化
   protocols:
     http:
@@ -525,7 +548,7 @@ spec:
 
 ---
 
-## 🔶 Grafana Beyla - 零代码HTTP/gRPC追踪
+## � Grafana Beyla - 零代码HTTP/gRPC追踪
 
 ### 2.1 核心特性
 
@@ -558,7 +581,7 @@ services:
     image: my-app:latest
     ports:
       - "8080:8080"
-  
+
   # Beyla Sidecar
   beyla:
     image: grafana/beyla:latest
@@ -771,7 +794,7 @@ services:
     ports:
       - "5000:5000"
     command: python app.py
-  
+
   beyla:
     image: grafana/beyla:latest
     privileged: true
@@ -819,12 +842,12 @@ otel:
     batch:
       max_batch_size: 512
       timeout: 5s
-  
+
   # 追踪配置
   traces:
     sampler: parentbased_traceidratio
     sampling_ratio: 0.1  # 10%采样
-  
+
   # 指标配置
   metrics:
     enabled: true
@@ -833,7 +856,7 @@ otel:
       - request.duration
       - request.size
       - response.size
-  
+
   # 资源属性
   resource:
     attributes:
@@ -852,11 +875,11 @@ ebpf:
       - Content-Type
       - Content-Length
     max_body_size: 1024  # 1KB
-  
+
   # gRPC解析
   grpc:
     enabled: true
-  
+
   # SSL/TLS
   ssl:
     enabled: true  # 自动解密HTTPS
@@ -865,10 +888,10 @@ ebpf:
 performance:
   # 内存限制
   max_memory_mb: 100
-  
+
   # CPU限制
   max_cpu_percent: 1.0
-  
+
   # 环形缓冲区大小
   ring_buffer_size: 8192
 ```
@@ -898,19 +921,19 @@ sudo beyla --executable-name=my-app --open-port=8080
 
    ```promql
    # 请求延迟
-   histogram_quantile(0.95, 
+   histogram_quantile(0.95,
      rate(http_server_duration_milliseconds_bucket[5m])
    )
-   
+
    # 错误率
-   sum(rate(http_server_requests_total{status_code=~"5.."}[5m])) 
-   / 
+   sum(rate(http_server_requests_total{status_code=~"5.."}[5m]))
+   /
    sum(rate(http_server_requests_total[5m]))
    ```
 
 ---
 
-## 🔷 Cilium Tetragon - 安全可观测性与运行时加固
+## � Cilium Tetragon - 安全可观测性与运行时加固
 
 ### 3.1 核心特性
 
@@ -1145,7 +1168,7 @@ kubectl exec -it prod-pod -n production -- /bin/bash
 
 ---
 
-## 🔶 Parca - 持续性能剖析 (Continuous Profiling)
+## � Parca - 持续性能剖析 (Continuous Profiling)
 
 ### 4.1 核心特性
 
@@ -1389,7 +1412,7 @@ Total CPU: 100%
 // MemoryLeak.java
 public class MemoryLeak {
     private static List<byte[]> leak = new ArrayList<>();
-    
+
     public static void main(String[] args) throws Exception {
         // 每秒泄漏1MB
         while (true) {
@@ -1472,7 +1495,7 @@ Y轴 (高度): 调用栈深度
 
 ---
 
-## 🎯 综合实战: 完整可观测性栈
+## 综合实战: 完整可观测性栈
 
 ### 架构设计
 
@@ -1581,7 +1604,7 @@ data:
             endpoint: 0.0.0.0:4317
           http:
             endpoint: 0.0.0.0:4318
-    
+
     processors:
       batch:
         timeout: 10s
@@ -1589,7 +1612,7 @@ data:
       memory_limiter:
         check_interval: 1s
         limit_mib: 512
-    
+
     exporters:
       prometheus:
         endpoint: "0.0.0.0:8889"
@@ -1599,7 +1622,7 @@ data:
           insecure: true
       loki:
         endpoint: http://loki:3100/loki/api/v1/push
-    
+
     service:
       pipelines:
         traces:
@@ -1740,7 +1763,7 @@ data:
       access: proxy
       url: http://kube-prometheus-prometheus:9090
       isDefault: true
-    
+
     # Tempo (追踪)
     - name: Tempo
       type: tempo
@@ -1753,7 +1776,7 @@ data:
         tracesToMetrics:
           datasourceUid: Prometheus
           tags: [{key: 'service.name', value: 'service'}]
-    
+
     # Loki (日志)
     - name: Loki
       type: loki
@@ -1765,7 +1788,7 @@ data:
           matcherRegex: "trace_id=(\\w+)"
           name: TraceID
           url: "$${__value.raw}"
-    
+
     # Parca (性能剖析)
     - name: Parca
       type: parca
@@ -1775,7 +1798,7 @@ data:
 
 ---
 
-## 🔧 故障排查与调优
+## 故障排查与调优
 
 ### 常见问题
 
@@ -1859,7 +1882,7 @@ spec:
 
 ---
 
-## 📊 性能开销对比
+## 性能开销对比
 
 基于生产环境测试 (100节点K8s集群):
 
@@ -1875,7 +1898,7 @@ spec:
 
 ---
 
-## 🆚 工具选型建议
+## � 工具选型建议
 
 **场景1: 快速上手,全栈可观测性**
 → **Pixie** (5分钟部署,开箱即用)
@@ -1894,7 +1917,7 @@ spec:
 
 ---
 
-## 📚 相关文档
+## 相关文档
 
 - [🌐_2025最新技术生态对标分析报告.md](../../🌐_2025最新技术生态对标分析报告.md) - eBPF生态国际趋势
 - [🔬_批判性评价与持续改进计划/01_国际趋势追踪/eBPF_生态追踪.md](../01_国际趋势追踪/eBPF_生态追踪.md) - eBPF技术深度分析
@@ -1902,7 +1925,7 @@ spec:
 
 ---
 
-## 💼 企业落地路线图
+## � 企业落地路线图
 
 ### 阶段1: PoC验证 (Week 1-2)
 
@@ -1969,7 +1992,7 @@ spec:
 
 ---
 
-## 🎯 完成总结与后续展望
+## 完成总结与后续展望
 
 **本文档完成情况**: ✅ 100%完成
 
@@ -2045,7 +2068,7 @@ spec:
 
 ---
 
-**文档负责人**: OTLP项目组 - eBPF小组  
-**最后更新**: 2025-10-09  
-**状态**: ✅ 已完成  
+**文档负责人**: OTLP项目组 - eBPF小组
+**最后更新**: 2025-10-09
+**状态**: ✅ 已完成
 **下一版本**: 将在2025 Q1增加自定义eBPF程序开发指南

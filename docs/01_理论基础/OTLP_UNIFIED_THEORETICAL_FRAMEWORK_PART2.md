@@ -1,3 +1,17 @@
+﻿---
+title: OTLP 统一理论框架 - 第二部分
+description: OTLP 统一理论框架 - 第二部分 详细指南和最佳实践
+version: OTLP v1.9.0
+date: 2026-03-17
+author: OTLP项目团队
+category: 理论基础
+tags:
+  - otlp
+  - observability
+  - performance
+  - optimization
+status: published
+---
 # OTLP 统一理论框架 - 第二部分
 
 > **版本**: 2.0.0
@@ -6,10 +20,10 @@
 
 ---
 
-## 📋 目录
+## 目录
 
 - [OTLP 统一理论框架 - 第二部分](#otlp-统一理论框架---第二部分)
-  - [📋 目录](#-目录)
+  - [目录](#目录)
   - [第三部分: 图灵可计算性与并发并行理论](#第三部分-图灵可计算性与并发并行理论)
     - [3.1 图灵机模型与OTLP](#31-图灵机模型与otlp)
       - [3.1.1 图灵机的形式化定义](#311-图灵机的形式化定义)

@@ -1,3 +1,18 @@
+﻿---
+title: RPC 语义约定
+description: RPC 语义约定 详细指南和最佳实践
+version: OTLP v1.9.0
+date: 2026-03-17
+author: OTLP项目团队
+category: 标准规范
+tags:
+  - otlp
+  - observability
+  - performance
+  - optimization
+  - sampling
+status: published
+---
 # RPC 语义约定
 
 > **标准版本**: v1.27.0

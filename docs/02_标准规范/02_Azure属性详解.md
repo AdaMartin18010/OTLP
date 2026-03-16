@@ -1,3 +1,21 @@
+﻿---
+title: Azure云平台属性详解
+description: Azure云平台属性详解 详细指南和最佳实践
+version: OTLP v1.9.0
+date: 2026-03-17
+author: OTLP项目团队
+category: 标准规范
+tags:
+  - otlp
+  - observability
+  - performance
+  - optimization
+  - sampling
+  - deployment
+  - kubernetes
+  - docker
+status: published
+---
 # Azure云平台属性详解
 
 > **Microsoft Azure**: Resource与Span完整语义约定规范

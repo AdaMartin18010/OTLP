@@ -1,3 +1,25 @@
+﻿---
+title: LLM应用监控实战
+description: LLM应用监控实战 详细指南和最佳实践
+version: OTLP v1.9.0
+date: 2026-03-17
+author: OTLP项目团队
+category: 前沿技术
+tags:
+  - otlp
+  - observability
+  - performance
+  - optimization
+  - case-study
+  - production
+  - sampling
+  - security
+  - compliance
+  - genai
+  - llm
+  - ai
+status: published
+---
 # LLM应用监控实战
 
 > **文档类型**: 实战指南
@@ -7,7 +29,7 @@
 
 ---
 
-## 🎯 学习目标
+## 学习目标
 
 完成本指南后，您将能够：
 
@@ -18,7 +40,7 @@
 
 ---
 
-## 📋 场景介绍
+## 场景介绍
 
 ### 场景：智能客服系统
 

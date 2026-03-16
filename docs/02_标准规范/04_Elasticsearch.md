@@ -1,3 +1,17 @@
+﻿---
+title: Elasticsearch语义约定详解
+description: Elasticsearch语义约定详解 详细指南和最佳实践
+version: OTLP v1.9.0
+date: 2026-03-17
+author: OTLP项目团队
+category: 标准规范
+tags:
+  - otlp
+  - observability
+  - performance
+  - optimization
+status: published
+---
 # Elasticsearch语义约定详解
 
 > **搜索与分析引擎**: Elasticsearch Tracing与Metrics完整规范

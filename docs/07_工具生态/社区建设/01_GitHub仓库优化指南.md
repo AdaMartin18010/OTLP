@@ -1,4 +1,20 @@
-# 🚀 GitHub仓库优化指南
+﻿---
+title: GitHub仓库优化指南
+description: GitHub仓库优化指南 详细指南和最佳实践
+version: OTLP v1.9.0
+date: 2026-03-17
+author: OTLP项目团队
+category: 工具生态
+tags:
+  - otlp
+  - observability
+  - performance
+  - optimization
+  - case-study
+  - production
+status: published
+---
+# GitHub仓库优化指南
 
 > **文档版本**: v1.0
 > **创建日期**: 2025年12月
@@ -7,10 +23,10 @@
 
 ---
 
-## 📋 目录
+## 目录
 
-- [🚀 GitHub仓库优化指南](#-github仓库优化指南)
-  - [📋 目录](#-目录)
+- [GitHub仓库优化指南](#github仓库优化指南)
+  - [目录](#目录)
   - [第一部分: Issue模板完善](#第一部分-issue模板完善)
     - [1.1 Bug报告模板](#11-bug报告模板)
     - [1.2 功能请求模板](#12-功能请求模板)
@@ -24,9 +40,9 @@
     - [3. 开发](#3-开发)
     - [4. 提交](#4-提交)
     - [5. 推送和PR](#5-推送和pr)
-  - [📝 提交规范](#-提交规范)
-  - [✅ 代码规范](#-代码规范)
-  - [🧪 测试要求](#-测试要求)
+  - [提交规范](#提交规范)
+  - [代码规范](#代码规范)
+  - [测试要求](#测试要求)
   - [第四部分: 文档网站建设](#第四部分-文档网站建设)
     - [4.1 VitePress配置](#41-vitepress配置)
       - [项目结构](#项目结构)
@@ -230,7 +246,7 @@ body:
 ```markdown
 # Pull Request
 
-## 📋 变更类型
+##  变更类型
 
 - [ ] Bug修复
 - [ ] 新功能
@@ -239,15 +255,15 @@ body:
 - [ ] 重构
 - [ ] 其他
 
-## 🎯 变更描述
+##  变更描述
 
 <!-- 描述这个PR做了什么 -->
 
-## 🔗 相关Issue
+## � 相关Issue
 
 <!-- 关联的Issue，例如: Fixes #123 -->
 
-## ✅ 检查清单
+##  检查清单
 
 - [ ] 代码遵循项目规范
 - [ ] 添加了必要的测试
@@ -255,15 +271,15 @@ body:
 - [ ] 更新了相关文档
 - [ ] 代码已自我审查
 
-## 📸 截图/示例
+## � 截图/示例
 
 <!-- 如果有UI变更，请提供截图 -->
 
-## 🧪 测试
+##  测试
 
 <!-- 描述如何测试这个变更 -->
 
-## 📝 额外说明
+##  额外说明
 
 <!-- 其他需要说明的内容 -->
 ```
@@ -318,7 +334,7 @@ jobs:
 ```markdown
 # 贡献指南
 
-## 🎯 如何贡献
+##  如何贡献
 
 ### 1. Fork仓库
 
@@ -359,7 +375,7 @@ git push origin feature/your-feature-name
 # 然后在GitHub创建PR
 ```
 
-## 📝 提交规范
+## 提交规范
 
 使用[Conventional Commits](https://www.conventionalcommits.org/)规范:
 
@@ -371,13 +387,13 @@ git push origin feature/your-feature-name
 - `test`: 测试
 - `chore`: 构建/工具
 
-## ✅ 代码规范
+## 代码规范
 
 - Go: 遵循[Effective Go](https://go.dev/doc/effective_go)
 - Python: 遵循[PEP 8](https://pep8.org/)
 - 文档: 遵循[Markdown规范](https://www.markdownguide.org/)
 
-## 🧪 测试要求
+## 测试要求
 
 - 新功能必须包含测试
 - 测试覆盖率>80%

@@ -1,3 +1,20 @@
+﻿---
+title: SpanContext 完整定义
+description: SpanContext 完整定义 详细指南和最佳实践
+version: OTLP v1.9.0
+date: 2026-03-17
+author: OTLP项目团队
+category: 核心实现
+tags:
+  - otlp
+  - observability
+  - performance
+  - optimization
+  - sampling
+  - security
+  - compliance
+status: published
+---
 # SpanContext 完整定义
 
 > **OTLP版本**: v1.0.0 (Stable)

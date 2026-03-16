@@ -1,3 +1,23 @@
+﻿---
+title: OTLP Collector v0.147.0 更新说明
+description: OTLP Collector v0.147.0 更新说明 详细指南和最佳实践
+version: OTLP v1.9.0
+date: 2026-03-17
+author: OTLP项目团队
+category: 核心实现
+tags:
+  - otlp
+  - observability
+  - performance
+  - optimization
+  - genai
+  - llm
+  - ai
+  - deployment
+  - kubernetes
+  - docker
+status: published
+---
 # OTLP Collector v0.147.0 更新说明
 
 > **更新时间**: 2026年3月16日
@@ -7,7 +27,7 @@
 
 ---
 
-## 📊 更新概览
+## 更新概览
 
 ```text
 ┌─────────────────────────────────────────────────────────────────┐
@@ -26,7 +46,7 @@
 
 ---
 
-## 🆕 一、重大变更 (Breaking Changes)
+## � 一、重大变更 (Breaking Changes)
 
 ### 1.1 Telemetry字段变为必需
 
@@ -184,7 +204,7 @@ factory := xprocessor.NewFactory()
 
 ---
 
-## 📈 二、主要新特性
+## 二、主要新特性
 
 ### 2.1 Semantic Conventions v1.38.0
 
@@ -235,7 +255,7 @@ exporters:
 
 ---
 
-## 🛠️ 三、组件更新
+## 三、组件更新
 
 ### 3.1 Collector Contrib更新
 
@@ -244,7 +264,7 @@ exporters:
 **移除的废弃配置**:
 
 ```yaml
-# ⚠️ 以下配置已移除，不再支持
+# ⚠ 以下配置已移除，不再支持
 receivers:
   prometheus:
     config:
@@ -283,7 +303,7 @@ exporters:
 
 ---
 
-## 🔧 四、配置更新
+## 四、配置更新
 
 ### 4.1 声明式配置Schema更新
 
@@ -329,7 +349,7 @@ logging:
 **声明式配置Schema已移除Zipkin Exporter支持**
 
 ```yaml
-# ⚠️ 不再支持
+# ⚠ 不再支持
 tracer_provider:
   processors:
     - batch:
@@ -348,7 +368,7 @@ tracer_provider:
 
 ---
 
-## 🚀 五、升级指南
+## 五、升级指南
 
 ### 5.1 升级步骤
 
@@ -408,7 +428,7 @@ curl http://localhost:13133/health
 
 ---
 
-## 📊 六、版本对应关系
+## 六、版本对应关系
 
 | 组件 | 版本 | 说明 |
 |:-----|:-----|:-----|
@@ -423,7 +443,7 @@ curl http://localhost:13133/health
 
 ---
 
-## 📚 七、参考链接
+## 七、参考链接
 
 - [Collector v0.147.0 Release](https://github.com/open-telemetry/opentelemetry-collector/releases)
 - [Collector Contrib Releases](https://github.com/open-telemetry/opentelemetry-collector-contrib/releases)

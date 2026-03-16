@@ -1,3 +1,21 @@
+﻿---
+title: Metrics Exemplars 详解
+description: Metrics Exemplars 详解 详细指南和最佳实践
+version: OTLP v1.9.0
+date: 2026-03-17
+author: OTLP项目团队
+category: 核心实现
+tags:
+  - otlp
+  - observability
+  - performance
+  - optimization
+  - sampling
+  - deployment
+  - kubernetes
+  - docker
+status: published
+---
 # Metrics Exemplars 详解
 
 > **标准版本**: v1.3.0 (Stable自v1.3.0)
@@ -7,10 +25,10 @@
 
 ---
 
-## 📋 目录
+## 目录
 
 - [Metrics Exemplars 详解](#metrics-exemplars-详解)
-  - [📋 目录](#-目录)
+  - [目录](#目录)
   - [1. 概述](#1-概述)
     - [1.1 什么是Exemplars](#11-什么是exemplars)
     - [1.2 为什么需要Exemplars](#12-为什么需要exemplars)

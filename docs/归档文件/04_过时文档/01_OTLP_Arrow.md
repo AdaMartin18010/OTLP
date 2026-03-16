@@ -1,3 +1,21 @@
+﻿---
+title: OTLP Arrow: 高性能列式编码
+description: OTLP Arrow: 高性能列式编码 详细指南和最佳实践
+version: OTLP v1.9.0
+date: 2026-03-17
+author: OTLP项目团队
+category: 其他
+tags:
+  - otlp
+  - observability
+  - otlp-arrow
+  - performance
+  - optimization
+  - deployment
+  - kubernetes
+  - docker
+status: published
+---
 # OTLP Arrow: 高性能列式编码
 
 > **规范版本**: v0.21.0 (Experimental)
@@ -5,10 +23,10 @@
 
 ---
 
-## 📋 目录
+## 目录
 
 - [OTLP Arrow: 高性能列式编码](#otlp-arrow-高性能列式编码)
-  - [📋 目录](#-目录)
+  - [目录](#目录)
   - [1. 概述](#1-概述)
     - [1.1 为什么需要OTLP Arrow](#11-为什么需要otlp-arrow)
     - [1.2 性能对比](#12-性能对比)

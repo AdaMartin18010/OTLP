@@ -1,3 +1,18 @@
+﻿---
+title: Semantic Conventions v1.39.0 → v1.40.0 完整变更日志
+description: Semantic Conventions v1.39.0 → v1.40.0 完整变更日志 详细指南和最佳实践
+version: OTLP v1.9.0
+date: 2026-03-17
+author: OTLP项目团队
+category: 标准规范
+tags:
+  - otlp
+  - observability
+  - genai
+  - llm
+  - ai
+status: published
+---
 # Semantic Conventions v1.39.0 → v1.40.0 完整变更日志
 
 > **来源**: OpenTelemetry Semantic Conventions GitHub Releases

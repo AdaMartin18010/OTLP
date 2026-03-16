@@ -1,4 +1,25 @@
-# 🤖 时序异常检测实战指南 - Prophet/LSTM/Isolation Forest
+﻿---
+title: 时序异常检测实战指南 - Prophet/LSTM/Isolation Forest
+description: 时序异常检测实战指南 - Prophet/LSTM/Isolation Forest 详细指南和最佳实践
+version: OTLP v1.9.0
+date: 2026-03-17
+author: OTLP项目团队
+category: 参考资料
+tags:
+  - otlp
+  - observability
+  - ebpf
+  - performance
+  - optimization
+  - case-study
+  - production
+  - sampling
+  - deployment
+  - kubernetes
+  - docker
+status: published
+---
+# 时序异常检测实战指南 - Prophet/LSTM/Isolation Forest
 
 **文档版本**: v1.0
 **创建日期**: 2025-10-09
@@ -7,48 +28,48 @@
 
 ---
 
-## 📋 目录
+## 目录
 
-- [🤖 时序异常检测实战指南 - Prophet/LSTM/Isolation Forest](#-时序异常检测实战指南---prophetlstmisolation-forest)
-  - [📋 目录](#-目录)
-  - [📊 执行摘要](#-执行摘要)
-  - [🎯 技术背景与动机](#-技术背景与动机)
+- [时序异常检测实战指南 - Prophet/LSTM/Isolation Forest](#时序异常检测实战指南---prophetlstmisolation-forest)
+  - [目录](#目录)
+  - [执行摘要](#执行摘要)
+  - [技术背景与动机](#技术背景与动机)
     - [为什么需要时序异常检测?](#为什么需要时序异常检测)
     - [本指南覆盖的场景](#本指南覆盖的场景)
   - [⏰ 时序预测 - Prophet](#-时序预测---prophet)
     - [算法原理](#算法原理)
     - [完整实现](#完整实现)
     - [调参指南](#调参指南)
-  - [🧠 深度学习异常检测 - LSTM](#-深度学习异常检测---lstm)
+  - [� 深度学习异常检测 - LSTM](#-深度学习异常检测---lstm)
     - [算法原理1](#算法原理1)
     - [完整实现1](#完整实现1)
     - [模型优化技巧](#模型优化技巧)
-  - [🌲 多维度异常检测 - Isolation Forest](#-多维度异常检测---isolation-forest)
+  - [� 多维度异常检测 - Isolation Forest](#-多维度异常检测---isolation-forest)
     - [算法原理2](#算法原理2)
     - [完整实现2](#完整实现2)
-  - [📝 实战案例](#-实战案例)
+  - [实战案例](#实战案例)
     - [案例1: CPU异常检测 (Prophet)](#案例1-cpu异常检测-prophet)
     - [案例2: 内存泄漏检测 (LSTM)](#案例2-内存泄漏检测-lstm)
     - [案例3: 多维度关联异常 (Isolation Forest)](#案例3-多维度关联异常-isolation-forest)
-  - [📊 性能对比与选型](#-性能对比与选型)
+  - [性能对比与选型](#性能对比与选型)
     - [算法对比](#算法对比)
     - [选型决策树](#选型决策树)
     - [生产环境推荐组合](#生产环境推荐组合)
-  - [🚀 生产部署指南](#-生产部署指南)
+  - [生产部署指南](#生产部署指南)
     - [架构设计](#架构设计)
     - [Docker部署](#docker部署)
     - [Kubernetes部署](#kubernetes部署)
-  - [🔧 故障排查与优化](#-故障排查与优化)
+  - [故障排查与优化](#故障排查与优化)
     - [常见问题](#常见问题)
-  - [🆚 与Datadog Watchdog对比](#-与datadog-watchdog对比)
+  - [� 与Datadog Watchdog对比](#-与datadog-watchdog对比)
     - [功能对比](#功能对比)
     - [准确率对比](#准确率对比)
-  - [📚 相关文档](#-相关文档)
-  - [🎯 完成总结与后续展望](#-完成总结与后续展望)
+  - [相关文档](#相关文档)
+  - [完成总结与后续展望](#完成总结与后续展望)
 
 ---
 
-## 📊 执行摘要
+## 执行摘要
 
 时序异常检测是AI驱动可观测性的核心能力。本指南提供三种主流算法的完整实现:
 
@@ -72,7 +93,7 @@
 
 ---
 
-## 🎯 技术背景与动机
+## 技术背景与动机
 
 ### 为什么需要时序异常检测?
 
@@ -297,7 +318,6 @@ class ProphetAnomalyDetector:
             raise ValueError("模型尚未训练")
         return self.model.component_mode
 
-
 # ========== 使用示例 ==========
 
 def example_prophet_cpu_detection():
@@ -410,7 +430,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🧠 深度学习异常检测 - LSTM
+## � 深度学习异常检测 - LSTM
 
 ### 算法原理1
 
@@ -619,7 +639,6 @@ class LSTMAnomalyDetector:
 
         return is_anomaly, mse
 
-
 # ========== 使用示例 ==========
 
 def example_lstm_memory_detection():
@@ -742,7 +761,7 @@ is_anomaly, scores = detector.detect(data_multi)
 
 ---
 
-## 🌲 多维度异常检测 - Isolation Forest
+## � 多维度异常检测 - Isolation Forest
 
 ### 算法原理2
 
@@ -862,7 +881,6 @@ class IsolationForestAnomalyDetector:
 
         return result
 
-
 # ========== 使用示例 ==========
 
 def example_isolation_forest_multivariate():
@@ -943,7 +961,7 @@ if __name__ == "__main__":
 
 ---
 
-## 📝 实战案例
+## 实战案例
 
 ### 案例1: CPU异常检测 (Prophet)
 
@@ -1035,7 +1053,7 @@ detector = IsolationForestAnomalyDetector(
 
 ---
 
-## 📊 性能对比与选型
+## 性能对比与选型
 
 ### 算法对比
 
@@ -1096,7 +1114,7 @@ is_anomaly = final_score > threshold
 
 ---
 
-## 🚀 生产部署指南
+## 生产部署指南
 
 ### 架构设计
 
@@ -1223,7 +1241,7 @@ spec:
 
 ---
 
-## 🔧 故障排查与优化
+## 故障排查与优化
 
 ### 常见问题
 
@@ -1286,7 +1304,7 @@ is_anomaly = scores < threshold
 
 ---
 
-## 🆚 与Datadog Watchdog对比
+## � 与Datadog Watchdog对比
 
 ### 功能对比
 
@@ -1316,7 +1334,7 @@ is_anomaly = scores < threshold
 
 ---
 
-## 📚 相关文档
+## 相关文档
 
 - [🤖_OTLP自主运维能力完整架构_AIOps平台设计.md](./🤖_OTLP自主运维能力完整架构_AIOps平台设计.md) - 时序异常检测是AIOps平台的核心模块
 - [🤖_AI驱动日志分析完整指南_LLM异常检测与RCA.md](./🤖_AI驱动日志分析完整指南_LLM异常检测与RCA.md) - 结合LLM进行根因分析
@@ -1324,7 +1342,7 @@ is_anomaly = scores < threshold
 
 ---
 
-## 🎯 完成总结与后续展望
+## 完成总结与后续展望
 
 **本文档完成情况**: ✅ 100%完成
 

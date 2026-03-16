@@ -1,13 +1,31 @@
+﻿---
+title: OTLP完整架构图与可视化
+description: OTLP完整架构图与可视化 详细指南和最佳实践
+version: OTLP v1.9.0
+date: 2026-03-17
+author: OTLP项目团队
+category: 核心实现
+tags:
+  - otlp
+  - observability
+  - performance
+  - optimization
+  - sampling
+  - deployment
+  - kubernetes
+  - docker
+status: published
+---
 # OTLP完整架构图与可视化
 
 > **最后更新**: 2025年10月8日
 
 ---
 
-## 📋 目录
+## 目录
 
 - [OTLP完整架构图与可视化](#otlp完整架构图与可视化)
-  - [📋 目录](#-目录)
+  - [目录](#目录)
   - [1. OTLP整体架构](#1-otlp整体架构)
   - [2. 数据流转架构](#2-数据流转架构)
   - [3. SDK架构](#3-sdk架构)

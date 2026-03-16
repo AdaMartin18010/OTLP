@@ -1,8 +1,27 @@
-# 📖 术语表 - OTLP 技术栈标准译法
+﻿---
+title: 术语表 - OTLP 技术栈标准译法
+description: 术语表 - OTLP 技术栈标准译法 详细指南和最佳实践
+version: OTLP v1.9.0
+date: 2026-03-17
+author: OTLP项目团队
+category: 参考资料
+tags:
+  - otlp
+  - observability
+  - ebpf
+  - performance
+  - optimization
+  - sampling
+  - deployment
+  - kubernetes
+  - docker
+status: published
+---
+# 术语表 - OTLP 技术栈标准译法
 
-> **版本**: v1.0  
-> **创建日期**: 2025年10月9日  
-> **适用范围**: 本项目所有技术文档  
+> **版本**: v1.0
+> **创建日期**: 2025年10月9日
+> **适用范围**: 本项目所有技术文档
 > **维护原则**: 优先采用 OpenTelemetry 官方中文文档译法
 
 ---
@@ -366,7 +385,7 @@
 
 ## 使用规范
 
-### ✅ 正确示例
+### 正确示例
 
 ```markdown
 # 正确
@@ -416,6 +435,6 @@
 
 ---
 
-**维护者**: AI Assistant  
-**最后更新**: 2025年10月9日  
+**维护者**: AI Assistant
+**最后更新**: 2025年10月9日
 **版本**: v1.0

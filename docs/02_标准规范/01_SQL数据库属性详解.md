@@ -1,3 +1,19 @@
+﻿---
+title: SQL数据库语义约定详解
+description: SQL数据库语义约定详解 详细指南和最佳实践
+version: OTLP v1.9.0
+date: 2026-03-17
+author: OTLP项目团队
+category: 标准规范
+tags:
+  - otlp
+  - observability
+  - performance
+  - optimization
+  - security
+  - compliance
+status: published
+---
 # SQL数据库语义约定详解
 
 > **Semantic Conventions版本**: v1.27.0
@@ -44,7 +60,7 @@
     - [8.1 慢查询追踪](#81-慢查询追踪)
     - [8.2 查询计划分析](#82-查询计划分析)
   - [9. 最佳实践](#9-最佳实践)
-    - [✅ DO（推荐）](#-do推荐)
+    - [DO（推荐）](#do推荐)
     - [❌ DON'T（避免）](#-dont避免)
   - [10. 故障排查](#10-故障排查)
     - [常见问题](#常见问题)
@@ -1184,7 +1200,7 @@ func (p *PostgresDB) ExplainQuery(ctx context.Context, query string, args ...int
 
 ## 9. 最佳实践
 
-### ✅ DO（推荐）
+### DO（推荐）
 
 ```text
 1. 语句脱敏

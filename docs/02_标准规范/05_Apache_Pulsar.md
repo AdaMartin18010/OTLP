@@ -1,3 +1,17 @@
+﻿---
+title: Apache Pulsar语义约定详解
+description: Apache Pulsar语义约定详解 详细指南和最佳实践
+version: OTLP v1.9.0
+date: 2026-03-17
+author: OTLP项目团队
+category: 标准规范
+tags:
+  - otlp
+  - observability
+  - performance
+  - optimization
+status: published
+---
 # Apache Pulsar语义约定详解
 
 > **下一代消息队列**: Apache Pulsar Tracing与Metrics完整规范

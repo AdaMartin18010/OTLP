@@ -1,3 +1,20 @@
+﻿---
+title: OpenTelemetry故障排查完整手册
+description: OpenTelemetry故障排查完整手册 详细指南和最佳实践
+version: OTLP v1.9.0
+date: 2026-03-17
+author: OTLP项目团队
+category: 部署运维
+tags:
+  - otlp
+  - observability
+  - performance
+  - optimization
+  - case-study
+  - production
+  - sampling
+status: published
+---
 # OpenTelemetry故障排查完整手册
 
 > **实战指南**: 生产环境故障诊断与解决
@@ -5,10 +22,10 @@
 
 ---
 
-## 📋 目录
+## 目录
 
 - [OpenTelemetry故障排查完整手册](#opentelemetry故障排查完整手册)
-  - [📋 目录](#-目录)
+  - [目录](#目录)
   - [1. 快速诊断流程](#1-快速诊断流程)
     - [1.1 故障分类](#11-故障分类)
     - [1.2 诊断决策树](#12-诊断决策树)

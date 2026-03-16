@@ -1,3 +1,20 @@
+﻿---
+title: Profiles信号概述与数据模型
+description: Profiles信号概述与数据模型 详细指南和最佳实践
+version: OTLP v1.9.0
+date: 2026-03-17
+author: OTLP项目团队
+category: 前沿技术
+tags:
+  - otlp
+  - observability
+  - performance
+  - optimization
+  - case-study
+  - production
+  - sampling
+status: published
+---
 # Profiles信号概述与数据模型
 
 > **文档版本**: v1.0 (2026年3月)
@@ -7,10 +24,10 @@
 
 ---
 
-## 📋 目录
+## 目录
 
 - [Profiles信号概述与数据模型](#profiles信号概述与数据模型)
-  - [📋 目录](#-目录)
+  - [目录](#目录)
   - [1. 什么是Profiles信号](#1-什么是profiles信号)
     - [1.1 定义](#11-定义)
     - [1.2 历史发展](#12-历史发展)

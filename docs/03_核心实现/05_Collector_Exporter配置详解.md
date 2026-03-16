@@ -1,3 +1,20 @@
+﻿---
+title: Collector Exporter 配置详解
+description: Collector Exporter 配置详解 详细指南和最佳实践
+version: OTLP v1.9.0
+date: 2026-03-17
+author: OTLP项目团队
+category: 核心实现
+tags:
+  - otlp
+  - observability
+  - performance
+  - optimization
+  - sampling
+  - security
+  - compliance
+status: published
+---
 # Collector Exporter 配置详解
 
 > **标准版本**: v1.27.0

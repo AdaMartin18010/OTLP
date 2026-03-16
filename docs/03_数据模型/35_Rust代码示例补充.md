@@ -1,3 +1,20 @@
+﻿---
+title: OTLP Rust 代码示例补充
+description: OTLP Rust 代码示例补充 详细指南和最佳实践
+version: OTLP v1.9.0
+date: 2026-03-17
+author: OTLP项目团队
+category: 核心实现
+tags:
+  - otlp
+  - observability
+  - performance
+  - optimization
+  - sampling
+  - security
+  - compliance
+status: published
+---
 # OTLP Rust 代码示例补充
 
 > **文档编号**: 35
@@ -8,7 +25,7 @@
 
 ---
 
-## 📋 文档概览
+## 文档概览
 
 ### 文档目标
 

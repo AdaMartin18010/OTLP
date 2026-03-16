@@ -1,4 +1,17 @@
-# 📘 Semantic Conventions速查手册
+﻿---
+title: 📘 Semantic Conventions速查手册
+description: 📘 Semantic Conventions速查手册
+ 详细指南
+version: OTLP v1.9.0
+date: 2026-03-17
+author: OTLP项目团队
+category: 参考资料
+tags:
+  - otlp
+  - observability
+status: published
+---
+# � Semantic Conventions速查手册
 
 > **版本**: v1.29.0
 > **最后更新**: 2025年10月9日
@@ -6,26 +19,26 @@
 
 ---
 
-## 🎯 速查目录
+## 速查目录
 
-- [📘 Semantic Conventions速查手册](#-semantic-conventions速查手册)
-  - [🎯 速查目录](#-速查目录)
-  - [📋 概述](#-概述)
+- [� Semantic Conventions速查手册](#-semantic-conventions速查手册)
+  - [速查目录](#速查目录)
+  - [概述](#概述)
     - [什么是Semantic Conventions?](#什么是semantic-conventions)
     - [版本演进](#版本演进)
-  - [🌍 通用属性](#-通用属性)
+  - [� 通用属性](#-通用属性)
     - [核心通用属性](#核心通用属性)
     - [环境标识](#环境标识)
-  - [🏢 资源属性](#-资源属性)
+  - [� 资源属性](#-资源属性)
     - [Service (服务)](#service-服务)
     - [Container (容器)](#container-容器)
     - [Kubernetes (K8s)](#kubernetes-k8s)
     - [Cloud (云平台)](#cloud-云平台)
-  - [🔍 Traces属性](#-traces属性)
+  - [Traces属性](#traces属性)
     - [Span通用属性](#span通用属性)
     - [Span Kind枚举](#span-kind枚举)
     - [错误属性](#错误属性)
-  - [📊 Metrics命名](#-metrics命名)
+  - [Metrics命名](#metrics命名)
     - [命名规范](#命名规范)
     - [常用Metrics](#常用metrics)
       - [HTTP Server](#http-server)
@@ -33,51 +46,51 @@
       - [Database](#database)
       - [System](#system)
     - [单位标准](#单位标准)
-  - [📝 Logs属性](#-logs属性)
+  - [Logs属性](#logs属性)
     - [核心Logs属性](#核心logs属性)
     - [日志级别](#日志级别)
-  - [🌐 HTTP约定](#-http约定)
+  - [HTTP约定](#http约定)
     - [HTTP请求属性](#http请求属性)
     - [HTTP响应属性](#http响应属性)
     - [HTTP版本](#http版本)
     - [HTTP状态码分类](#http状态码分类)
-  - [🗄️ 数据库约定](#️-数据库约定)
+  - [� 数据库约定](#-数据库约定)
     - [通用数据库属性](#通用数据库属性)
     - [SQL数据库](#sql数据库)
     - [NoSQL数据库](#nosql数据库)
       - [MongoDB](#mongodb)
       - [Redis](#redis)
     - [数据库系统枚举](#数据库系统枚举)
-  - [📨 消息队列约定](#-消息队列约定)
+  - [� 消息队列约定](#-消息队列约定)
     - [Messaging属性](#messaging属性)
     - [Kafka特定属性](#kafka特定属性)
     - [RabbitMQ特定属性](#rabbitmq特定属性)
-  - [☁️ 云平台约定](#️-云平台约定)
+  - [☁ 云平台约定](#-云平台约定)
     - [AWS](#aws)
     - [Azure](#azure)
     - [Google Cloud Platform](#google-cloud-platform)
     - [阿里云](#阿里云)
-  - [🤖 GenAI约定 (v1.29.0稳定) 🆕](#-genai约定-v1290稳定-)
+  - [GenAI约定 (v1.29.0稳定) �](#genai约定-v1290稳定-)
     - [LLM调用属性](#llm调用属性)
     - [成本追踪属性](#成本追踪属性)
     - [Prompt属性](#prompt属性)
     - [支持的AI系统](#支持的ai系统)
-  - [📐 命名规范](#-命名规范)
+  - [命名规范](#命名规范-1)
     - [属性命名规则](#属性命名规则)
     - [命名空间](#命名空间)
     - [Metric命名规则](#metric命名规则)
-  - [🔍 快速查找工具](#-快速查找工具)
+  - [快速查找工具](#快速查找工具)
     - [按技术栈查找](#按技术栈查找)
       - [Web应用](#web应用)
       - [后端服务](#后端服务)
       - [云原生](#云原生)
       - [AI应用](#ai应用)
-  - [📚 参考资源](#-参考资源)
-  - [🎯 最佳实践](#-最佳实践)
+  - [参考资源](#参考资源)
+  - [最佳实践](#最佳实践)
 
 ---
 
-## 📋 概述
+## 概述
 
 ### 什么是Semantic Conventions?
 
@@ -93,7 +106,7 @@
 
 ---
 
-## 🌍 通用属性
+## � 通用属性
 
 ### 核心通用属性
 
@@ -117,7 +130,7 @@
 
 ---
 
-## 🏢 资源属性
+## � 资源属性
 
 ### Service (服务)
 
@@ -162,7 +175,7 @@
 
 ---
 
-## 🔍 Traces属性
+## Traces属性
 
 ### Span通用属性
 
@@ -193,7 +206,7 @@
 
 ---
 
-## 📊 Metrics命名
+## Metrics命名
 
 ### 命名规范
 
@@ -253,7 +266,7 @@
 
 ---
 
-## 📝 Logs属性
+## Logs属性
 
 ### 核心Logs属性
 
@@ -279,7 +292,7 @@
 
 ---
 
-## 🌐 HTTP约定
+## HTTP约定
 
 ### HTTP请求属性
 
@@ -333,7 +346,7 @@
 
 ---
 
-## 🗄️ 数据库约定
+## � 数据库约定
 
 ### 通用数据库属性
 
@@ -392,7 +405,7 @@ NoSQL:
 
 ---
 
-## 📨 消息队列约定
+## � 消息队列约定
 
 ### Messaging属性
 
@@ -423,7 +436,7 @@ NoSQL:
 
 ---
 
-## ☁️ 云平台约定
+## ☁ 云平台约定
 
 ### AWS
 
@@ -463,7 +476,7 @@ NoSQL:
 
 ---
 
-## 🤖 GenAI约定 (v1.29.0稳定) 🆕
+## GenAI约定 (v1.29.0稳定) �
 
 ### LLM调用属性
 
@@ -511,7 +524,7 @@ NoSQL:
 
 ---
 
-## 📐 命名规范
+## 命名规范
 
 ### 属性命名规则
 
@@ -559,7 +572,7 @@ NoSQL:
 
 ---
 
-## 🔍 快速查找工具
+## 快速查找工具
 
 ### 按技术栈查找
 
@@ -587,7 +600,7 @@ NoSQL:
 
 ---
 
-## 📚 参考资源
+## 参考资源
 
 | 资源 | 链接 |
 |------|------|
@@ -601,7 +614,7 @@ NoSQL:
 
 ---
 
-## 🎯 最佳实践
+## 最佳实践
 
 ```text
 ✅ 使用标准属性名称,不要自定义

@@ -1,4 +1,25 @@
-# 📊 Profiles 性能分析完整指南 - 连续性能剖析与 OTLP 集成
+﻿---
+title: Profiles 性能分析完整指南 - 连续性能剖析与 OTLP 集成
+description: Profiles 性能分析完整指南 - 连续性能剖析与 OTLP 集成 详细指南和最佳实践
+version: OTLP v1.9.0
+date: 2026-03-17
+author: OTLP项目团队
+category: 参考资料
+tags:
+  - otlp
+  - observability
+  - ebpf
+  - performance
+  - optimization
+  - case-study
+  - production
+  - sampling
+  - deployment
+  - kubernetes
+  - docker
+status: published
+---
+# Profiles 性能分析完整指南 - 连续性能剖析与 OTLP 集成
 
 > **文档版本**: v1.0
 > **创建日期**: 2025年10月9日
@@ -8,10 +29,10 @@
 
 ---
 
-## 📋 目录
+## 目录
 
-- [📊 Profiles 性能分析完整指南 - 连续性能剖析与 OTLP 集成](#-profiles-性能分析完整指南---连续性能剖析与-otlp-集成)
-  - [📋 目录](#-目录)
+- [Profiles 性能分析完整指南 - 连续性能剖析与 OTLP 集成](#profiles-性能分析完整指南---连续性能剖析与-otlp-集成)
+  - [目录](#目录)
   - [第一部分: Profiling 基础](#第一部分-profiling-基础)
     - [1.1 什么是 Profiling?](#11-什么是-profiling)
       - [传统 Profiling vs Continuous Profiling](#传统-profiling-vs-continuous-profiling)
@@ -77,7 +98,7 @@
     - [Continuous Profiling 核心价值](#continuous-profiling-核心价值)
     - [适用场景](#适用场景)
     - [参考资源](#参考资源)
-  - [📚 相关文档](#-相关文档)
+  - [相关文档](#相关文档)
     - [核心集成 ⭐⭐⭐](#核心集成-)
     - [架构可视化 ⭐⭐⭐](#架构可视化-)
     - [工具链支持 ⭐⭐](#工具链支持-)
@@ -2460,7 +2481,7 @@ ROI:
 
 ---
 
-## 📚 相关文档
+## 相关文档
 
 ### 核心集成 ⭐⭐⭐
 

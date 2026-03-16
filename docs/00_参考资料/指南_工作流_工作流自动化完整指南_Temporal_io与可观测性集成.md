@@ -1,4 +1,23 @@
-# 🔄 工作流自动化完整指南 - Temporal.io 与可观测性集成
+﻿---
+title: 工作流自动化完整指南 - Temporal.io 与可观测性集成
+description: 工作流自动化完整指南 - Temporal.io 与可观测性集成 详细指南和最佳实践
+version: OTLP v1.9.0
+date: 2026-03-17
+author: OTLP项目团队
+category: 参考资料
+tags:
+  - otlp
+  - observability
+  - performance
+  - optimization
+  - case-study
+  - production
+  - deployment
+  - kubernetes
+  - docker
+status: published
+---
+# 工作流自动化完整指南 - Temporal.io 与可观测性集成
 
 > **文档版本**: v1.0
 > **创建日期**: 2025年10月9日
@@ -8,10 +27,10 @@
 
 ---
 
-## 📋 目录
+## 目录
 
-- [🔄 工作流自动化完整指南 - Temporal.io 与可观测性集成](#-工作流自动化完整指南---temporalio-与可观测性集成)
-  - [📋 目录](#-目录)
+- [工作流自动化完整指南 - Temporal.io 与可观测性集成](#工作流自动化完整指南---temporalio-与可观测性集成)
+  - [目录](#目录)
   - [第一部分: 工作流编排基础](#第一部分-工作流编排基础)
     - [1.1 为什么需要工作流编排?](#11-为什么需要工作流编排)
     - [1.2 Temporal.io 核心概念](#12-temporalio-核心概念)
@@ -47,7 +66,7 @@
     - [Temporal.io 核心价值](#temporalio-核心价值)
     - [适用场景](#适用场景)
     - [参考资源](#参考资源)
-  - [📚 相关文档](#-相关文档)
+  - [相关文档](#相关文档)
     - [核心集成 ⭐⭐⭐](#核心集成-)
     - [架构可视化 ⭐⭐⭐](#架构可视化-)
     - [工具链支持 ⭐⭐](#工具链支持-)
@@ -2143,7 +2162,7 @@ ROI: 550% (首年)
 
 ---
 
-## 📚 相关文档
+## 相关文档
 
 ### 核心集成 ⭐⭐⭐
 

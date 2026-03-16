@@ -1,3 +1,22 @@
+﻿---
+title: AWS云平台属性详解
+description: AWS云平台属性详解 详细指南和最佳实践
+version: OTLP v1.9.0
+date: 2026-03-17
+author: OTLP项目团队
+category: 标准规范
+tags:
+  - otlp
+  - observability
+  - case-study
+  - production
+  - security
+  - compliance
+  - deployment
+  - kubernetes
+  - docker
+status: published
+---
 # AWS云平台属性详解
 
 > **规范版本**: v1.30.0

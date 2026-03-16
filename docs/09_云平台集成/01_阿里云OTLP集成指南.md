@@ -1,4 +1,22 @@
-# 🇨🇳 阿里云OpenTelemetry集成指南
+﻿---
+title: �� 阿里云OpenTelemetry集成指南
+description: �� 阿里云OpenTelemetry集成指南 详细指南和最佳实践
+version: OTLP v1.9.0
+date: 2026-03-17
+author: OTLP项目团队
+category: 工具生态
+tags:
+  - otlp
+  - observability
+  - performance
+  - optimization
+  - sampling
+  - deployment
+  - kubernetes
+  - docker
+status: published
+---
+# �� 阿里云OpenTelemetry集成指南
 
 > **阿里云服务**: SLS, ARMS, Prometheus
 > **OTLP版本**: v1.3.0
@@ -6,16 +24,16 @@
 
 ---
 
-## 📋 目录
+## 目录
 
-- [🇨🇳 阿里云OpenTelemetry集成指南](#-阿里云opentelemetry集成指南)
-  - [📋 目录](#-目录)
-  - [🎯 概述](#-概述)
+- [�� 阿里云OpenTelemetry集成指南](#-阿里云opentelemetry集成指南)
+  - [目录](#目录)
+  - [概述](#概述)
     - [阿里云可观测性服务](#阿里云可观测性服务)
     - [集成架构](#集成架构)
     - [为什么使用OTLP?](#为什么使用otlp)
-  - [📊 SLS日志服务集成](#-sls日志服务集成)
-    - [概述](#概述)
+  - [SLS日志服务集成](#sls日志服务集成)
+    - [概述](#概述-1)
     - [前置准备](#前置准备)
     - [Collector配置](#collector配置)
       - [完整配置示例](#完整配置示例)
@@ -26,7 +44,7 @@
     - [SLS查询和分析](#sls查询和分析)
       - [查询Traces](#查询traces)
       - [查询Metrics](#查询metrics)
-  - [🚀 ARMS应用监控集成](#-arms应用监控集成)
+  - [ARMS应用监控集成](#arms应用监控集成)
     - [概述1](#概述1)
     - [前置准备1](#前置准备1)
     - [Collector配置1](#collector配置1)
@@ -34,17 +52,17 @@
     - [ARMS链路追踪](#arms链路追踪)
       - [查看链路拓扑](#查看链路拓扑)
       - [查询Traces1](#查询traces1)
-  - [📈 Prometheus监控集成](#-prometheus监控集成)
+  - [Prometheus监控集成](#prometheus监控集成)
     - [阿里云Prometheus监控](#阿里云prometheus监控)
     - [Collector配置2](#collector配置2)
     - [Grafana可视化](#grafana可视化)
       - [配置数据源](#配置数据源)
       - [常用PromQL查询](#常用promql查询)
-  - [🏗️ 架构最佳实践](#️-架构最佳实践)
+  - [� 架构最佳实践](#-架构最佳实践)
     - [1. 混合云部署架构](#1-混合云部署架构)
     - [2. K8s DaemonSet模式](#2-k8s-daemonset模式)
     - [3. 多后端导出](#3-多后端导出)
-  - [💰 成本优化](#-成本优化)
+  - [� 成本优化](#-成本优化)
     - [SLS成本分析](#sls成本分析)
       - [计费项目](#计费项目)
       - [成本优化策略](#成本优化策略)
@@ -53,17 +71,17 @@
         - [3. 精简索引 (节省50-80%)](#3-精简索引-节省50-80)
         - [4. 设置数据生命周期](#4-设置数据生命周期)
       - [成本计算示例](#成本计算示例)
-  - [🔍 故障排查](#-故障排查)
+  - [故障排查](#故障排查)
     - [常见问题](#常见问题)
       - [1. 数据未到达SLS](#1-数据未到达sls)
       - [2. ARMS Token认证失败](#2-arms-token认证失败)
       - [3. 高延迟问题](#3-高延迟问题)
-  - [📚 参考资源](#-参考资源)
-  - [🎯 最佳实践总结](#-最佳实践总结)
+  - [参考资源](#参考资源)
+  - [最佳实践总结](#最佳实践总结)
 
 ---
 
-## 🎯 概述
+## 概述
 
 ### 阿里云可观测性服务
 
@@ -118,7 +136,7 @@
 
 ---
 
-## 📊 SLS日志服务集成
+## SLS日志服务集成
 
 ### 概述
 
@@ -450,7 +468,7 @@ if __name__ == "__main__":
 
 ---
 
-## 🚀 ARMS应用监控集成
+## ARMS应用监控集成
 
 ### 概述1
 
@@ -514,7 +532,7 @@ exporter, err := otlptracegrpc.New(
 
 ---
 
-## 📈 Prometheus监控集成
+## Prometheus监控集成
 
 ### 阿里云Prometheus监控
 
@@ -573,7 +591,7 @@ process_runtime_jvm_memory_usage
 
 ---
 
-## 🏗️ 架构最佳实践
+## � 架构最佳实践
 
 ### 1. 混合云部署架构
 
@@ -691,7 +709,7 @@ service:
 
 ---
 
-## 💰 成本优化
+## � 成本优化
 
 ### SLS成本分析
 
@@ -792,7 +810,7 @@ SLS控制台 → Logstore → 数据保留
 
 ---
 
-## 🔍 故障排查
+## 故障排查
 
 ### 常见问题
 
@@ -857,7 +875,7 @@ exporters:
 
 ---
 
-## 📚 参考资源
+## 参考资源
 
 | 资源 | 链接 |
 |------|------|
@@ -868,7 +886,7 @@ exporters:
 
 ---
 
-## 🎯 最佳实践总结
+## 最佳实践总结
 
 ```text
 ✅ 使用内网Endpoint降低延迟和成本

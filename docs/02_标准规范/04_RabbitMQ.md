@@ -1,3 +1,17 @@
+﻿---
+title: RabbitMQ语义约定详解
+description: RabbitMQ语义约定详解 详细指南和最佳实践
+version: OTLP v1.9.0
+date: 2026-03-17
+author: OTLP项目团队
+category: 标准规范
+tags:
+  - otlp
+  - observability
+  - performance
+  - optimization
+status: published
+---
 # RabbitMQ语义约定详解
 
 > **企业级消息队列**: RabbitMQ Tracing与Metrics完整规范

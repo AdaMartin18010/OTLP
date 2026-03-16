@@ -1,3 +1,20 @@
+﻿---
+title: OpenTelemetry安全加固完整指南
+description: OpenTelemetry安全加固完整指南 详细指南和最佳实践
+version: OTLP v1.9.0
+date: 2026-03-17
+author: OTLP项目团队
+category: 工具生态
+tags:
+  - otlp
+  - observability
+  - security
+  - compliance
+  - deployment
+  - kubernetes
+  - docker
+status: published
+---
 # OpenTelemetry安全加固完整指南
 
 > **安全等级**: 生产级企业标准
@@ -5,10 +22,10 @@
 
 ---
 
-## 📋 目录
+## 目录
 
 - [OpenTelemetry安全加固完整指南](#opentelemetry安全加固完整指南)
-  - [📋 目录](#-目录)
+  - [目录](#目录)
   - [1. 安全概述](#1-安全概述)
     - [1.1 安全威胁模型](#11-安全威胁模型)
     - [1.2 安全原则](#12-安全原则)

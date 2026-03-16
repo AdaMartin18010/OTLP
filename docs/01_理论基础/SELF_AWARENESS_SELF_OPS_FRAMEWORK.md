@@ -1,3 +1,22 @@
+﻿---
+title: OTLP自我感知与自我运维理论框架
+description: OTLP自我感知与自我运维理论框架 详细指南和最佳实践
+version: OTLP v1.9.0
+date: 2026-03-17
+author: OTLP项目团队
+category: 理论基础
+tags:
+  - otlp
+  - observability
+  - performance
+  - optimization
+  - security
+  - compliance
+  - deployment
+  - kubernetes
+  - docker
+status: published
+---
 # OTLP自我感知与自我运维理论框架
 
 > **版本**: 1.0.0
@@ -7,11 +26,11 @@
 
 ---
 
-## 📋 目录
+## 目录
 
 - [OTLP自我感知与自我运维理论框架](#otlp自我感知与自我运维理论框架)
-  - [📋 目录](#-目录)
-  - [📋 执行摘要](#-执行摘要)
+  - [目录](#目录)
+  - [执行摘要](#执行摘要)
     - [核心定义](#核心定义)
     - [理论体系框架](#理论体系框架)
   - [第一部分: 自我感知理论体系](#第一部分-自我感知理论体系)
@@ -62,7 +81,7 @@
 
 ---
 
-## 📋 执行摘要
+## 执行摘要
 
 ### 核心定义
 

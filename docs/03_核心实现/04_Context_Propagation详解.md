@@ -1,3 +1,18 @@
+﻿---
+title: Context Propagation 详解
+description: Context Propagation 详解 详细指南和最佳实践
+version: OTLP v1.9.0
+date: 2026-03-17
+author: OTLP项目团队
+category: 核心实现
+tags:
+  - otlp
+  - observability
+  - performance
+  - optimization
+  - sampling
+status: published
+---
 # Context Propagation 详解
 
 > **规范版本**: v1.30.0

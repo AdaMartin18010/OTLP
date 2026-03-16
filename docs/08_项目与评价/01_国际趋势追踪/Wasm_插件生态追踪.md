@@ -1,16 +1,39 @@
-# 🔌 WebAssembly插件生态追踪
+﻿---
+title: � WebAssembly插件生态追踪
+description: � WebAssembly插件生态追踪 详细指南和最佳实践
+version: OTLP v1.9.0
+date: 2026-03-17
+author: OTLP项目团队
+category: 项目管理
+tags:
+  - otlp
+  - observability
+  - ebpf
+  - performance
+  - optimization
+  - case-study
+  - production
+  - sampling
+  - security
+  - compliance
+  - deployment
+  - kubernetes
+  - docker
+status: published
+---
+# � WebAssembly插件生态追踪
 
-**创建日期**: 2025-10-10  
-**更新频率**: 季度更新  
+**创建日期**: 2025-10-10
+**更新频率**: 季度更新
 **负责人**: OTLP项目组 - 标准追踪小组
 
 ---
 
-## 📋 目录
+## 目录
 
-- [🔌 WebAssembly插件生态追踪](#-webassembly插件生态追踪)
-  - [📋 目录](#-目录)
-  - [📋 执行摘要](#-执行摘要)
+- [� WebAssembly插件生态追踪](#-webassembly插件生态追踪)
+  - [目录](#目录)
+  - [执行摘要](#执行摘要)
     - [当前状态 (2025-10)](#当前状态-2025-10)
     - [关键趋势](#关键趋势)
   - [1. 标准规范追踪](#1-标准规范追踪)
@@ -78,7 +101,7 @@
   - [11. 行动建议](#11-行动建议)
     - [对于本项目](#对于本项目)
 
-## 📋 执行摘要
+## 执行摘要
 
 **WebAssembly (Wasm)** 正在从浏览器走向云原生基础设施,成为**可扩展可观测性系统**的首选插件技术。
 
@@ -152,13 +175,13 @@
 interface observability {
   // 发送Trace
   export-span: func(span: span-data) -> result<_, error>
-  
+
   // 发送Metric
   export-metric: func(metric: metric-data) -> result<_, error>
-  
+
   // 发送Log
   export-log: func(log: log-record) -> result<_, error>
-  
+
   record span-data {
     trace-id: string,
     span-id: string,
@@ -253,7 +276,7 @@ interface observability {
 
 #### WebAssembly Hub (solo.io)
 
-**网址**: [webassemblyhub.io](https://webassemblyhub.io)  
+**网址**: [webassemblyhub.io](https://webassemblyhub.io)
 **定位**: Envoy/Istio Wasm插件仓库 (类似Docker Hub)
 
 #### 热门插件 (按下载量)
@@ -303,16 +326,16 @@ impl HttpContext for OtlpSampler {
         // 读取用户等级
         let user_tier = self.get_http_request_header("x-user-tier")
             .unwrap_or_else(|| "free".to_string());
-        
+
         // 动态采样决策
         let sample_rate = match user_tier.as_str() {
             "vip" => 1.0,      // 100%
             "pro" => 0.1,      // 10%
             _ => 0.01,         // 1%
         };
-        
+
         let should_sample = rand::random::<f64>() < sample_rate;
-        
+
         // 设置W3C Trace Context
         if should_sample {
             self.set_http_request_header("traceparent", Some(&format!(
@@ -327,7 +350,7 @@ impl HttpContext for OtlpSampler {
                 generate_span_id()
             )));
         }
-        
+
         Action::Continue
     }
 }
@@ -373,7 +396,7 @@ use serde_json::Value;
 pub extern "C" fn process_log(log_ptr: *const u8, log_len: usize) -> *const u8 {
     let log_bytes = unsafe { std::slice::from_raw_parts(log_ptr, log_len) };
     let log_str = std::str::from_utf8(log_bytes).unwrap();
-    
+
     // 解析嵌套JSON
     if let Ok(mut json) = serde_json::from_str::<Value>(log_str) {
         // 提取嵌套字段
@@ -381,15 +404,15 @@ pub extern "C" fn process_log(log_ptr: *const u8, log_len: usize) -> *const u8 {
             json["user_id"] = metadata["user"]["id"].clone();
             json["session_id"] = metadata["session"]["id"].clone();
         }
-        
+
         // 添加计算字段
         json["log_size_bytes"] = json!(log_str.len());
-        
+
         // 返回转换后的JSON
         let output = serde_json::to_string(&json).unwrap();
         return output.as_ptr();
     }
-    
+
     log_ptr  // 解析失败,返回原始数据
 }
 ```
@@ -421,7 +444,7 @@ processors:
     module: file:///etc/otelcol/processors/custom_processor.wasm
     config:
       sampling_rate: 0.05
-  
+
   batch:
 
 exporters:
@@ -509,7 +532,7 @@ service:
 
 Wasm插件:
   Plugin.wasm → 运行在沙箱 → 崩溃仅影响自身 ✅
-  
+
 隔离级别:
 - 内存隔离: Wasm无法访问宿主内存 (除非显式导出)
 - 文件系统隔离: WASI能力系统控制
@@ -565,10 +588,10 @@ static_resources:
                   uri: https://wasm-hub.io/plugins/auth@v1.0.0.wasm
                   cluster: wasm-hub
                   timeout: 10s
-                
+
                 # ✅ 签名验证
                 sha256: "a3f2b8c9d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w3x4y5z6"
-                
+
                 # ✅ 最小权限
                 allow_precompiled: false
                 runtime: envoy.wasm.runtime.v8
@@ -684,7 +707,7 @@ static_resources:
 eBPF (采集层):
   - 零侵入采集HTTP请求
   - 提取关键字段 (URL, Status, Latency)
-  
+
 Wasm (处理层):
   - 数据脱敏 (信用卡号、邮箱)
   - 业务规则过滤 (仅采样VIP用户)
@@ -790,6 +813,6 @@ Wasm (处理层):
 
 ---
 
-**文档维护者**: OTLP项目组 - Service Mesh小组  
-**最后更新**: 2025-10-10  
+**文档维护者**: OTLP项目组 - Service Mesh小组
+**最后更新**: 2025-10-10
 **下次评审**: 2026-04-01 (Component Model 1.0预期发布)

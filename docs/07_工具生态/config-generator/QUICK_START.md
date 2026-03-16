@@ -1,6 +1,26 @@
-# ⚡ 配置生成器 - 3分钟快速上手
+﻿---
+title: 配置生成器 - 3分钟快速上手
+description: 配置生成器 - 3分钟快速上手 详细指南和最佳实践
+version: OTLP v1.9.0
+date: 2026-03-17
+author: OTLP项目团队
+category: 工具生态
+tags:
+  - otlp
+  - observability
+  - performance
+  - optimization
+  - sampling
+  - security
+  - compliance
+  - deployment
+  - kubernetes
+  - docker
+status: published
+---
+# 配置生成器 - 3分钟快速上手
 
-## 🚀 超快速开始 (30秒)
+## 超快速开始 (30秒)
 
 ```bash
 # 1. 打开工具 (双击或命令行)
@@ -14,7 +34,7 @@ xdg-open index.html # Linux
 
 ---
 
-## 📝 典型场景
+## 典型场景
 
 ### 场景1: 新手入门 (第一次使用)
 
@@ -93,7 +113,7 @@ xdg-open index.html # Linux
 
 ---
 
-## 🎯 快速决策树
+## 快速决策树
 
 ```text
 你的场景是什么？
@@ -120,7 +140,7 @@ xdg-open index.html # Linux
 
 ---
 
-## 📋 配置项说明 (1分钟速览)
+## 配置项说明 (1分钟速览)
 
 ### 必填项
 
@@ -141,7 +161,7 @@ xdg-open index.html # Linux
 
 ---
 
-## 💡 常见问题 (FAQ)
+## � 常见问题 (FAQ)
 
 ### Q1: 生成的配置可以直接用吗?
 
@@ -192,7 +212,7 @@ chmod +x validate.sh
 
 ---
 
-## 🔗 下一步
+## � 下一步
 
 完成配置生成后:
 
@@ -205,12 +225,12 @@ chmod +x validate.sh
 
 ---
 
-## 🎉 完成
+## � 完成
 
 你已经掌握了配置生成器的基本用法!
 
-**用时**: 3分钟  
-**生成**: 生产级配置  
+**用时**: 3分钟
+**生成**: 生产级配置
 **节约**: 手动配置30分钟 → 工具3分钟 = **10倍提升**
 
 **开始使用**:

@@ -1,3 +1,18 @@
+﻿---
+title: OpenTelemetry性能基准测试
+description: OpenTelemetry性能基准测试 详细指南和最佳实践
+version: OTLP v1.9.0
+date: 2026-03-17
+author: OTLP项目团队
+category: 核心实现
+tags:
+  - otlp
+  - observability
+  - performance
+  - optimization
+  - sampling
+status: published
+---
 # OpenTelemetry性能基准测试
 
 > **测试环境**: 生产级配置
@@ -5,10 +20,10 @@
 
 ---
 
-## 📋 目录
+## 目录
 
 - [OpenTelemetry性能基准测试](#opentelemetry性能基准测试)
-  - [📋 目录](#-目录)
+  - [目录](#目录)
   - [1. 测试概述](#1-测试概述)
     - [1.1 测试环境](#11-测试环境)
     - [1.2 测试场景](#12-测试场景)

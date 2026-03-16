@@ -1,3 +1,20 @@
+﻿---
+title: OpenTelemetry Collector v0.113.0 → v0.147.0 完整变更日志
+description: OpenTelemetry Collector v0.113.0 → v0.147.0 完整变更日志 详细指南和最佳实践
+version: OTLP v1.9.0
+date: 2026-03-17
+author: OTLP项目团队
+category: 核心实现
+tags:
+  - otlp
+  - observability
+  - performance
+  - optimization
+  - sampling
+  - security
+  - compliance
+status: published
+---
 # OpenTelemetry Collector v0.113.0 → v0.147.0 完整变更日志
 
 > **来源**: OpenTelemetry Collector GitHub Releases
@@ -20,7 +37,7 @@
 
 ## 关键里程碑
 
-### 1. 声明式配置 GA (v1.0.0) 🎉
+### 1. 声明式配置 GA (v1.0.0) �
 
 **状态**: Stable (正式版)
 **引入版本**: v0.147.0

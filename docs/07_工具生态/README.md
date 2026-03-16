@@ -1,26 +1,26 @@
-# 🛠️ OpenTelemetry 工具集
+﻿# OpenTelemetry 工具集
 
 > **目的**: 提供实用工具,简化OpenTelemetry的配置、部署和管理
 
 ---
 
-## 📖 目录
+## 目录
 
-- [🛠️ OpenTelemetry 工具集](#️-opentelemetry-工具集)
-  - [📖 目录](#-目录)
-  - [🚀 可用工具](#-可用工具)
+- [OpenTelemetry 工具集](#opentelemetry-工具集)
+  - [目录](#目录)
+  - [可用工具](#可用工具)
     - [1. 配置生成器 (Config Generator)](#1-配置生成器-config-generator)
-  - [🎯 工具对比](#-工具对比)
-  - [📚 使用指南](#-使用指南)
+  - [工具对比](#工具对比)
+  - [使用指南](#使用指南)
     - [配置生成器快速上手](#配置生成器快速上手)
-  - [🔮 规划中的工具](#-规划中的工具)
+  - [� 规划中的工具](#-规划中的工具)
     - [2. SDK示例代码生成器 (SDK Code Generator)](#2-sdk示例代码生成器-sdk-code-generator)
     - [3. 性能测试工具 (Performance Tester)](#3-性能测试工具-performance-tester)
     - [4. 配置迁移工具 (Config Migrator)](#4-配置迁移工具-config-migrator)
     - [5. 可视化Pipeline编辑器 (Visual Pipeline Editor)](#5-可视化pipeline编辑器-visual-pipeline-editor)
     - [6. 成本计算器 (Cost Calculator)](#6-成本计算器-cost-calculator)
-  - [🤝 贡献工具](#-贡献工具)
-  - [📖 相关文档](#-相关文档)
+  - [贡献工具](#贡献工具)
+  - [相关文档](#相关文档)
 
 **本模块思维表征**：核心组件与 Collector 配置的思维导图、决策树见 [📊 多维思维表征体系 §10.2](../../📊_多维思维表征体系_2025.md#102-核心组件模块04_核心组件)。
 
@@ -36,7 +36,7 @@ flowchart TD
 
 ---
 
-## 🚀 可用工具
+## 可用工具
 
 ### 1. 配置生成器 (Config Generator)
 
@@ -85,7 +85,7 @@ xdg-open index.html # Linux
 
 ---
 
-## 🎯 工具对比
+## 工具对比
 
 | 工具 | 类型 | 适用对象 | 难度 | 部署方式 |
 |------|------|----------|------|----------|
@@ -93,7 +93,7 @@ xdg-open index.html # Linux
 
 ---
 
-## 📚 使用指南
+## 使用指南
 
 ### 配置生成器快速上手
 
@@ -151,7 +151,7 @@ compression: gzip  # 或 zstd (v1.3.0+)
 
 ---
 
-## 🔮 规划中的工具
+## � 规划中的工具
 
 以下工具正在规划中,欢迎贡献:
 
@@ -207,7 +207,7 @@ compression: gzip  # 或 zstd (v1.3.0+)
 
 ---
 
-## 🤝 贡献工具
+## 贡献工具
 
 欢迎贡献新工具!
 
@@ -244,7 +244,7 @@ compression: gzip  # 或 zstd (v1.3.0+)
 
 ---
 
-## 📖 相关文档
+## 相关文档
 
 **速查手册系列**:
 

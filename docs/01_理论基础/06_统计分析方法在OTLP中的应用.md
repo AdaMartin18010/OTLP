@@ -1,4 +1,19 @@
-# 📈 统计分析方法在OTLP中的应用
+﻿---
+title: 统计分析方法在OTLP中的应用
+description: 统计分析方法在OTLP中的应用 详细指南和最佳实践
+version: OTLP v1.9.0
+date: 2026-03-17
+author: OTLP项目团队
+category: 理论基础
+tags:
+  - otlp
+  - observability
+  - performance
+  - optimization
+  - sampling
+status: published
+---
+# 统计分析方法在OTLP中的应用
 
 > **文档版本**: v1.0
 > **创建日期**: 2025年12月
@@ -9,10 +24,10 @@
 
 ---
 
-## 📋 目录
+## 目录
 
-- [📈 统计分析方法在OTLP中的应用](#-统计分析方法在otlp中的应用)
-  - [📋 目录](#-目录)
+- [统计分析方法在OTLP中的应用](#统计分析方法在otlp中的应用)
+  - [目录](#目录)
   - [第一部分: 描述性统计](#第一部分-描述性统计)
     - [1.1 集中趋势度量](#11-集中趋势度量)
       - [均值 (Mean)](#均值-mean)

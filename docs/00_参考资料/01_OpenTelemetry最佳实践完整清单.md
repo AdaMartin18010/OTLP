@@ -1,3 +1,16 @@
+﻿---
+title: OpenTelemetry最佳实践完整清单
+description: OpenTelemetry最佳实践完整清单
+ 详细指南
+version: OTLP v1.9.0
+date: 2026-03-17
+author: OTLP项目团队
+category: 参考资料
+tags:
+  - otlp
+  - observability
+status: published
+---
 # OpenTelemetry最佳实践完整清单
 
 > **实践指南**: 生产级OpenTelemetry部署与运维
@@ -5,10 +18,10 @@
 
 ---
 
-## 📋 目录
+## 目录
 
 - [OpenTelemetry最佳实践完整清单](#opentelemetry最佳实践完整清单)
-  - [📋 目录](#-目录)
+  - [目录](#目录)
   - [1. SDK最佳实践](#1-sdk最佳实践)
     - [1.1 初始化配置](#11-初始化配置)
     - [1.3 错误处理](#13-错误处理)

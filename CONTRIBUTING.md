@@ -499,5 +499,5 @@ We look forward to your contributions! 🎉
 
 ---
 
-**最后更新 / Last Updated**: 2025-10-17  
+**最后更新 / Last Updated**: 2025-10-17
 **维护者 / Maintainer**: OTLP Project Team

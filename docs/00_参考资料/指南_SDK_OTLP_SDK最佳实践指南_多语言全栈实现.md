@@ -1,4 +1,22 @@
-# 📚 OTLP SDK 最佳实践指南 - 多语言全栈实现
+﻿---
+title: OTLP SDK 最佳实践指南 - 多语言全栈实现
+description: OTLP SDK 最佳实践指南 - 多语言全栈实现 详细指南和最佳实践
+version: OTLP v1.9.0
+date: 2026-03-17
+author: OTLP项目团队
+category: 参考资料
+tags:
+  - otlp
+  - observability
+  - performance
+  - optimization
+  - sampling
+  - deployment
+  - kubernetes
+  - docker
+status: published
+---
+# OTLP SDK 最佳实践指南 - 多语言全栈实现
 
 > **文档版本**: v1.0
 > **创建日期**: 2025年10月9日
@@ -7,10 +25,10 @@
 
 ---
 
-## 📋 目录
+## 目录
 
-- [📚 OTLP SDK 最佳实践指南 - 多语言全栈实现](#-otlp-sdk-最佳实践指南---多语言全栈实现)
-  - [📋 目录](#-目录)
+- [OTLP SDK 最佳实践指南 - 多语言全栈实现](#otlp-sdk-最佳实践指南---多语言全栈实现)
+  - [目录](#目录)
   - [项目概述](#项目概述)
     - [支持的语言与成熟度](#支持的语言与成熟度)
   - [第一部分: Go SDK 最佳实践](#第一部分-go-sdk-最佳实践)
@@ -18,7 +36,7 @@
       - [项目结构](#项目结构)
       - [核心代码](#核心代码)
     - [1.2 最佳实践总结](#12-最佳实践总结)
-      - [✅ DO (推荐做法)](#-do-推荐做法)
+      - [DO (推荐做法)](#do-推荐做法)
       - [❌ DON'T (避免做法)](#-dont-避免做法)
   - [第二部分: Java SDK 最佳实践](#第二部分-java-sdk-最佳实践)
     - [2.1 Spring Boot 集成](#21-spring-boot-集成)
@@ -503,7 +521,7 @@ func main() {
 
 ### 1.2 最佳实践总结
 
-#### ✅ DO (推荐做法)
+#### DO (推荐做法)
 
 1. **使用 Context 传递 Span**
 

@@ -1,4 +1,23 @@
-# 📊 OTLP性能基准测试扩展报告
+﻿---
+title: OTLP性能基准测试扩展报告
+description: OTLP性能基准测试扩展报告 详细指南和最佳实践
+version: OTLP v1.9.0
+date: 2026-03-17
+author: OTLP项目团队
+category: 核心实现
+tags:
+  - otlp
+  - observability
+  - otlp-arrow
+  - performance
+  - optimization
+  - sampling
+  - deployment
+  - kubernetes
+  - docker
+status: published
+---
+# OTLP性能基准测试扩展报告
 
 > **文档版本**: v1.0
 > **创建日期**: 2025年12月
@@ -7,10 +26,10 @@
 
 ---
 
-## 📋 目录
+## 目录
 
-- [📊 OTLP性能基准测试扩展报告](#-otlp性能基准测试扩展报告)
-  - [📋 目录](#-目录)
+- [OTLP性能基准测试扩展报告](#otlp性能基准测试扩展报告)
+  - [目录](#目录)
   - [第一部分: 测试环境](#第一部分-测试环境)
     - [1.1 硬件配置](#11-硬件配置)
     - [1.2 软件配置](#12-软件配置)
