@@ -1,7 +1,7 @@
 # 🏷️ OTLP文档标签分类体系
 
-> **设计目标**: 建立统一的标签系统，支持多维度检索  
-> **标签维度**: 6大维度，50+标签  
+> **设计目标**: 建立统一的标签系统，支持多维度检索
+> **标签维度**: 6大维度，50+标签
 > **更新日期**: 2026年3月16日
 
 ---
@@ -287,18 +287,21 @@ tags:
 ## 🔍 标签检索示例
 
 ### 按角色检索
+
 ```
 role:operator AND type:practice → 运维实战指南
 role:developer AND lang:python → Python开发者资源
 ```
 
 ### 按技术检索
+
 ```
 tech:ebpf AND level:intermediate → eBPF进阶文档
 infra:kubernetes AND type:tutorial → K8s教程
 ```
 
 ### 按难度检索
+
 ```
 difficulty:⭐⭐ AND status:stable → 简单稳定文档
 domain:formal AND difficulty:⭐⭐⭐⭐⭐ → 形式化专家级
@@ -323,21 +326,24 @@ domain:formal AND difficulty:⭐⭐⭐⭐⭐ → 形式化专家级
 ## 🎯 标签应用计划
 
 ### 阶段1: 核心文档打标签 (1周)
+
 - [ ] TOP50核心文档添加标签
 - [ ] 建立标签索引
 
 ### 阶段2: 全面覆盖 (2周)
+
 - [ ] 所有L2/L3/L4文档打标签
 - [ ] 建立标签云
 
 ### 阶段3: 检索系统 (1周)
+
 - [ ] 实现标签检索功能
 - [ ] 添加相关推荐
 
 ---
 
-**标签体系版本**: v1.0  
-**维护团队**: OTLP项目团队  
+**标签体系版本**: v1.0
+**维护团队**: OTLP项目团队
 **扩展规则**: 新标签需评审后添加
 
 ---
