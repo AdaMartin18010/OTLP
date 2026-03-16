@@ -90,7 +90,7 @@ message ProfileContainer {
 
 #### 影响
 
-- Collector v1.49.0+ 支持Profiles接收和导出
+- Collector v0.148.0+ 支持Profiles接收和导出
 - 新增`profiles`流水线类型
 - 与Trace的关联机制
 

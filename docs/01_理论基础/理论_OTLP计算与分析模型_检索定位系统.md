@@ -18,7 +18,7 @@ status: published
 
 > **文档版本**: v1.0.0
 > **创建日期**: 2025年10月9日
-> **对标标准**: OTLP v1.3.0 + PostgreSQL 17 + ClickHouse 24.x + Apache Flink 1.18
+> **对标标准**: OTLP v1.9.0 + PostgreSQL 17 + ClickHouse 24.x + Apache Flink 1.18
 > **理论基础**: 关系代数、数据流计算、索引理论、分布式计算模型
 
 ---

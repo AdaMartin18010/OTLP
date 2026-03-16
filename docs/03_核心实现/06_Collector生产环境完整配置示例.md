@@ -20,7 +20,7 @@ status: published
 ---
 # OpenTelemetry Collector 生产环境完整配置示例
 
-> **适用版本**: OpenTelemetry Collector v0.90.0+
+> **适用版本**: OpenTelemetry Collector v0.148.0+
 > **配置类型**: 生产级高可用部署
 > **最后更新**: 2025年10月8日
 

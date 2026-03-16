@@ -149,15 +149,15 @@ Exemplars像"具体案例":
 Timeline:
 2020-11: OpenMetrics提出Exemplars概念
          ↓
-2021-06: OTLP v0.9.0引入Exemplars (Experimental)
+2021-06: OTLP v1.9.0引入Exemplars (Experimental)
          - 仅支持Histogram
          - API不稳定
          ↓
-2023-02: OTLP v1.0.0 (仍为Experimental)
+2023-02: OTLP v1.9.0 (仍为Experimental)
          - 扩展到所有Metric类型
          - 改进采样策略
          ↓
-2024-09: OTLP v1.3.0 → Stable 🎉
+2024-09: OTLP v1.9.0 → Stable 🎉
          - API稳定,生产可用
          - 完整的Trace关联
          - 优化存储效率

@@ -16,7 +16,7 @@ status: published
 # Redis 语义约定
 
 > **最后更新**: 2025年10月8日
-> **规范版本**: OpenTelemetry Semantic Conventions v1.24.0
+> **规范版本**: OpenTelemetry Semantic Conventions v1.40.0.0
 > **目标读者**: 后端工程师、可观测性工程师
 
 ---

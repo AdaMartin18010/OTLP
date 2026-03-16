@@ -18,7 +18,7 @@ status: published
 # Profiles信号概述与数据模型
 
 > **文档版本**: v1.0 (2026年3月)
-> **基于标准**: OpenTelemetry Profiles v1.0 + Collector v1.49.0
+> **基于标准**: OpenTelemetry Profiles v1.0 + Collector v0.148.0
 > **信号状态**: 🟢 生产就绪 (2026年1月)
 > **创建日期**: 2026年3月15日
 
@@ -93,7 +93,7 @@ status: published
 | **2023** | 数据模型OTEP提案 |
 | **2024.03** | 官方宣布支持Profiles信号 |
 | **2025** | 实验性Collector支持 |
-| **2026.01** | **生产就绪** (Collector v1.49.0) |
+| **2026.01** | **生产就绪** (Collector v0.148.0) |
 
 ---
 

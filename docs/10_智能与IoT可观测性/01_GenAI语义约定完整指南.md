@@ -18,7 +18,7 @@ status: published
 ---
 # GenAI语义约定完整指南
 
-> **文档版本**: v1.0 (基于OpenTelemetry Semantic Conventions v1.37+)
+> **文档版本**: v1.0 (基于OpenTelemetry Semantic Conventions v1.40.0+)
 > **稳定性**: Development (发展中)
 > **适用范围**: LLM应用、AI Agent、RAG系统
 > **创建日期**: 2026年3月15日

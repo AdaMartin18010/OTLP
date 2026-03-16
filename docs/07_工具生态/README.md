@@ -81,7 +81,7 @@ xdg-open index.html # Linux
 - 零依赖
 
 **版本**: v1.0.0
-**基于**: OTLP v1.3.0, Collector v0.113.0
+**基于**: OTLP v1.9.0, Collector v0.148.0
 
 ---
 

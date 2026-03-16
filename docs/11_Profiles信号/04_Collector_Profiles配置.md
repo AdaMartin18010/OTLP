@@ -19,7 +19,7 @@ status: published
 ---
 # Collector Profiles配置指南
 
-> **适用版本**: OpenTelemetry Collector v1.49.0+
+> **适用版本**: OpenTelemetry Collector v0.148.0+
 > **配置难度**: 中级
 > **预计时间**: 30分钟
 

@@ -1,6 +1,6 @@
 ﻿---
-title: OpenTelemetry Collector v0.113.0 → v0.147.0 完整变更日志
-description: OpenTelemetry Collector v0.113.0 → v0.147.0 完整变更日志 详细指南和最佳实践
+title: OpenTelemetry Collector v0.148.0 → v0.147.0 完整变更日志
+description: OpenTelemetry Collector v0.148.0 → v0.147.0 完整变更日志 详细指南和最佳实践
 version: OTLP v1.9.0
 date: 2026-03-17
 author: OTLP项目团队
@@ -15,7 +15,7 @@ tags:
   - compliance
 status: published
 ---
-# OpenTelemetry Collector v0.113.0 → v0.147.0 完整变更日志
+# OpenTelemetry Collector v0.148.0 → v0.147.0 完整变更日志
 
 > **来源**: OpenTelemetry Collector GitHub Releases
 > **发布日期**: v0.147.0 (2026年3月)
