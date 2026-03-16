@@ -1,7 +1,7 @@
 # 自我修复与自动调整架构
 
-> **版本**: OTLP Rust 1.0  
-> **日期**: 2025年10月7日  
+> **版本**: OTLP Rust 1.0
+> **日期**: 2025年10月7日
 > **主题**: 自适应系统、自我修复、自动扩缩容、智能运维
 
 ---
@@ -80,36 +80,36 @@ impl MAPEKSystem {
     pub async fn control_loop(&mut self) {
         loop {
             let mut span = self.tracer.start("mape_k_cycle");
-            
+
             // 1. Monitor: 收集系统状态
             let symptoms = self.monitor.collect_symptoms().await;
             span.add_event("monitoring_complete", vec![
                 ("symptom_count", symptoms.len().to_string().into()),
             ]);
-            
+
             // 2. Analyze: 分析问题
             let issues = self.analyzer.analyze(&symptoms, &self.knowledge_base).await;
             span.add_event("analysis_complete", vec![
                 ("issue_count", issues.len().to_string().into()),
             ]);
-            
+
             if !issues.is_empty() {
                 // 3. Plan: 制定修复计划
                 let plan = self.planner.create_plan(&issues, &self.knowledge_base).await;
                 span.add_event("planning_complete", vec![
                     ("action_count", plan.actions.len().to_string().into()),
                 ]);
-                
+
                 // 4. Execute: 执行计划
                 let result = self.executor.execute(&plan).await;
                 span.add_event("execution_complete", vec![
                     ("success", result.is_ok().to_string().into()),
                 ]);
-                
+
                 // 5. 更新知识库
                 self.knowledge_base.update_from_execution(&plan, &result);
             }
-            
+
             // 等待下一个周期
             tokio::time::sleep(Duration::from_secs(30)).await;
         }
@@ -151,10 +151,10 @@ pub enum SymptomType {
 impl Monitor {
     pub async fn collect_symptoms(&self) -> Vec<Symptom> {
         let mut symptoms = Vec::new();
-        
+
         // 收集 Metrics
         let metrics = self.metrics_collector.collect().await;
-        
+
         // 检测高延迟
         if let Some(&latency) = metrics.get("latency_p99") {
             if latency > 1000.0 {
@@ -172,7 +172,7 @@ impl Monitor {
                 });
             }
         }
-        
+
         // 检测高错误率
         if let Some(&error_rate) = metrics.get("error_rate") {
             if error_rate > 0.05 {
@@ -190,7 +190,7 @@ impl Monitor {
                 });
             }
         }
-        
+
         symptoms
     }
 }
@@ -228,13 +228,13 @@ impl Analyzer {
         knowledge_base: &KnowledgeBase,
     ) -> Vec<Issue> {
         let mut issues = Vec::new();
-        
+
         for symptom in symptoms {
             // 根因分析
             let root_cause = self.root_cause_engine
                 .find_root_cause(symptom, knowledge_base)
                 .await;
-            
+
             issues.push(Issue {
                 issue_type: self.classify_issue(symptom),
                 root_cause,
@@ -242,10 +242,10 @@ impl Analyzer {
                 severity: symptom.severity,
             });
         }
-        
+
         issues
     }
-    
+
     fn classify_issue(&self, symptom: &Symptom) -> IssueType {
         match symptom.symptom_type {
             SymptomType::HighLatency | SymptomType::HighErrorRate => {
@@ -258,7 +258,7 @@ impl Analyzer {
             _ => IssueType::PerformanceDegradation,
         }
     }
-    
+
     fn identify_affected_services(&self, _symptom: &Symptom) -> Vec<String> {
         // 从症状中识别受影响的服务
         vec!["api-service".to_string()]
@@ -306,23 +306,23 @@ impl Planner {
         knowledge_base: &KnowledgeBase,
     ) -> RecoveryPlan {
         let mut actions = Vec::new();
-        
+
         for issue in issues {
             // 根据问题类型选择策略
             let strategy = self.select_strategy(issue, knowledge_base);
-            
+
             // 生成恢复动作
             let issue_actions = strategy.generate_actions(issue);
             actions.extend(issue_actions);
         }
-        
+
         RecoveryPlan {
             actions,
             expected_outcome: "System recovered".to_string(),
             rollback_plan: None,
         }
     }
-    
+
     fn select_strategy(
         &self,
         issue: &Issue,
@@ -380,7 +380,7 @@ impl Executor {
         }
         Ok(())
     }
-    
+
     async fn execute_action(&self, action: &RecoveryAction) -> Result<()> {
         match action {
             RecoveryAction::RestartService { service } => {
@@ -398,19 +398,19 @@ impl Executor {
             _ => Ok(()),
         }
     }
-    
+
     async fn restart_service(&self, service: &str) -> Result<()> {
         println!("Restarting service: {}", service);
         // 实际实现会调用 K8s API
         Ok(())
     }
-    
+
     async fn scale_service(&self, service: &str, replicas: u32) -> Result<()> {
         println!("Scaling service {} to {} replicas", service, replicas);
         // 实际实现会调用 K8s API
         Ok(())
     }
-    
+
     async fn update_config(
         &self,
         service: &str,
@@ -487,25 +487,25 @@ impl PIDController {
             setpoint,
         }
     }
-    
+
     /// 计算控制输出
     pub fn update(&mut self, measured_value: f64, dt: f64) -> f64 {
         // 计算误差
         let error = self.setpoint - measured_value;
-        
+
         // 比例项
         let p = self.kp * error;
-        
+
         // 积分项
         self.integral += error * dt;
         let i = self.ki * self.integral;
-        
+
         // 微分项
         let derivative = (error - self.last_error) / dt;
         let d = self.kd * derivative;
-        
+
         self.last_error = error;
-        
+
         // PID 输出
         p + i + d
     }
@@ -532,17 +532,17 @@ impl AutoScaler {
             max_replicas,
         }
     }
-    
+
     /// 根据当前 CPU 使用率计算目标副本数
     pub fn calculate_target_replicas(&mut self, current_cpu: f64, dt: f64) -> u32 {
         let control_output = self.pid.update(current_cpu, dt);
-        
+
         // 将控制输出转换为副本数调整
         let replica_adjustment = (control_output / 10.0).round() as i32;
         let target = (self.current_replicas as i32 + replica_adjustment)
             .max(self.min_replicas as i32)
             .min(self.max_replicas as i32) as u32;
-        
+
         target
     }
 }
@@ -599,7 +599,7 @@ impl CircuitBreaker {
             success_threshold: 3,
         }
     }
-    
+
     /// 执行操作
     pub async fn call<F, T>(&mut self, f: F) -> Result<T>
     where
@@ -619,7 +619,7 @@ impl CircuitBreaker {
             }
             _ => {}
         }
-        
+
         // 执行操作
         match f.await {
             Ok(result) => {
@@ -632,7 +632,7 @@ impl CircuitBreaker {
             }
         }
     }
-    
+
     fn on_success(&mut self) {
         match self.state {
             CircuitState::HalfOpen => {
@@ -649,11 +649,11 @@ impl CircuitBreaker {
             _ => {}
         }
     }
-    
+
     fn on_failure(&mut self) {
         self.failure_count += 1;
         self.last_failure_time = Some(Instant::now());
-        
+
         if self.failure_count >= self.failure_threshold {
             self.state = CircuitState::Open;
         }
@@ -687,29 +687,29 @@ impl HealthChecker {
     {
         let mut unhealthy_count = 0;
         let mut healthy_count = 0;
-        
+
         loop {
             if health_check().await {
                 healthy_count += 1;
                 unhealthy_count = 0;
-                
+
                 if healthy_count >= self.healthy_threshold {
                     println!("{} is healthy", service_name);
                 }
             } else {
                 unhealthy_count += 1;
                 healthy_count = 0;
-                
+
                 if unhealthy_count >= self.unhealthy_threshold {
                     println!("{} is unhealthy, initiating recovery", service_name);
                     self.recover(service_name).await;
                 }
             }
-            
+
             tokio::time::sleep(self.interval).await;
         }
     }
-    
+
     async fn recover(&self, service_name: &str) {
         println!("Recovering service: {}", service_name);
         // 执行恢复操作:
@@ -762,15 +762,15 @@ impl HPAController {
                 .get(&policy.service)
                 .copied()
                 .unwrap_or(policy.min_replicas);
-            
+
             let target = self.calculate_target_replicas(policy, metrics, current);
-            
+
             if target != current {
                 self.scale_service(&policy.service, target).await;
             }
         }
     }
-    
+
     fn calculate_target_replicas(
         &self,
         policy: &ScalingPolicy,
@@ -779,18 +779,18 @@ impl HPAController {
     ) -> u32 {
         let cpu_key = format!("{}.cpu", policy.service);
         let current_cpu = metrics.get(&cpu_key).copied().unwrap_or(0.0);
-        
+
         // 计算目标副本数
         let target = if current_cpu > 0.0 {
             ((current as f64) * current_cpu / policy.target_cpu).ceil() as u32
         } else {
             current
         };
-        
+
         // 限制在 min 和 max 之间
         target.max(policy.min_replicas).min(policy.max_replicas)
     }
-    
+
     async fn scale_service(&mut self, service: &str, replicas: u32) {
         println!("Scaling {} to {} replicas", service, replicas);
         self.current_replicas.insert(service.to_string(), replicas);
@@ -857,7 +857,7 @@ impl AdaptiveLoadBalancer {
             _ => self.backends.first(),
         }
     }
-    
+
     fn adaptive_select(&self) -> Option<&Backend> {
         // 综合考虑多个因素
         self.backends
@@ -869,15 +869,15 @@ impl AdaptiveLoadBalancer {
                 score_a.partial_cmp(&score_b).unwrap()
             })
     }
-    
+
     fn calculate_score(&self, backend: &Backend) -> f64 {
         // 综合评分:连接数 + 响应时间 / 权重
         let conn_score = backend.active_connections as f64 / 100.0;
         let time_score = backend.avg_response_time.as_millis() as f64 / 1000.0;
-        
+
         (conn_score + time_score) / backend.weight
     }
-    
+
     /// 更新后端统计信息
     pub fn update_backend_stats(
         &mut self,
@@ -892,7 +892,7 @@ impl AdaptiveLoadBalancer {
                 ((1.0 - alpha) * backend.avg_response_time.as_millis() as f64
                     + alpha * response_time.as_millis() as f64) as u64
             );
-            
+
             // 更新健康状态
             if !success {
                 backend.healthy = false;
@@ -939,7 +939,7 @@ impl ResourceManager {
                     quota.cpu *= 1.2;
                     println!("Increasing CPU quota for {}", service);
                 }
-                
+
                 // 如果使用率低于 30%,减少配额
                 if usage.cpu / quota.cpu < 0.3 {
                     quota.cpu *= 0.8;
@@ -1000,7 +1000,7 @@ impl QLearningAgent {
             epsilon: 0.1,
         }
     }
-    
+
     /// 选择动作
     pub fn select_action(&self, state: &State) -> Action {
         // ε-贪心策略
@@ -1012,7 +1012,7 @@ impl QLearningAgent {
             self.best_action(state)
         }
     }
-    
+
     fn best_action(&self, state: &State) -> Action {
         let actions = [
             Action::DoNothing,
@@ -1020,7 +1020,7 @@ impl QLearningAgent {
             Action::ScaleDown,
             Action::RestartService,
         ];
-        
+
         actions.iter()
             .max_by(|a, b| {
                 let q_a = self.get_q_value(state, a);
@@ -1030,7 +1030,7 @@ impl QLearningAgent {
             .copied()
             .unwrap()
     }
-    
+
     fn random_action(&self) -> Action {
         let actions = [
             Action::DoNothing,
@@ -1040,11 +1040,11 @@ impl QLearningAgent {
         ];
         actions[rand::random::<usize>() % actions.len()]
     }
-    
+
     fn get_q_value(&self, state: &State, action: &Action) -> f64 {
         self.q_table.get(&(state.clone(), *action)).copied().unwrap_or(0.0)
     }
-    
+
     /// 更新 Q 值
     pub fn update(
         &mut self,
@@ -1055,14 +1055,14 @@ impl QLearningAgent {
     ) {
         let current_q = self.get_q_value(state, &action);
         let max_next_q = self.best_action_value(next_state);
-        
+
         // Q-Learning 更新公式
         let new_q = current_q + self.learning_rate
             * (reward + self.discount_factor * max_next_q - current_q);
-        
+
         self.q_table.insert((state.clone(), action), new_q);
     }
-    
+
     fn best_action_value(&self, state: &State) -> f64 {
         let actions = [
             Action::DoNothing,
@@ -1070,7 +1070,7 @@ impl QLearningAgent {
             Action::ScaleDown,
             Action::RestartService,
         ];
-        
+
         actions.iter()
             .map(|a| self.get_q_value(state, a))
             .fold(f64::NEG_INFINITY, f64::max)
@@ -1112,19 +1112,19 @@ impl AdaptiveOTLPSystem {
             self.learning_loop(),
         );
     }
-    
+
     async fn auto_scaling_loop(&mut self) {
         loop {
             // 收集指标
             let metrics = self.collect_metrics().await;
-            
+
             // 执行自动扩缩容
             self.auto_scaler.reconcile(&metrics).await;
-            
+
             tokio::time::sleep(Duration::from_secs(60)).await;
         }
     }
-    
+
     async fn health_check_loop(&self) {
         // 持续健康检查
         loop {
@@ -1132,33 +1132,33 @@ impl AdaptiveOTLPSystem {
             tokio::time::sleep(Duration::from_secs(10)).await;
         }
     }
-    
+
     async fn learning_loop(&mut self) {
         loop {
             // 收集状态
             let state = self.get_current_state().await;
-            
+
             // 选择动作
             let action = self.rl_agent.select_action(&state);
-            
+
             // 执行动作
             self.execute_rl_action(action).await;
-            
+
             // 观察奖励和新状态
             let reward = self.calculate_reward().await;
             let next_state = self.get_current_state().await;
-            
+
             // 更新 Q 值
             self.rl_agent.update(&state, action, reward, &next_state);
-            
+
             tokio::time::sleep(Duration::from_secs(300)).await;
         }
     }
-    
+
     async fn collect_metrics(&self) -> HashMap<String, f64> {
         HashMap::new()
     }
-    
+
     async fn get_current_state(&self) -> State {
         State {
             cpu_usage: 50,
@@ -1166,11 +1166,11 @@ impl AdaptiveOTLPSystem {
             error_rate: 1,
         }
     }
-    
+
     async fn execute_rl_action(&self, _action: Action) {
         // 执行强化学习选择的动作
     }
-    
+
     async fn calculate_reward(&self) -> f64 {
         // 计算奖励:
         // - 系统稳定性

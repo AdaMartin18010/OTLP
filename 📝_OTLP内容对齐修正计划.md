@@ -1,8 +1,8 @@
 # OTLP内容对齐修正计划
 
-> **计划制定**: 2026年3月16日  
-> **目标**: 本项目所有内容与网络权威标准充分、最新、全面对齐  
-> **策略**: 专注内容对齐，去除发布/开源任务  
+> **计划制定**: 2026年3月16日
+> **目标**: 本项目所有内容与网络权威标准充分、最新、全面对齐
+> **策略**: 专注内容对齐，去除发布/开源任务
 > **范围**: docs/ 目录251篇文档全面检查更新
 
 ---
@@ -10,6 +10,7 @@
 ## 🎯 修正后目标
 
 ### ✅ 要做的 (内容对齐)
+
 - [ ] 与官方最新标准版本对齐
 - [ ] 更新所有技术文档到最新版本
 - [ ] 补充缺失的新特性内容
@@ -17,6 +18,7 @@
 - [ ] 统一术语和规范
 
 ### ❌ 不做 (已去除)
+
 - [x] ~~论文发布~~ - 已去除
 - [x] ~~开源发布~~ - 已去除
 - [x] ~~社区推广~~ - 已去除
@@ -41,33 +43,38 @@
 
 ### 任务1: Semantic Conventions v1.40.0 更新
 
-**发现差距**: 
+**发现差距**:
+
 - 当前: v1.39.0 (2025年11月)
 - 最新: v1.40.0 (2026年2月)
 
 **需要更新**:
+
 - [ ] 创建 `版本更新日志_v1.39_to_v1.40.md`
 - [ ] 更新所有引用v1.39的文档为v1.40
 - [ ] 检查v1.40新增内容
 
 **参考来源**:
-- https://github.com/open-telemetry/semantic-conventions/releases/tag/v1.40.0
-- https://newreleases.io/project/github/open-telemetry/opentelemetry-js/release/semconv%2Fv1.40.0
+
+- <https://github.com/open-telemetry/semantic-conventions/releases/tag/v1.40.0>
+- <https://newreleases.io/project/github/open-telemetry/opentelemetry-js/release/semconv%2Fv1.40.0>
 
 ---
 
 ### 任务2: 声明式配置 (Declarative Configuration) v1.0.0
 
-**重要发现**: 
+**重要发现**:
 2026年3月5日，声明式配置标记为**稳定版v1.0.0**
 
 **需要新增/更新**:
+
 - [ ] 创建 `docs/04_核心组件/声明式配置完整指南_v1.0.md`
 - [ ] 更新Collector配置文档
 - [ ] 添加JSON Schema说明
 
 **参考来源**:
-- https://opentelemetry.io/blog/2026/declarative-config-stable/
+
+- <https://opentelemetry.io/blog/2026/declarative-config-stable/>
 
 ---
 
@@ -76,18 +83,21 @@
 **状态**: Development (持续更新中)
 
 **最新发现**:
+
 - GenAI语义约定仍在快速发展
 - Agent相关约定仍在Draft阶段
 - Cost tracking尚未标准化
 
 **需要更新**:
+
 - [ ] 更新 `docs/13_GenAI可观测性/01_GenAI语义约定完整指南.md`
 - [ ] 添加Agent spans (draft)说明
 - [ ] 添加Cost tracking现状说明
 
 **参考来源**:
-- https://rhesis.ai/post/tracing-agentic-applications-developers-guide
-- https://oneuptime.com/blog/post/2026-02-06-monitor-llm-opentelemetry-genai-semantic-conventions/view
+
+- <https://rhesis.ai/post/tracing-agentic-applications-developers-guide>
+- <https://oneuptime.com/blog/post/2026-02-06-monitor-llm-opentelemetry-genai-semantic-conventions/view>
 
 ---
 
@@ -96,12 +106,14 @@
 ### 任务4: SDK多语言版本对齐
 
 **检查各语言SDK最新版本**:
+
 - [ ] Go SDK - 检查最新版本
 - [ ] Python SDK - 检查最新版本
 - [ ] Java SDK - 检查最新版本
 - [ ] Node.js SDK - 检查最新版本
 
 **更新内容**:
+
 - [ ] 更新各语言SDK文档
 - [ ] 更新示例代码
 
@@ -112,6 +124,7 @@
 **状态**: 2026目标持续跟踪
 
 **需要更新**:
+
 - [ ] 更新 `docs/15_eBPF自动插桩/OBI_2026年目标更新.md`
 - [ ] 添加最新进展
 
@@ -122,6 +135,7 @@
 **状态**: OTLP v1.9.0已支持
 
 **需要检查**:
+
 - [ ] `docs/14_Profiles信号/` 内容完整性
 - [ ] 补充生产配置示例
 
@@ -142,6 +156,7 @@
 ### 任务8: 术语统一
 
 **检查整个docs目录**:
+
 - [ ] 统一中英文术语
 - [ ] 统一命名规范
 - [ ] 统一链接格式
@@ -205,11 +220,11 @@
 
 | 来源 | URL | 检查频率 |
 |:-----|:-----|:--------:|
-| Semantic Conventions Releases | https://github.com/open-telemetry/semantic-conventions/releases | 每周 |
-| OTLP Protocol | https://github.com/open-telemetry/opentelemetry-proto/releases | 每月 |
-| Collector Releases | https://github.com/open-telemetry/opentelemetry-collector/releases | 每周 |
-| OpenTelemetry Blog | https://opentelemetry.io/blog/ | 每周 |
-| GenAI Conventions | https://opentelemetry.io/docs/specs/semconv/gen-ai/ | 每周 |
+| Semantic Conventions Releases | <https://github.com/open-telemetry/semantic-conventions/releases> | 每周 |
+| OTLP Protocol | <https://github.com/open-telemetry/opentelemetry-proto/releases> | 每月 |
+| Collector Releases | <https://github.com/open-telemetry/opentelemetry-collector/releases> | 每周 |
+| OpenTelemetry Blog | <https://opentelemetry.io/blog/> | 每周 |
+| GenAI Conventions | <https://opentelemetry.io/docs/specs/semconv/gen-ai/> | 每周 |
 
 ---
 
@@ -237,8 +252,8 @@
 
 ---
 
-**计划制定**: 2026年3月16日  
-**开始执行**: 立即  
+**计划制定**: 2026年3月16日
+**开始执行**: 立即
 **目标完成**: 2026年3月18日
 
 ---

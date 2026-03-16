@@ -429,8 +429,8 @@ cargo run --example semantic_models
 
 ---
 
-**最后更新**: 2025年10月17日  
-**维护者**: OTLP Rust Team  
+**最后更新**: 2025年10月17日
+**维护者**: OTLP Rust Team
 **文档版本**: 1.0
 
 ---
