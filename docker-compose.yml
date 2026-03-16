@@ -54,4 +54,3 @@ networks:
 # volumes:
 #   jaeger-data:
 #     driver: local
-
