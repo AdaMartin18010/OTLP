@@ -1,4 +1,4 @@
----
+﻿---
 title: 06_工具生态层
 description: OTLP工具生态层 - SDK指南、工具集成、可视化工具、社区资源
 category: 工具生态
@@ -8,7 +8,7 @@ tags:
   - visualization
   - community
   - tools
-version: OTLP v1.9.0
+version: OTLP v1.10.0
 spec_version: v1.55.0
 semconv_version: v1.40.0
 date: 2026-03-17

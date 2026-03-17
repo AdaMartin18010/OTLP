@@ -1,7 +1,7 @@
 ﻿---
 title: OTLP语义模型本体论基础
 description: OTLP协议语义模型的本体论(Ontology)基础，从哲学语义学角度论证数据模型的完备性和一致性
-version: OTLP v1.9.0 / Semantic Conventions v1.41.0
+version: OTLP v1.10.0 / Semantic Conventions v1.41.0
 date: 2026-03-17
 author: OTLP项目团队
 category: 理论基础

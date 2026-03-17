@@ -1,8 +1,8 @@
----
+﻿---
 title: 14_Profiles数据模型
 description: OTLP Profiles数据模型 - 性能剖析信号
 category: 核心协议
-version: OTLP v1.9.0
+version: OTLP v1.10.0
 date: 2026-03-17
 status: draft
 ---

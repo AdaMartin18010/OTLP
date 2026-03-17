@@ -1,7 +1,7 @@
----
+﻿---
 title: 05_应用实践层
 description: OTLP应用实践层 - 行业案例、GenAI可观测性、微服务实践、Serverless实践、边缘计算
-version: OTLP v1.9.0
+version: OTLP v1.10.0
 spec_version: v1.55.0
 semconv_version: v1.40.0
 date: 2026-03-17

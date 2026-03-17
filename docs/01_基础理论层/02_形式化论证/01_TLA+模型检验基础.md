@@ -1,7 +1,7 @@
----
+﻿---
 title: TLA+模型检验基础
 description: TLA+形式化验证基础，包含TLA+语言、TLC模型检验器、PlusCal算法语言
-version: OTLP v1.9.0
+version: OTLP v1.10.0
 date: 2026-03-17
 category: 理论基础
 tags:

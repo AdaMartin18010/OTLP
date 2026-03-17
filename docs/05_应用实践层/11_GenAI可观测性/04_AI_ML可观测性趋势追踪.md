@@ -1,7 +1,7 @@
 ﻿---
 title: AI/ML驱动可观测性生态追踪报告
 description: AI/ML驱动可观测性生态追踪报告 详细指南和最佳实践
-version: OTLP v1.9.0
+version: OTLP v1.10.0
 date: 2026-03-17
 author: OTLP项目团队
 category: 项目管理

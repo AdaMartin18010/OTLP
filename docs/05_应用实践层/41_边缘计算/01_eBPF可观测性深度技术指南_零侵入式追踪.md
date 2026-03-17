@@ -1,7 +1,7 @@
 ﻿---
 title: eBPF 可观测性深度技术指南 - 零侵入式追踪
 description: eBPF 可观测性深度技术指南 - 零侵入式追踪 详细指南和最佳实践
-version: OTLP v1.9.0
+version: OTLP v1.10.0
 date: 2026-03-17
 author: OTLP项目团队
 category: 参考资料

@@ -1,8 +1,8 @@
----
+﻿---
 title: 04_部署运维层
 description: OTLP部署运维层 - 部署指南、运维管理、故障排查、性能优化、安全合规
 category: 部署运维
-version: OTLP v1.9.0
+version: OTLP v1.10.0
 collector_version: v0.147.0
 date: 2026-03-17
 status: published

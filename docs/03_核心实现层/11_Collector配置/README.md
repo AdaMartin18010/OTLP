@@ -1,8 +1,8 @@
----
+﻿---
 title: 11_Collector配置
 description: OTLP Collector详细配置指南 - Receiver, Processor, Exporter
 category: 核心实现
-version: OTLP v1.9.0
+version: OTLP v1.10.0
 collector_version: v0.147.0
 date: 2026-03-17
 status: published

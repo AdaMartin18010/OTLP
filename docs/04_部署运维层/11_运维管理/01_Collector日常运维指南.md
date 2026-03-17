@@ -1,7 +1,7 @@
----
+﻿---
 title: Collector日常运维指南
 description: OpenTelemetry Collector日常运维管理，包含监控告警、日志管理、备份策略、证书管理
-version: OTLP v1.9.0
+version: OTLP v1.10.0
 collector_version: v0.147.0
 date: 2026-03-17
 category: 部署运维

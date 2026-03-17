@@ -1,4 +1,4 @@
----
+﻿---
 title: 金融级OTLP架构设计
 description: 面向金融行业的高可用、高安全、合规的OpenTelemetry架构设计方案
 category: 应用实践
@@ -6,7 +6,7 @@ tags:
   - financial
   - high-availability
   - compliance
-version: OTLP v1.9.0
+version: OTLP v1.10.0
 date: 2026-03-17
 status: published
 ---

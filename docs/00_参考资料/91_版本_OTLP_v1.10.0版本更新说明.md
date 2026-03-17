@@ -1,7 +1,7 @@
 ﻿---
 title: OTLP v1.10.0版本更新说明
 description: OTLP Protocol v1.10.0版本更新内容详解，包含新特性、破坏性变更和迁移指南
-version: OTLP v1.9.0
+version: OTLP v1.10.0
 date: 2026-03-17
 author: OTLP项目团队
 category: 参考资料
@@ -18,7 +18,7 @@ status: published
 > **版本**: OTLP v1.10.0
 > **发布日期**: 2024年12月
 > **最后更新**: 2026-03-17
-> **前序版本**: OTLP v1.9.0
+> **前序版本**: OTLP v1.10.0
 
 ---
 
@@ -341,7 +341,7 @@ processors:
 
 ### 6.1 组件版本对照
 
-| 组件 | OTLP v1.9.0 | OTLP v1.10.0 | 说明 |
+| 组件 | OTLP v1.10.0 | OTLP v1.10.0 | 说明 |
 |------|-------------|--------------|------|
 | **Protocol** | v1.9.0 | v1.10.0 | 协议版本 |
 | **Collector** | v0.113.0 | v0.117.0 | Collector版本 |

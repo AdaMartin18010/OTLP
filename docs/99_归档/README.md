@@ -1,8 +1,8 @@
----
+﻿---
 title: 99_归档
 description: OTLP知识库归档文件目录，包含已废弃或历史文档
 category: 归档
-version: OTLP v1.9.0
+version: OTLP v1.10.0
 date: 2026-03-17
 status: archived
 ---

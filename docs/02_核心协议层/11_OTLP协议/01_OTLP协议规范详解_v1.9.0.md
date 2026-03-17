@@ -1,7 +1,7 @@
----
+﻿---
 title: OTLP协议规范详解 v1.9.0
 description: OpenTelemetry Protocol v1.9.0完整规范解析，包括Protobuf定义、gRPC/HTTP传输、编码细节和实现要求
-version: OTLP v1.9.0
+version: OTLP v1.10.0
 category: 核心协议
 tags:
   - otlp

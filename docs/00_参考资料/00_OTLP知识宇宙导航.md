@@ -1,7 +1,7 @@
 ﻿---
 title: OTLP知识宇宙 - 主题导航
 description: OTLP知识宇宙 - 主题导航 详细指南
-version: OTLP v1.9.0
+version: OTLP v1.10.0
 date: 2026-03-17
 author: OTLP项目团队
 category: 参考资料

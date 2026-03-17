@@ -1,8 +1,8 @@
----
+﻿---
 title: 02_形式化论证
 description: OTLP形式化论证 - 形式化验证、模型检验、定理证明
 category: 理论基础
-version: OTLP v1.9.0
+version: OTLP v1.10.0
 date: 2026-03-17
 status: draft
 ---

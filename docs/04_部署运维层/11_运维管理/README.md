@@ -1,8 +1,8 @@
----
+﻿---
 title: 11_运维管理
 description: OTLP运维管理 - 监控、告警、日常运维
 category: 部署运维
-version: OTLP v1.9.0
+version: OTLP v1.10.0
 collector_version: v0.147.0
 date: 2026-03-17
 status: draft

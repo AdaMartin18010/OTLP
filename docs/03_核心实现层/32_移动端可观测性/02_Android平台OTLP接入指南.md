@@ -1,7 +1,7 @@
 ﻿---
 title: Android平台OTLP接入指南
 description: Android应用集成OpenTelemetry OTLP协议的完整实践指南，包含Java/Kotlin SDK、性能优化和最佳实践
-version: OTLP v1.9.0 / OpenTelemetry Android v0.9.0
+version: OTLP v1.10.0 / OpenTelemetry Android v0.9.0
 date: 2026-03-17
 author: OTLP项目团队
 category: 移动端可观测性

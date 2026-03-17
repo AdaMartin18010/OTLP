@@ -1,8 +1,8 @@
----
+﻿---
 title: 03_核心实现层
 description: OTLP核心实现层 - SDK实现、Collector配置、采样策略、eBPF、移动端
 category: 核心实现
-version: OTLP v1.9.0
+version: OTLP v1.10.0
 collector_version: v0.147.0
 date: 2026-03-17
 status: published

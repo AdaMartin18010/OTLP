@@ -1,8 +1,8 @@
----
+﻿---
 title: 00_参考资料
 description: OTLP参考资料层 - 快速参考、术语表、速查手册、学术资源
 category: 参考资料
-version: OTLP v1.9.0
+version: OTLP v1.10.0
 date: 2026-03-17
 status: published
 ---

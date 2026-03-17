@@ -1,4 +1,4 @@
----
+﻿---
 title: OTLP安全传输与认证实践
 description: OpenTelemetry Protocol安全传输配置，包括TLS/mTLS设置、认证机制和敏感数据处理
 category: 核心协议
@@ -8,7 +8,7 @@ tags:
   - mtls
   - authentication
   - encryption
-version: OTLP v1.9.0
+version: OTLP v1.10.0
 date: 2026-03-17
 status: published
 ---

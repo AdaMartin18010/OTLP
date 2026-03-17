@@ -1,8 +1,8 @@
----
+﻿---
 title: 01_基础理论层
 description: OTLP基础理论层 - 语义模型、形式化论证、演化理论
 category: 理论基础
-version: OTLP v1.9.0
+version: OTLP v1.10.0
 date: 2026-03-17
 status: published
 ---

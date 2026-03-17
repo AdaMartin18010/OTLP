@@ -1,7 +1,7 @@
----
+﻿---
 title: OTLP知识库项目介绍
 description: OTLP标准中文知识库项目介绍，包含项目愿景、目标、架构和成果
-version: OTLP v1.9.0
+version: OTLP v1.10.0
 date: 2026-03-17
 category: 项目管理
 tags:

@@ -1,7 +1,7 @@
 ﻿---
 title: 控制流、执行流、数据流的形式化分析
 description: 控制流、执行流、数据流的形式化分析 详细指南和最佳实践
-version: OTLP v1.9.0
+version: OTLP v1.10.0
 date: 2026-03-17
 author: OTLP项目团队
 category: 理论基础

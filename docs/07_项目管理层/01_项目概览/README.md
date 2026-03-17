@@ -1,8 +1,8 @@
----
+﻿---
 title: 01_项目概览
 description: OTLP项目概览 - 目标、愿景、关键指标
 category: 项目管理
-version: OTLP v1.9.0
+version: OTLP v1.10.0
 date: 2026-03-17
 status: published
 ---

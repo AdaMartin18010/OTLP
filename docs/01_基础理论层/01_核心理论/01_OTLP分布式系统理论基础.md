@@ -1,4 +1,4 @@
----
+﻿---
 title: OTLP分布式系统理论基础
 description: OpenTelemetry Protocol背后的分布式系统理论基础，包括CAP定理、一致性模型和可观测性理论
 category: 理论基础
@@ -6,7 +6,7 @@ tags:
   - distributed-systems
   - theory
   - cap-theorem
-version: OTLP v1.9.0
+version: OTLP v1.10.0
 date: 2026-03-17
 status: published
 ---

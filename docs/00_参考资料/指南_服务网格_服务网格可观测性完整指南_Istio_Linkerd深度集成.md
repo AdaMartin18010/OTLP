@@ -1,7 +1,7 @@
 ﻿---
 title: 服务网格可观测性完整指南 - Istio & Linkerd 深度集成
 description: 服务网格可观测性完整指南 - Istio & Linkerd 深度集成 详细指南和最佳实践
-version: OTLP v1.9.0
+version: OTLP v1.10.0
 date: 2026-03-17
 author: OTLP项目团队
 category: 参考资料

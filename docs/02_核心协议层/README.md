@@ -1,8 +1,8 @@
----
+﻿---
 title: 02_核心协议层
 description: OTLP核心协议层 - 协议基础、数据模型、语义约定
 category: 核心协议
-version: OTLP v1.9.0
+version: OTLP v1.10.0
 spec_version: v1.55.0
 semconv_version: v1.40.0
 date: 2026-03-17

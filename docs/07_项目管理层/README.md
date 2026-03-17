@@ -1,7 +1,7 @@
----
+﻿---
 title: 07_项目管理层
 description: OTLP项目管理层 - 项目概览、趋势追踪、评价模型、改进计划、完成报告
-version: OTLP v1.9.0
+version: OTLP v1.10.0
 spec_version: v1.55.0
 semconv_version: v1.40.0
 date: 2026-03-17

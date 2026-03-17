@@ -1,7 +1,7 @@
 ﻿---
 title: AI 驱动日志分析完整指南 - LLM 异常检测与根因分析
 description: AI 驱动日志分析完整指南 - LLM 异常检测与根因分析 详细指南和最佳实践
-version: OTLP v1.9.0
+version: OTLP v1.10.0
 date: 2026-03-17
 author: OTLP项目团队
 category: 参考资料

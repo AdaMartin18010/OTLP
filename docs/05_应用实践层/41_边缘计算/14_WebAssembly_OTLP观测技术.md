@@ -1,7 +1,7 @@
 ﻿---
 title: WebAssembly OTLP观测技术
 description: WebAssembly/WASM环境下的OpenTelemetry观测方案，包含浏览器WASM、WASI服务端和边缘计算场景
-version: OTLP v1.9.0 / WASI Preview 2
+version: OTLP v1.10.0 / WASI Preview 2
 date: 2026-03-17
 author: OTLP项目团队
 category: 移动端可观测性

@@ -1,4 +1,4 @@
----
+﻿---
 title: TLA+验证OTLP协议属性
 description: 使用TLA+形式化验证语言验证OpenTelemetry Protocol的关键属性，包括数据一致性、可靠性和安全性
 category: 理论基础
@@ -8,7 +8,7 @@ tags:
   - pluscal
   - protocol-verification
   - model-checking
-version: OTLP v1.9.0
+version: OTLP v1.10.0
 date: 2026-03-17
 status: published
 ---

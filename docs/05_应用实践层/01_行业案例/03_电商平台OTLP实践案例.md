@@ -1,7 +1,7 @@
----
+﻿---
 title: 电商平台OTLP实践案例
 description: 大型电商平台OTLP可观测性实践，包含架构设计、性能优化、故障排查真实案例
-version: OTLP v1.9.0
+version: OTLP v1.10.0
 date: 2026-03-17
 category: 应用实践
 tags:

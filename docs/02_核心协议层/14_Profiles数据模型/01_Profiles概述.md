@@ -1,7 +1,7 @@
----
+﻿---
 title: Profiles概述 - 可观测性第四大支柱
 description: OpenTelemetry Profiles信号概述，作为可观测性第四大支柱，与Traces、Metrics、Logs并列
-version: OTLP v1.9.0
+version: OTLP v1.10.0
 spec_version: v1.55.0
 date: 2026-03-17
 category: 核心协议

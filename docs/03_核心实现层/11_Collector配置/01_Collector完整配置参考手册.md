@@ -1,7 +1,7 @@
----
+﻿---
 title: Collector完整配置参考手册
 description: OpenTelemetry Collector完整配置参考，包含所有Receiver、Processor、Exporter详细配置
-version: OTLP v1.9.0
+version: OTLP v1.10.0
 collector_version: v0.147.0
 date: 2026-03-17
 category: 核心实现

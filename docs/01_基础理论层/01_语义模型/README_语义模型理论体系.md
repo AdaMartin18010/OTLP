@@ -1,7 +1,7 @@
 ﻿---
 title: OTLP语义模型理论体系 - 目录导航
 description: OTLP语义模型的完整理论体系，包括本体论基础、形式化论证、演化理论和竞品对比
-version: OTLP v1.9.0 / Semantic Conventions v1.41.0
+version: OTLP v1.10.0 / Semantic Conventions v1.41.0
 date: 2026-03-17
 author: OTLP项目团队
 category: 理论基础

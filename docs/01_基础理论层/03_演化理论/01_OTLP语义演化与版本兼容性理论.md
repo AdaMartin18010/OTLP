@@ -1,7 +1,7 @@
----
+﻿---
 title: OTLP语义演化与版本兼容性理论
 description: OTLP语义演化的理论基础，包含版本兼容性模型、破坏性变更分析、迁移策略
-version: OTLP v1.9.0
+version: OTLP v1.10.0
 spec_version: v1.55.0
 semconv_version: v1.40.0
 date: 2026-03-17
@@ -349,7 +349,7 @@ MigrationComplete ==
   2020年: 提议新的Profiling信号
   2022年: 成立Profiles SIG
   2024年: OTLP v1.3.0 - Profiles进入development
-  2025年: OTLP v1.9.0 - Profiles继续演进
+  2025年: OTLP v1.10.0 - Profiles继续演进
   2026年: 预期GA
 
 设计决策:

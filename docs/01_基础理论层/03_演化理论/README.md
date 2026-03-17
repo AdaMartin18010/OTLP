@@ -1,8 +1,8 @@
----
+﻿---
 title: 03_演化理论
 description: OTLP演化理论 - 版本演化、兼容性、语义变迁
 category: 理论基础
-version: OTLP v1.9.0
+version: OTLP v1.10.0
 date: 2026-03-17
 status: draft
 ---

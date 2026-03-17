@@ -1,7 +1,7 @@
----
+﻿---
 title: Collector配置形式化验证
 description: 使用TLA+对OpenTelemetry Collector配置进行形式化验证，确保配置正确性和系统可靠性
-version: OTLP v1.9.0
+version: OTLP v1.10.0
 collector_version: v0.147.0
 date: 2026-03-17
 category: 理论基础
