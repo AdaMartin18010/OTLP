@@ -945,4 +945,3 @@ func goodAttributes(ctx context.Context, userTier string) {
 **文档状态**: ✅ 完成
 **审核状态**: 待审核
 **相关文档**: [SDK概述](01_SDK概述.md), [Collector架构](02_Collector架构.md)
-
