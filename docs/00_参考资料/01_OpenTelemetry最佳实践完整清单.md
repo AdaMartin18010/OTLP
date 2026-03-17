@@ -2,7 +2,7 @@
 title: OpenTelemetry最佳实践完整清单
 description: OpenTelemetry最佳实践完整清单
  详细指南
-version: OTLP v1.10.0
+version: OTLP v1.9.0
 date: 2026-03-17
 author: OTLP项目团队
 category: 参考资料
@@ -1424,3 +1424,4 @@ status: published
 **文档状态**: ✅ 完成
 **适用场景**: 企业级OpenTelemetry生产部署
 **持续更新**: 根据最新最佳实践持续迭代
+

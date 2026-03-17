@@ -1,7 +1,7 @@
 ﻿---
 title: OTLP与竞品语义模型深度对比
 description: OTLP与OpenTracing、OpenCensus、OpenMetrics、Prometheus等观测数据模型的语义层面深度对比分析
-version: OTLP v1.10.0
+version: OTLP v1.9.0
 date: 2026-03-17
 author: OTLP项目团队
 category: 理论基础
@@ -733,3 +733,4 @@ print(f"OTLP↔Proto语义等价: {result}")  # 应该为True
 
 **文档维护**: OTLP项目团队
 **最后更新**: 2026-03-17
+

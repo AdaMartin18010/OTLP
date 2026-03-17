@@ -1,7 +1,7 @@
 ﻿---
 title: 分布式系统理论与 OTLP 实现分析
 description: 分布式系统理论与 OTLP 实现分析 详细指南和最佳实践
-version: OTLP v1.10.0
+version: OTLP v1.9.0
 date: 2026-03-17
 author: OTLP项目团队
 category: 理论基础
@@ -1330,3 +1330,4 @@ pub struct Anomaly {
 5. **形式化验证**: 安全性和活性证明
 
 这些理论和实现为构建可靠的分布式 OTLP 系统提供了坚实基础。
+

@@ -1,7 +1,7 @@
 ﻿---
 title: Metrics数据模型概述
 description: Metrics数据模型概述 详细指南和最佳实践
-version: OTLP v1.10.0
+version: OTLP v1.9.0
 date: 2026-03-17
 author: OTLP项目团队
 category: 核心实现
@@ -974,3 +974,4 @@ func main() {
 **文档状态**: ✅ 完成
 **审核状态**: 待审核
 **下一步**: [02_Metrics子类型详解](./02_Metrics子类型详解.md)、[03_Pre-aggregation与Prometheus_StatsD映射](./03_Pre-aggregation与Prometheus_StatsD映射.md)
+

@@ -1,7 +1,7 @@
 ﻿---
 title: 移动端可观测性 - 目录导航
 description: iOS、Android、React Native和WebAssembly平台的OpenTelemetry观测完整指南
-version: OTLP v1.10.0
+version: OTLP v1.9.0
 date: 2026-03-17
 author: OTLP项目团队
 category: 移动端可观测性
@@ -191,3 +191,4 @@ status: published
 ---
 
 > 💡 **提示**: 移动端可观测性是OTLP生态系统的重要组成部分，选择合适的平台方案可以有效提升用户体验和故障排查效率。
+

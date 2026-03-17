@@ -1,7 +1,7 @@
 ﻿---
 title: Google Cloud Functions语义约定详解
 description: Google Cloud Functions语义约定详解 详细指南和最佳实践
-version: OTLP v1.10.0
+version: OTLP v1.9.0
 date: 2026-03-17
 author: OTLP项目团队
 category: 标准规范
@@ -471,3 +471,4 @@ Cloud Functions最佳实践:
 - ✅ Go/Python/Node.js示例
 - ✅ Cloud Trace集成
 - ✅ 2nd Gen推荐配置
+

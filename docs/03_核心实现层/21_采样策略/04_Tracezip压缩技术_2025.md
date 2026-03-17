@@ -1,7 +1,7 @@
 ﻿---
 title: Tracezip：下一代追踪压缩技术（2025年2月最新）
 description: Tracezip：下一代追踪压缩技术（2025年2月最新） 详细指南和最佳实践
-version: OTLP v1.10.0
+version: OTLP v1.9.0
 date: 2026-03-17
 author: OTLP项目团队
 category: 前沿技术
@@ -677,3 +677,4 @@ WHERE trace_id = unhex('trace123456789ab');
   - Python概念实现示例
   - 性能评估和应用场景
   - 与其他技术对比分析
+

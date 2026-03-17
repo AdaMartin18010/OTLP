@@ -1,7 +1,7 @@
 ﻿---
 title: OTLP 自主运维能力完整架构 - AIOps 平台设计
 description: OTLP 自主运维能力完整架构 - AIOps 平台设计 详细指南和最佳实践
-version: OTLP v1.10.0
+version: OTLP v1.9.0
 date: 2026-03-17
 author: OTLP项目团队
 category: 参考资料
@@ -4535,3 +4535,4 @@ aiops_vector_search_latency_seconds{p50="0.01",p99="0.05"}
 **最后更新**: 2025年12月
 **作者**: OTLP 项目组
 **联系方式**: GitHub Issues
+

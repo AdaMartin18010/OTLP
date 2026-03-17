@@ -1,7 +1,7 @@
 ﻿---
 title: OpenTelemetry性能基准测试
 description: OpenTelemetry性能基准测试 详细指南和最佳实践
-version: OTLP v1.10.0
+version: OTLP v1.9.0
 date: 2026-03-17
 author: OTLP项目团队
 category: 核心实现
@@ -733,3 +733,4 @@ metrics:
 **文档状态**: ✅ 完成
 **测试环境**: 生产级配置
 **数据来源**: 真实压测结果
+

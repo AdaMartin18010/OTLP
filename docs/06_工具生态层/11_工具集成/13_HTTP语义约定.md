@@ -1,7 +1,7 @@
 ﻿---
 title: HTTP语义约定详解
 description: HTTP语义约定详解 详细指南和最佳实践
-version: OTLP v1.10.0
+version: OTLP v1.9.0
 date: 2026-03-17
 author: OTLP项目团队
 category: 标准规范
@@ -859,3 +859,4 @@ func getRoute(r *http.Request) string {
 **文档状态**: ✅ 完成
 **审核状态**: 待审核
 **下一步**: [02_gRPC.md](./02_gRPC.md)
+

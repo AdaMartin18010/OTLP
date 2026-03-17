@@ -1,7 +1,7 @@
 ﻿---
 title: Pre-aggregation 与 Prometheus/StatsD 双向映射
 description: Pre-aggregation 与 Prometheus/StatsD 双向映射 详细指南和最佳实践
-version: OTLP v1.10.0
+version: OTLP v1.9.0
 date: 2026-03-17
 author: OTLP项目团队
 category: 核心实现
@@ -182,3 +182,4 @@ flowchart LR
 - **Prometheus**: <https://prometheus.io/docs/>；Collector Prometheus Remote Write 文档（见 OTel 官网）
 - **StatsD**: <https://github.com/statsd/statsd/wiki>；Collector StatsD 文档（见 OTel 官网）
 - **范围-权威对齐矩阵**: [00_范围-权威对齐矩阵](../../🔬_批判性评价与持续改进计划/00_范围-权威对齐矩阵.md)
+

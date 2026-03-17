@@ -1,7 +1,7 @@
 ﻿---
 title: 📚 OTLP 知识宇宙导航 v2.0
 description: 📚 OTLP 知识宇宙导航 v2.0 详细指南
-version: OTLP v1.10.0
+version: OTLP v1.9.0
 date: 2026-03-17
 author: OTLP项目团队
 category: 参考资料
@@ -117,3 +117,4 @@ status: published
 
 **维护团队**: OTLP项目团队
 **最后更新**: 2026年03月17日
+

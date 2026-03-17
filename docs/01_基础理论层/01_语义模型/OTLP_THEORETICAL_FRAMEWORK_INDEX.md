@@ -1,9 +1,9 @@
----
+﻿---
 title: OTLP 统一理论框架 - 完整导航
 description: OTLP (OpenTelemetry Protocol) 统一理论框架完整导航，涵盖形式化语义、三流分析、并发理论、分布式系统、容错机制、数据分析和自动化运维七大维度
-version: OTLP v1.10.0
-spec_version: v1.55.0
-semconv_version: v1.40.0
+version: OTLP v1.9.0
+spec_version: OTLP v1.9.0
+semconv_version: OTLP v1.9.0
 date: 2026-03-17
 author: OTLP理论研究团队
 category: 理论基础
@@ -934,3 +934,4 @@ AI审查               ───────→ 智能运维
 **最后更新**: 2026年3月17日  
 **维护者**: OTLP理论研究团队  
 **许可证**: CC BY-SA 4.0
+

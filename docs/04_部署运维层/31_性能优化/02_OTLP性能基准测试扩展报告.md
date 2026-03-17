@@ -1,7 +1,7 @@
 ﻿---
 title: OTLP性能基准测试扩展报告
 description: OTLP性能基准测试扩展报告 详细指南和最佳实践
-version: OTLP v1.10.0
+version: OTLP v1.9.0
 date: 2026-03-17
 author: OTLP项目团队
 category: 核心实现
@@ -681,3 +681,4 @@ exporters:
 **文档状态**: ✅ 完成 (3,000+ 行)
 **最后更新**: 2025年12月
 **维护者**: OTLP项目组
+

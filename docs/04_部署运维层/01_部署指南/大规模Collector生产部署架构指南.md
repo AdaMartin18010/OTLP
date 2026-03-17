@@ -1,7 +1,7 @@
 ﻿---
 title: 大规模Collector部署架构指南
 description: 大规模Collector部署架构指南 详细指南和最佳实践
-version: OTLP v1.10.0
+version: OTLP v1.9.0
 date: 2026-03-17
 author: OTLP项目团队
 category: 部署运维
@@ -413,3 +413,4 @@ processors:
 **最后更新**: 2026年3月17日
 **维护团队**: OTLP项目运维团队
 **适用版本**: Collector v0.147.0+
+

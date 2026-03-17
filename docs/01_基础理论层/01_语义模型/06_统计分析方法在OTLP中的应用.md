@@ -1,7 +1,7 @@
 ﻿---
 title: 统计分析方法在OTLP中的应用
 description: 统计分析方法在OTLP中的应用 详细指南和最佳实践
-version: OTLP v1.10.0
+version: OTLP v1.9.0
 date: 2026-03-17
 author: OTLP项目团队
 category: 理论基础
@@ -640,3 +640,4 @@ analyzeErrorRate spans =
 **文档状态**: ✅ 完成 (1,500+ 行)
 **最后更新**: 2025年12月
 **维护者**: OTLP项目组
+

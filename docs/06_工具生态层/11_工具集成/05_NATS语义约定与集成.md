@@ -1,7 +1,7 @@
 ﻿---
 title: NATS语义约定详解
 description: NATS语义约定详解 详细指南和最佳实践
-version: OTLP v1.10.0
+version: OTLP v1.9.0
 date: 2026-03-17
 author: OTLP项目团队
 category: 标准规范
@@ -1147,3 +1147,4 @@ func StartWorkerPool(
 - ✅ Queue Groups负载均衡
 - ✅ 完整Metrics定义
 - ✅ Go/Python示例
+

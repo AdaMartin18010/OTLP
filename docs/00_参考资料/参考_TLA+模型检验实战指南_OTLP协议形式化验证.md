@@ -1,7 +1,7 @@
 ﻿---
 title: TLA+ 模型检验实战指南 - OTLP 协议形式化验证
 description: TLA+ 模型检验实战指南 - OTLP 协议形式化验证 详细指南和最佳实践
-version: OTLP v1.10.0
+version: OTLP v1.9.0
 date: 2026-03-17
 author: OTLP项目团队
 category: 参考资料
@@ -1538,3 +1538,4 @@ java -cp tla2tools.jar pcal.trans OTLPExportPlusCal.tla
 ---
 
 *形式化验证是软件工程的未来,TLA+ 让你在设计阶段就能证明系统的正确性!*
+

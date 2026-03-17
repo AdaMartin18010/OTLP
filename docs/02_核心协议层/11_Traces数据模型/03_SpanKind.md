@@ -1,7 +1,7 @@
 ﻿---
 title: SpanKind 完整定义
 description: SpanKind 完整定义 详细指南和最佳实践
-version: OTLP v1.10.0
+version: OTLP v1.9.0
 date: 2026-03-17
 author: OTLP项目团队
 category: 核心实现
@@ -1075,3 +1075,4 @@ CONSUMER.duration: 处理消息延迟
 **文档状态**: ✅ 完成
 **审核状态**: 待审核
 **下一步**: [04_SpanStatus.md](./04_SpanStatus.md)
+

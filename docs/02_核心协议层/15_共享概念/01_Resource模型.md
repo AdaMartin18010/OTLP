@@ -1,7 +1,7 @@
 ﻿---
 title: OpenTelemetry Resource 模型详解
 description: OpenTelemetry Resource 模型详解 详细指南和最佳实践
-version: OTLP v1.10.0
+version: OTLP v1.9.0
 date: 2026-03-17
 author: OTLP项目团队
 category: 核心实现
@@ -894,3 +894,4 @@ res, _ := resource.New(ctx,
 **文档状态**: ✅ 完成
 **审核状态**: 待审核
 **相关文档**: [Span结构](../01_Traces数据模型/01_Span结构.md), [SDK概述](../../04_核心组件/01_SDK概述.md)
+

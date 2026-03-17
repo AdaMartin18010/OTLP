@@ -1,7 +1,7 @@
 ﻿---
 title: OpAMP管理协议完整指南
 description: OpAMP管理协议完整指南 详细指南和最佳实践
-version: OTLP v1.10.0
+version: OTLP v1.9.0
 date: 2026-03-17
 author: OTLP项目团队
 category: 核心实现
@@ -716,3 +716,4 @@ extensions:
 **文档状态**: ✅ 完成 (1,500+ 行)
 **最后更新**: 2025年12月
 **维护者**: OTLP项目组
+

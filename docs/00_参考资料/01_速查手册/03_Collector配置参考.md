@@ -2,7 +2,7 @@
 title: 📘 OpenTelemetry Collector配置速查手册
 description: 📘 OpenTelemetry Collector配置速查手册
  详细指南
-version: OTLP v1.10.0
+version: OTLP v1.9.0
 date: 2026-03-17
 author: OTLP项目团队
 category: 参考资料
@@ -939,3 +939,4 @@ sending_queue:
 **最后更新**: 2025年10月9日
 **上一篇**: [Semantic Conventions速查手册](./02_Semantic_Conventions速查手册.md)
 **下一篇**: [故障排查速查手册](./04_故障排查速查手册.md)
+

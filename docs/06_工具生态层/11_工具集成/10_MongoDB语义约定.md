@@ -1,7 +1,7 @@
 ﻿---
 title: MongoDB语义约定详解
 description: MongoDB语义约定详解 详细指南和最佳实践
-version: OTLP v1.10.0
+version: OTLP v1.9.0
 date: 2026-03-17
 author: OTLP项目团队
 category: 标准规范
@@ -933,3 +933,4 @@ public class MongoDBTracing {
 - ✅ Go/Python/Java完整示例
 - ✅ 性能优化建议
 - ✅ 安全最佳实践
+

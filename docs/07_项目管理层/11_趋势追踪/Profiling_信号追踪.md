@@ -1,7 +1,7 @@
 ﻿---
 title: OpenTelemetry Profiling信号追踪
 description: OpenTelemetry Profiling信号追踪 详细指南和最佳实践
-version: OTLP v1.10.0
+version: OTLP v1.9.0
 date: 2026-03-17
 author: OTLP项目团队
 category: 项目管理
@@ -712,3 +712,4 @@ saveToDatabase() - 1850ms
 **文档维护者**: OTLP项目组 - 标准追踪小组
 **最后更新**: 2025-10-10
 **下次评审**: 2026-01-15 (OTel Profiling GA预期时间)
+

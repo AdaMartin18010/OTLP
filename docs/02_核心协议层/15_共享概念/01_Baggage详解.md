@@ -1,7 +1,7 @@
 ﻿---
 title: OpenTelemetry Baggage 详解
 description: OpenTelemetry Baggage 详解 详细指南和最佳实践
-version: OTLP v1.10.0
+version: OTLP v1.9.0
 date: 2026-03-17
 author: OTLP项目团队
 category: 核心实现
@@ -758,3 +758,4 @@ db.Query(sql, userID)
 **文档状态**: ✅ 完成
 **审核状态**: 待审核
 **相关文档**: [SpanContext](../01_Traces数据模型/02_SpanContext.md), [Resource模型](../04_Resource/01_Resource模型.md)
+

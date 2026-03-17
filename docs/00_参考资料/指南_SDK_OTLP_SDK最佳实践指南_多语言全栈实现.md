@@ -1,7 +1,7 @@
 ﻿---
 title: OTLP SDK 最佳实践指南 - 多语言全栈实现
 description: OTLP SDK 最佳实践指南 - 多语言全栈实现 详细指南和最佳实践
-version: OTLP v1.10.0
+version: OTLP v1.9.0
 date: 2026-03-17
 author: OTLP项目团队
 category: 参考资料
@@ -1232,3 +1232,4 @@ async fn create_user(
 4. ✅ **最佳实践**: DO/DON'T 清单
 
 **下一步**: 生产部署与性能调优
+

@@ -1,7 +1,7 @@
 ﻿---
 title: SpanContext 完整定义
 description: SpanContext 完整定义 详细指南和最佳实践
-version: OTLP v1.10.0
+version: OTLP v1.9.0
 date: 2026-03-17
 author: OTLP项目团队
 category: 核心实现
@@ -925,3 +925,4 @@ func (s *TraceIDRatioBasedSampler) ShouldSample(p SamplingParameters) SamplingRe
 **文档状态**: ✅ 完成
 **审核状态**: 待审核
 **下一步**: [03_SpanKind.md](./03_SpanKind.md)
+

@@ -1,7 +1,7 @@
 ﻿---
 title: Redis 语义约定
 description: Redis 语义约定 详细指南和最佳实践
-version: OTLP v1.10.0
+version: OTLP v1.9.0
 date: 2026-03-17
 author: OTLP项目团队
 category: 标准规范
@@ -640,3 +640,4 @@ Span命名:
 **文档状态**: ✅ 完成
 **审核状态**: 待审核
 **相关文档**: [Kafka语义约定](01_Kafka.md), [数据库语义约定](../02_追踪属性/03_数据库.md)
+

@@ -1,7 +1,7 @@
 ﻿---
 title: OTLP自我感知与自我运维理论框架
 description: OTLP自我感知与自我运维理论框架 详细指南和最佳实践
-version: OTLP v1.10.0
+version: OTLP v1.9.0
 date: 2026-03-17
 author: OTLP项目团队
 category: 理论基础
@@ -1777,3 +1777,4 @@ MTTR < 5分钟
 **维护者**: OTLP理论框架团队
 **版本**: 1.0.0
 **文档状态**: ✅ 完成
+

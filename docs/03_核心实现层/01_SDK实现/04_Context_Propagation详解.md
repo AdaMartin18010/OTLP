@@ -1,7 +1,7 @@
 ﻿---
 title: Context Propagation 详解
 description: Context Propagation 详解 详细指南和最佳实践
-version: OTLP v1.10.0
+version: OTLP v1.9.0
 date: 2026-03-17
 author: OTLP项目团队
 category: 核心实现
@@ -923,3 +923,4 @@ conn, _ := grpc.Dial("localhost:50051",
 **文档状态**: ✅ 完成
 **审核状态**: 待审核
 **相关文档**: [SDK最佳实践](03_SDK最佳实践.md), [Baggage详解](../03_数据模型/05_Baggage/01_Baggage详解.md)
+

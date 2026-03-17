@@ -1,7 +1,7 @@
 ﻿---
 title: Elasticsearch语义约定详解
 description: Elasticsearch语义约定详解 详细指南和最佳实践
-version: OTLP v1.10.0
+version: OTLP v1.9.0
 date: 2026-03-17
 author: OTLP项目团队
 category: 标准规范
@@ -303,3 +303,4 @@ def search_with_tracing(client: Elasticsearch, index: str, query: dict):
 - ✅ 批量操作支持
 - ✅ Go/Python示例
 - ✅ 性能优化建议
+

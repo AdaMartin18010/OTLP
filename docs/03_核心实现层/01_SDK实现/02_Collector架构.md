@@ -1,7 +1,7 @@
 ﻿---
 title: OpenTelemetry Collector 架构详解
 description: OpenTelemetry Collector 架构详解 详细指南和最佳实践
-version: OTLP v1.10.0
+version: OTLP v1.9.0
 date: 2026-03-17
 author: OTLP项目团队
 category: 核心实现
@@ -922,3 +922,4 @@ level: info
 **文档状态**: ✅ 完成
 **审核状态**: 待审核
 **相关文档**: [SDK概述](01_SDK概述.md), [采样策略](../05_采样与性能/01_采样策略.md)
+

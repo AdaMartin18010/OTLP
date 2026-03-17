@@ -1,7 +1,7 @@
 ﻿---
 title: AWS云平台属性详解
 description: AWS云平台属性详解 详细指南和最佳实践
-version: OTLP v1.10.0
+version: OTLP v1.9.0
 date: 2026-03-17
 author: OTLP项目团队
 category: 标准规范
@@ -825,3 +825,4 @@ func main() {
 **文档状态**: ✅ 完成
 **审核状态**: 待审核
 **相关文档**: [通用资源属性](01_通用资源属性.md), [AWS集成指南](../../10_云平台集成/01_AWS集成指南.md)
+

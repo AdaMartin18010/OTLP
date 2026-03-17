@@ -1,7 +1,7 @@
 ﻿---
 title: OTLP 统一理论框架 - 第四部分
 description: OTLP 统一理论框架 - 第四部分 详细指南和最佳实践
-version: OTLP v1.10.0
+version: OTLP v1.9.0
 date: 2026-03-17
 author: OTLP项目团队
 category: 理论基础
@@ -1291,3 +1291,4 @@ impl CorrelationAnalyzer {
 - 相关性分析和因果推断方法
 
 这为理解Rust异步程序的行为和进行深度数据分析提供了理论基础。
+

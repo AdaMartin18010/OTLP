@@ -1,7 +1,7 @@
 ﻿---
 title: OTLP语义演化与版本兼容性理论
 description: OTLP语义模型的演化机制、版本兼容性保证策略和长期维护的理论基础
-version: OTLP v1.10.0 / Semantic Conventions v1.41.0
+version: OTLP v1.9.0 / Semantic Conventions v1.41.0
 date: 2026-03-17
 author: OTLP项目团队
 category: 理论基础
@@ -786,3 +786,4 @@ OTLP语义演化方向:
 
 **文档维护**: OTLP项目团队
 **最后更新**: 2026-03-17
+

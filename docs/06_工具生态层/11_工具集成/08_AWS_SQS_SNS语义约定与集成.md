@@ -1,7 +1,7 @@
 ﻿---
 title: AWS SQS/SNS语义约定详解
 description: AWS SQS/SNS语义约定详解 详细指南和最佳实践
-version: OTLP v1.10.0
+version: OTLP v1.9.0
 date: 2026-03-17
 author: OTLP项目团队
 category: 标准规范
@@ -1038,3 +1038,4 @@ SNS:
 - ✅ 消息属性传播
 - ✅ Go/Python完整示例
 - ✅ 成本优化策略
+

@@ -1,7 +1,7 @@
 ﻿---
 title: Kafka 语义约定详解
 description: Kafka 语义约定详解 详细指南和最佳实践
-version: OTLP v1.10.0
+version: OTLP v1.9.0
 date: 2026-03-17
 author: OTLP项目团队
 category: 标准规范
@@ -927,3 +927,4 @@ func ConsumeOrders() {
 **文档状态**: ✅ 完成
 **审核状态**: 待审核
 **相关文档**: [HTTP语义约定](../02_追踪属性/01_HTTP.md), [gRPC语义约定](../02_追踪属性/02_gRPC.md)
+

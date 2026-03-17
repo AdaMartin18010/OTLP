@@ -1,7 +1,7 @@
 ﻿---
 title: OTLP 统一理论框架 - 第三部分
 description: OTLP 统一理论框架 - 第三部分 详细指南和最佳实践
-version: OTLP v1.10.0
+version: OTLP v1.9.0
 date: 2026-03-17
 author: OTLP项目团队
 category: 理论基础
@@ -1407,3 +1407,4 @@ impl ProgramSlicer {
 - 根因分析和故障定位方法
 
 这为构建高可靠性的OTLP系统提供了理论基础和实践指导。
+

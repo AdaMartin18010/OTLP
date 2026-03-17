@@ -1,7 +1,7 @@
----
+﻿---
 title: OTLP v1.10.0版本更新说明
 description: OTLP Protocol v1.10.0版本更新内容详解，包含新特性、破坏性变更和迁移指南
-version: OTLP v1.10.0
+version: OTLP v1.9.0
 date: 2026-03-17
 author: OTLP项目团队
 category: 参考资料
@@ -423,3 +423,4 @@ kubectl exec -it <collector-pod> -- /otelcol-contrib --version
 ---
 
 > 💡 **提示**: OTLP v1.10.0是向后兼容的升级，建议尽快升级以获得性能改进和新特性。
+

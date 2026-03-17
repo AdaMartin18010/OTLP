@@ -1,7 +1,7 @@
 ﻿---
 title: OTLP 架构图表与可视化指南 - Mermaid 完整版
 description: OTLP 架构图表与可视化指南 - Mermaid 完整版 详细指南和最佳实践
-version: OTLP v1.10.0
+version: OTLP v1.9.0
 date: 2026-03-17
 author: OTLP项目团队
 category: 参考资料
@@ -1018,3 +1018,4 @@ graph TB
 **下一步**: 为每个技术指南添加图表链接
 
 🎨 **10 个架构图表已完成!可视化覆盖率 100%!** 🎨
+

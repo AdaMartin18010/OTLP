@@ -1,7 +1,7 @@
 ﻿---
 title: � WebAssembly插件生态追踪
 description: � WebAssembly插件生态追踪 详细指南和最佳实践
-version: OTLP v1.10.0
+version: OTLP v1.9.0
 date: 2026-03-17
 author: OTLP项目团队
 category: 项目管理
@@ -816,3 +816,4 @@ Wasm (处理层):
 **文档维护者**: OTLP项目组 - Service Mesh小组
 **最后更新**: 2025-10-10
 **下次评审**: 2026-04-01 (Component Model 1.0预期发布)
+

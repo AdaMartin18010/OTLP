@@ -1,7 +1,7 @@
 ﻿---
 title: RPC 语义约定
 description: RPC 语义约定 详细指南和最佳实践
-version: OTLP v1.10.0
+version: OTLP v1.9.0
 date: 2026-03-17
 author: OTLP项目团队
 category: 标准规范
@@ -928,3 +928,4 @@ public class DubboConsumerExample {
 **最后更新**: 2025年10月8日
 **文档版本**: v1.0
 **质量等级**: ⭐⭐⭐⭐⭐
+
