@@ -16,10 +16,10 @@ status: published
 
 # Profiles概述 - 可观测性第四大支柱
 
-> **OTLP版本**: v1.9.0 (Profiles部分为development状态)  
-> **规范状态**: Development/Unstable  
-> **预期GA**: 2025年  
-> **最后更新**: 2026-03-17  
+> **OTLP版本**: v1.9.0 (Profiles部分为development状态)
+> **规范状态**: Development/Unstable
+> **预期GA**: 2025年
+> **最后更新**: 2026-03-17
 
 ---
 
@@ -120,28 +120,28 @@ status: published
 message Profile {
   // 采样类型和周期
   repeated ValueType sample_type = 1;
-  
+
   // 实际采样数据
   repeated Sample sample = 2;
-  
+
   // 映射信息（二进制文件）
   repeated Mapping mapping = 3;
-  
+
   // 位置信息（函数+行号）
   repeated Location location = 4;
-  
+
   // 函数元数据
   repeated Function function = 5;
-  
+
   // 字符串表（节省空间）
   repeated string string_table = 6;
-  
+
   // 时间戳
   fixed64 time_nanos = 7;
-  
+
   // 采样周期（纳秒）
   int64 duration_nanos = 8;
-  
+
   // 与pprof的兼容性
   bytes original_payload = 9;
   string original_payload_format = 10;  // "pprof", "jfr", "linux_perf"
@@ -150,10 +150,10 @@ message Profile {
 message Sample {
   // 位置ID列表（栈帧）
   repeated uint64 location_id = 1;
-  
+
   // 采样值（与sample_type对应）
   repeated int64 value = 2;
-  
+
   // 标签（属性）
   repeated Label label = 3;
 }
@@ -287,13 +287,13 @@ message Function {
 ```
 步骤1: Metrics告警
   └── cpu_usage_percent > 80%
-  
+
 步骤2: 关联到Trace
   └── 发现/trace/orders/create端点P99延迟增加
-  
+
 步骤3: 关联到Profile
   └── 该端点的热点函数: parseJSON()占用65% CPU
-  
+
 步骤4: 定位根因
   └── parseJSON()处理大JSON对象，需要优化
 ```
@@ -315,7 +315,7 @@ processors:
   batch:
     timeout: 10s
     send_batch_size: 256
-  
+
   # 保留特定服务的Profile
   filter:
     error_mode: ignore
@@ -432,13 +432,13 @@ spec:
 
 | 资源 | 链接 |
 |------|------|
-| Profiles规范 | https://opentelemetry.io/docs/specs/otel/profiles/ |
-| Profiles博客 | https://opentelemetry.io/blog/2024/state-profiling/ |
-| eBPF Profiler | https://github.com/open-telemetry/opentelemetry-ebpf-profiler |
-| OTLP Proto | https://github.com/open-telemetry/opentelemetry-proto |
+| Profiles规范 | <https://opentelemetry.io/docs/specs/otel/profiles/> |
+| Profiles博客 | <https://opentelemetry.io/blog/2024/state-profiling/> |
+| eBPF Profiler | <https://github.com/open-telemetry/opentelemetry-ebpf-profiler> |
+| OTLP Proto | <https://github.com/open-telemetry/opentelemetry-proto> |
 
 ---
 
-**最后更新**: 2026-03-17  
-**维护者**: OTLP核心协议团队  
+**最后更新**: 2026-03-17
+**维护者**: OTLP核心协议团队
 **状态**: Development (向GA演进中)

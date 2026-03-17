@@ -13,6 +13,7 @@ tags:
   - sampling
 status: published
 ---
+
 # SpanKind 完整定义
 
 > **OTLP版本**: v1.0.0 (Stable)
@@ -1075,4 +1076,3 @@ CONSUMER.duration: 处理消息延迟
 **文档状态**: ✅ 完成
 **审核状态**: 待审核
 **下一步**: [04_SpanStatus.md](./04_SpanStatus.md)
-

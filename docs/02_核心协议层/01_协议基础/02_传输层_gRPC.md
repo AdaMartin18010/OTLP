@@ -14,6 +14,7 @@ tags:
   - compliance
 status: published
 ---
+
 # OTLP传输层 - gRPC详解
 
 > **协议版本**: gRPC over HTTP/2
@@ -1580,4 +1581,3 @@ ERROR:
 **文档状态**: ✅ 完成
 **审核状态**: 待审核
 **下一步**: [03_传输层_HTTP.md](./03_传输层_HTTP.md)
-

@@ -15,6 +15,7 @@ tags:
   - docker
 status: published
 ---
+
 # AWS Lambda语义约定详解
 
 > **Serverless计算**: AWS Lambda完整Tracing与Metrics规范
@@ -841,4 +842,3 @@ Lambda成本优化:
 - ✅ Go/Python示例
 - ✅ 性能优化建议
 - ✅ 成本优化策略
-

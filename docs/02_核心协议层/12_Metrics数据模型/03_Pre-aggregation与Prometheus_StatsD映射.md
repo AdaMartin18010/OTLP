@@ -12,6 +12,7 @@ tags:
   - performance
 status: published
 ---
+
 # Pre-aggregation 与 Prometheus/StatsD 双向映射
 
 > **覆盖范围**: OTLP Metrics Data Model（pre-aggregated 时序、与 Prometheus/StatsD 双向映射）
@@ -182,4 +183,3 @@ flowchart LR
 - **Prometheus**: <https://prometheus.io/docs/>；Collector Prometheus Remote Write 文档（见 OTel 官网）
 - **StatsD**: <https://github.com/statsd/statsd/wiki>；Collector StatsD 文档（见 OTel 官网）
 - **范围-权威对齐矩阵**: [00_范围-权威对齐矩阵](../../🔬_批判性评价与持续改进计划/00_范围-权威对齐矩阵.md)
-

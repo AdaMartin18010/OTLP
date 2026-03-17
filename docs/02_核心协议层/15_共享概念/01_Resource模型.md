@@ -17,6 +17,7 @@ tags:
   - docker
 status: published
 ---
+
 # OpenTelemetry Resource 模型详解
 
 > **规范版本**: v1.30.0
@@ -894,4 +895,3 @@ res, _ := resource.New(ctx,
 **文档状态**: ✅ 完成
 **审核状态**: 待审核
 **相关文档**: [Span结构](../01_Traces数据模型/01_Span结构.md), [SDK概述](../../04_核心组件/01_SDK概述.md)
-

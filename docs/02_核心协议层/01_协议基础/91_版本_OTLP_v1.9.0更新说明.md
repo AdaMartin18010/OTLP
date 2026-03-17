@@ -12,6 +12,7 @@ tags:
   - optimization
 status: published
 ---
+
 # OTLP Protocol Buffers v1.9.0 更新说明
 
 > **更新时间**: 2026年3月15日
@@ -374,4 +375,3 @@ exporters:
 **文档版本**: v1.0
 **更新日期**: 2026年3月15日
 **维护者**: OTLP项目团队
-

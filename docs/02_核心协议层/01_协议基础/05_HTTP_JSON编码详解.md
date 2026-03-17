@@ -18,6 +18,7 @@ tags:
   - docker
 status: published
 ---
+
 # OTLP/HTTP JSON编码详解
 
 > **标准版本**: v1.3.0 (JSON支持自v1.1.0)
@@ -3198,4 +3199,3 @@ func main() {
 **审核**: 待审核
 **版本**: v1.0
 **总行数**: ~2,100行
-

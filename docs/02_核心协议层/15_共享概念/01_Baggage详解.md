@@ -14,6 +14,7 @@ tags:
   - compliance
 status: published
 ---
+
 # OpenTelemetry Baggage 详解
 
 > **规范版本**: v1.30.0
@@ -758,4 +759,3 @@ db.Query(sql, userID)
 **文档状态**: ✅ 完成
 **审核状态**: 待审核
 **相关文档**: [SpanContext](../01_Traces数据模型/02_SpanContext.md), [Resource模型](../04_Resource/01_Resource模型.md)
-

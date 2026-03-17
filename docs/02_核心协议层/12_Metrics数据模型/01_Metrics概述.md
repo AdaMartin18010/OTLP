@@ -13,6 +13,7 @@ tags:
   - sampling
 status: published
 ---
+
 # Metrics数据模型概述
 
 > **OTLP版本**: v1.0.0 (Stable)
@@ -974,4 +975,3 @@ func main() {
 **文档状态**: ✅ 完成
 **审核状态**: 待审核
 **下一步**: [02_Metrics子类型详解](./02_Metrics子类型详解.md)、[03_Pre-aggregation与Prometheus_StatsD映射](./03_Pre-aggregation与Prometheus_StatsD映射.md)
-

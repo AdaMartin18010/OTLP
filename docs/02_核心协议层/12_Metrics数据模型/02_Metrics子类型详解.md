@@ -10,6 +10,7 @@ tags:
   - observability
 status: published
 ---
+
 # Metrics 子类型详解
 
 > **标准版本**: v1.27.0
@@ -925,4 +926,3 @@ public class ApiMetrics {
 **最后更新**: 2025年10月8日
 **文档版本**: v1.0
 **质量等级**: ⭐⭐⭐⭐⭐
-

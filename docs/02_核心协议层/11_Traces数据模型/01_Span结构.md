@@ -15,6 +15,7 @@ tags:
   - compliance
 status: published
 ---
+
 # Span结构完整定义
 
 > **OTLP版本**: v1.0.0 (Stable)
@@ -930,4 +931,3 @@ span.End(trace.WithTimestamp(customTime))
 **文档状态**: ✅ 完成
 **审核状态**: 待审核
 **下一步**: [02_SpanContext.md](./02_SpanContext.md)
-

@@ -15,6 +15,7 @@ tags:
   - compliance
 status: published
 ---
+
 # SpanContext 完整定义
 
 > **OTLP版本**: v1.0.0 (Stable)
@@ -925,4 +926,3 @@ func (s *TraceIDRatioBasedSampler) ShouldSample(p SamplingParameters) SamplingRe
 **文档状态**: ✅ 完成
 **审核状态**: 待审核
 **下一步**: [03_SpanKind.md](./03_SpanKind.md)
-

@@ -14,6 +14,7 @@ tags:
   - compliance
 status: published
 ---
+
 # OTLP传输层 - HTTP详解
 
 > **协议版本**: HTTP/1.1
@@ -1572,4 +1573,3 @@ ERROR: HTTP POST /v1/traces 500 (server error)
 **文档状态**: ✅ 完成
 **审核状态**: 待审核
 **下一步**: [04_Protocol_Buffers编码.md](./04_Protocol_Buffers编码.md)
-

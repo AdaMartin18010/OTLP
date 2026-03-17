@@ -13,6 +13,7 @@ tags:
   - sampling
 status: published
 ---
+
 # OpenTelemetry Logs 数据模型详解
 
 > **规范版本**: v1.30.0
@@ -888,4 +889,3 @@ logger.Emit(context.Background(), api.Record{
 **文档状态**: ✅ 完成
 **审核状态**: 待审核
 **相关文档**: [Span结构](../01_Traces数据模型/01_Span结构.md), [Metrics概述](../02_Metrics数据模型/01_Metrics概述.md), [03_统一结构与多格式映射](./03_统一结构与多格式映射.md)
-
