@@ -50,7 +50,7 @@ OTLP知识宇宙
 | **总字数** | 500,000+ | ✅ |
 | **代码示例** | 630+ | ✅ |
 | **主题层级** | 8层33主题 | ✅ |
-| **标准版本** | OTLP v1.9.0, SC v1.38.0 | ✅ |
+| **标准版本** | OTLP v1.10.0, SC v1.40.0, Collector v0.148.0+ | ✅ |
 
 ### 质量评分
 
@@ -170,7 +170,8 @@ cd examples/python && pip install -r requirements.txt && python app.py
 
 ---
 
-**最后更新**: 2026年3月16日
+**最后更新**: 2026年3月18日
+**持续更新**: Collector v0.148.0+ (OTTL Context Inference, Log Deduplication)
 **主题体系**: v3.0.0 - 8层架构
 **维护团队**: OTLP项目团队
 
