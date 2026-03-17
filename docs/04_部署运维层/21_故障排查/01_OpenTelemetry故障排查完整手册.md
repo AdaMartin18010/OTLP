@@ -1121,4 +1121,3 @@ builder --config=builder-config.yaml
 **文档状态**: ✅ 完成
 **适用版本**: OpenTelemetry v1.28+
 **更新频率**: 持续更新
-

@@ -21,6 +21,7 @@ tags:
   - docker
 status: published
 ---
+
 # OTLP 自主运维能力完整架构 - AIOps 平台设计
 
 > **文档版本**: v1.0
@@ -4535,4 +4536,3 @@ aiops_vector_search_latency_seconds{p50="0.01",p99="0.05"}
 **最后更新**: 2025年12月
 **作者**: OTLP 项目组
 **联系方式**: GitHub Issues
-

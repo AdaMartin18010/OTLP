@@ -17,6 +17,7 @@ tags:
   - docker
 status: published
 ---
+
 # 工作流自动化完整指南 - Temporal.io 与可观测性集成
 
 > **文档版本**: v1.0
@@ -2201,4 +2202,3 @@ ROI: 550% (首年)
 ---
 
 *"In distributed systems, failures are not exceptions, they are the norm. Temporal makes them manageable."*-
-

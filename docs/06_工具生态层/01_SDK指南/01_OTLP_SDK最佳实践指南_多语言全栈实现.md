@@ -16,6 +16,7 @@ tags:
   - docker
 status: published
 ---
+
 # OTLP SDK 最佳实践指南 - 多语言全栈实现
 
 > **文档版本**: v1.0
@@ -1232,4 +1233,3 @@ async fn create_user(
 4. ✅ **最佳实践**: DO/DON'T 清单
 
 **下一步**: 生产部署与性能调优
-

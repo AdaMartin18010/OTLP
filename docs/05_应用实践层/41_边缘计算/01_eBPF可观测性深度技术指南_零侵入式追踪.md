@@ -21,6 +21,7 @@ tags:
   - docker
 status: published
 ---
+
 # eBPF 可观测性深度技术指南 - 零侵入式追踪
 
 > **文档版本**: v1.0
@@ -3450,4 +3451,3 @@ filter:
 **内核要求**: Linux 5.10+, BTF enabled
 **适用架构**: x86_64, ARM64
 **OBI版本**: v0.1.0-alpha (2025年11月)
-

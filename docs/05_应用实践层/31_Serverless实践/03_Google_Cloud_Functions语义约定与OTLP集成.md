@@ -15,6 +15,7 @@ tags:
   - docker
 status: published
 ---
+
 # Google Cloud Functions语义约定详解
 
 > **Serverless计算**: Google Cloud Functions完整Tracing与Metrics规范
@@ -471,4 +472,3 @@ Cloud Functions最佳实践:
 - ✅ Go/Python/Node.js示例
 - ✅ Cloud Trace集成
 - ✅ 2nd Gen推荐配置
-

@@ -12,6 +12,7 @@ tags:
   - performance
 status: published
 ---
+
 # OpenTelemetry 成本优化(FinOps)实践指南
 
 > **目标**: 降低30-50%的观测成本
@@ -24,7 +25,7 @@ status: published
 
 OpenTelemetry观测成本主要包括:
 
-`
+```text
 总成本 = 采集成本 + 传输成本 + 存储成本 + 计算成本
 
 ├─ 采集成本 (10-20%)
@@ -38,7 +39,7 @@ OpenTelemetry观测成本主要包括:
 │
 └─ 计算成本 (10-20%)
    └─ 查询分析、告警计算
-`
+```
 
 ---
 
@@ -279,4 +280,3 @@ receivers:
 
 **最后更新**: 2026年3月17日
 **维护团队**: OTLP项目FinOps团队
-

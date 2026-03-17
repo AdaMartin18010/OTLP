@@ -21,6 +21,7 @@ tags:
   - docker
 status: published
 ---
+
 # � WebAssembly插件生态追踪
 
 **创建日期**: 2025-10-10
@@ -816,4 +817,3 @@ Wasm (处理层):
 **文档维护者**: OTLP项目组 - Service Mesh小组
 **最后更新**: 2025-10-10
 **下次评审**: 2026-04-01 (Component Model 1.0预期发布)
-

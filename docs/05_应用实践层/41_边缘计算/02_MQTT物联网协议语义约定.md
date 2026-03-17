@@ -12,6 +12,7 @@ tags:
   - optimization
 status: published
 ---
+
 # MQTT语义约定详解
 
 > **IoT消息协议**: MQTT Tracing与Metrics完整规范
@@ -1268,4 +1269,3 @@ client := mqtt.NewClient(opts)
 - ✅ 持久会话
 - ✅ Go/Python/Java完整示例
 - ✅ IoT场景最佳实践
-

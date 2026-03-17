@@ -1041,4 +1041,3 @@ https://github.com/open-telemetry/opentelemetry-cpp
 **文档状态**: ✅ 完成
 **审核状态**: 待审核
 **下一步**: [02_Collector架构.md](./02_Collector架构.md)
-

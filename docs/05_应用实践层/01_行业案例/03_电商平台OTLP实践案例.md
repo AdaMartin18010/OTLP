@@ -14,10 +14,10 @@ status: published
 
 # 电商平台OTLP实践案例
 
-> **平台规模**: 日均PV 1亿+，微服务300+  
-> **团队规模**: 运维团队50+人  
-> **实施周期**: 6个月  
-> **最后更新**: 2026-03-17  
+> **平台规模**: 日均PV 1亿+，微服务300+
+> **团队规模**: 运维团队50+人
+> **实施周期**: 6个月
+> **最后更新**: 2026-03-17
 
 ---
 
@@ -26,6 +26,7 @@ status: published
 ### 1.1 业务背景
 
 某头部电商平台，业务覆盖：
+
 - **核心交易**: 商品、订单、支付、物流
 - **用户服务**: 会员、营销、推荐、搜索
 - **基础设施**: 库存、价格、优惠券、消息
@@ -138,17 +139,17 @@ processors:
         string_attribute:
           key: service.name
           values: ["payment-service", "order-service"]
-      
+
       # 2. 错误全采
       - name: errors
         type: status_code
         status_code: {status_codes: [ERROR]}
-      
+
       # 3. 慢请求采样 (P99>500ms)
       - name: slow_requests
         type: latency
         latency: {threshold_ms: 500}
-      
+
       # 4. 普通流量1%采样
       - name: normal_traffic
         type: probabilistic
@@ -204,30 +205,30 @@ import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.context.Scope;
 
 public class OrderService {
-    
+
     public Order createOrder(CreateOrderRequest request) {
         Span span = Span.current();
-        
+
         // 添加业务属性
         span.setAttribute("order.user_id", request.getUserId());
         span.setAttribute("order.amount", request.getAmount());
         span.setAttribute("order.coupon_id", request.getCouponId());
-        
+
         try (Scope scope = span.makeCurrent()) {
             // 1. 扣减库存
             inventoryService.deduct(request.getSkuId(), request.getQuantity());
-            
+
             // 2. 计算价格
             PriceCalculationResult price = pricingService.calculate(request);
             span.setAttribute("order.final_amount", price.getFinalAmount());
-            
+
             // 3. 创建订单
             Order order = orderRepository.save(request);
             span.setAttribute("order.id", order.getId());
-            
+
             // 4. 发送消息
             eventPublisher.publish(new OrderCreatedEvent(order));
-            
+
             return order;
         } catch (Exception e) {
             span.setStatus(StatusCode.ERROR);
@@ -269,11 +270,11 @@ processors:
   batch:
     timeout: 1s           # 平衡延迟和吞吐
     send_batch_size: 1024
-  
+
   memory_limiter:
     limit_mib: 800        # 限制内存使用
     spike_limit_mib: 200
-  
+
   resource:
     attributes:
       - key: k8s.cluster.name
@@ -379,12 +380,12 @@ exporters:
 双11预测:
   QPS: 100万 (10倍)
   Trace量: 500亿/天
-  
+
 扩容方案:
   Collector: 10 → 50 Pod
   Kafka: 3 → 9 Broker
   ClickHouse: 3 → 15 Shard
-  
+
 采样策略调整:
   平时: 智能采样4%
   大促: 概率采样1%
@@ -392,6 +393,7 @@ exporters:
 ```
 
 **实施效果**:
+
 - 成功支撑100万QPS
 - 关键链路0丢失
 - 成本控制在预算内
@@ -462,12 +464,12 @@ exporters:
 
 | 资源 | 链接 |
 |------|------|
-| OTLP官方文档 | https://opentelemetry.io/docs/ |
-| Java SDK文档 | https://opentelemetry.io/docs/instrumentation/java/ |
-| Collector文档 | https://opentelemetry.io/docs/collector/ |
+| OTLP官方文档 | <https://opentelemetry.io/docs/> |
+| Java SDK文档 | <https://opentelemetry.io/docs/instrumentation/java/> |
+| Collector文档 | <https://opentelemetry.io/docs/collector/> |
 
 ---
 
-**最后更新**: 2026-03-17  
-**案例提供**: 某头部电商平台  
+**最后更新**: 2026-03-17
+**案例提供**: 某头部电商平台
 **状态**: Published

@@ -15,9 +15,9 @@ status: published
 
 # Collector日常运维指南
 
-> **运维等级**: 生产级  
-> **适用场景**: 大规模Collector集群运维  
-> **最后更新**: 2026-03-17  
+> **运维等级**: 生产级
+> **适用场景**: 大规模Collector集群运维
+> **最后更新**: 2026-03-17
 
 ---
 
@@ -85,8 +85,8 @@ groups:
       - alert: CollectorHighRefusalRate
         expr: |
           (
-            sum(rate(otelcol_receiver_refused_spans_total[5m])) 
-            / 
+            sum(rate(otelcol_receiver_refused_spans_total[5m]))
+            /
             sum(rate(otelcol_receiver_accepted_spans_total[5m]))
           ) > 0.01
         for: 5m
@@ -95,7 +95,7 @@ groups:
         annotations:
           summary: "Collector拒绝率过高"
           description: "Collector {{ $labels.instance }} 拒绝率超过1%"
-      
+
       # 发送队列积压
       - alert: CollectorQueueBackingUp
         expr: |
@@ -106,7 +106,7 @@ groups:
         annotations:
           summary: "Collector发送队列积压"
           description: "队列使用率超过80%，可能导致数据丢失"
-      
+
       # 发送失败
       - alert: CollectorSendErrors
         expr: |
@@ -117,7 +117,7 @@ groups:
         annotations:
           summary: "Collector发送失败"
           description: "无法发送数据到后端，请检查网络连接"
-      
+
       # 内存使用过高
       - alert: CollectorHighMemoryUsage
         expr: |
@@ -128,7 +128,7 @@ groups:
         annotations:
           summary: "Collector内存使用过高"
           description: "内存使用率超过85%"
-      
+
       # CPU使用过高
       - alert: CollectorHighCPUUsage
         expr: |
@@ -139,7 +139,7 @@ groups:
         annotations:
           summary: "Collector CPU使用过高"
           description: "CPU使用率超过80%"
-      
+
       # 实例宕机
       - alert: CollectorInstanceDown
         expr: |
@@ -150,11 +150,11 @@ groups:
         annotations:
           summary: "Collector实例宕机"
           description: "实例 {{ $labels.instance }} 已宕机"
-      
+
       # 批次过大
       - alert: CollectorLargeBatches
         expr: |
-          histogram_quantile(0.99, 
+          histogram_quantile(0.99,
             sum(rate(otelcol_processor_batch_send_size_bucket[5m])) by (le)
           ) > 10000
         for: 10m
@@ -261,7 +261,7 @@ service:
       sampling:
         initial: 2
         thereafter: 500
-      
+
       # 日志轮转 (使用file exporter)
       rotate:
         max_size_mb: 100
@@ -324,13 +324,13 @@ for cert in $CERT_DIR/*.crt; do
     expiry_epoch=$(date -d "$expiry_date" +%s)
     current_epoch=$(date +%s)
     days_until_expiry=$(( (expiry_epoch - current_epoch) / 86400 ))
-    
+
     if [ $days_until_expiry -lt $RENEWAL_DAYS ]; then
         echo "Certificate $cert expires in $days_until_expiry days. Renewing..."
-        
+
         # 使用cert-manager或手动续期
         kubectl certificate approve $cert
-        
+
         # 重启Collector加载新证书
         kubectl rollout restart deployment/otel-collector -n monitoring
     fi
@@ -372,7 +372,7 @@ spec:
 - alert: CollectorCertificateExpiring
   expr: |
     (
-      ssl_certificate_expiry_seconds{job="otel-collector"} 
+      ssl_certificate_expiry_seconds{job="otel-collector"}
       - time()
     ) / 86400 < 14
   for: 1h
@@ -468,7 +468,7 @@ Collector资源估算:
 
 内存需求 = 基础内存 + 队列内存 + 处理缓冲区
          = 500MB + (队列大小 × 平均Span大小) + 处理缓冲区
-         
+
          示例:
          = 500MB + (10000 × 2KB) + 500MB
          = 500MB + 20MB + 500MB
@@ -476,7 +476,7 @@ Collector资源估算:
 
 CPU需求 = 基础CPU + 处理CPU + 导出CPU
         = 0.1核 + (每秒Span数 × 处理成本) + (每秒Span数 × 导出成本)
-        
+
         示例 (10K spans/sec):
         = 0.1 + (10000 × 0.00001) + (10000 × 0.00002)
         = 0.1 + 0.1 + 0.2
@@ -484,7 +484,7 @@ CPU需求 = 基础CPU + 处理CPU + 导出CPU
 
 网络带宽 = 每秒数据量 × 复制因子
          = (每秒Span数 × 平均Span大小) × 复制因子
-         
+
          示例:
          = (10000 × 2KB) × 2
          = 20MB/s × 2
@@ -549,8 +549,8 @@ spec:
 - record: collector:capacity:utilization
   expr: |
     (
-      otelcol_process_memory_rss 
-      / 
+      otelcol_process_memory_rss
+      /
       otelcol_process_memory_limit
     ) * 100
 
@@ -560,8 +560,8 @@ spec:
 
 - record: collector:queue:utilization
   expr: |
-    otelcol_exporter_queue_size 
-    / 
+    otelcol_exporter_queue_size
+    /
     otelcol_exporter_queue_capacity
 ```
 
@@ -665,6 +665,6 @@ otelcol validate --config config.yaml
 
 ---
 
-**最后更新**: 2026-03-17  
-**维护者**: OTLP部署运维团队  
+**最后更新**: 2026-03-17
+**维护者**: OTLP部署运维团队
 **状态**: Production Ready

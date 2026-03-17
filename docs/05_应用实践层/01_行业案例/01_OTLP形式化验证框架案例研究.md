@@ -1,8 +1,8 @@
 # OTLP Formal Verification Framework - Detailed Case Studies
 
-> **Document Type**: Extended Case Studies  
-> **Target Paper**: A Comprehensive Formal Verification Framework for OTLP  
-> **Last Updated**: October 17, 2025  
+> **Document Type**: Extended Case Studies
+> **Target Paper**: A Comprehensive Formal Verification Framework for OTLP
+> **Last Updated**: October 17, 2025
 > **Case Studies**: 5 Real-World Systems
 
 ---
@@ -25,9 +25,9 @@ Each case study includes:
 
 ### System Overview
 
-**Company**: Large-scale e-commerce platform  
-**Scale**: 500+ microservices, 10M+ requests/day  
-**Technology Stack**: Java Spring Boot, Node.js, Python, Go  
+**Company**: Large-scale e-commerce platform
+**Scale**: 500+ microservices, 10M+ requests/day
+**Technology Stack**: Java Spring Boot, Node.js, Python, Go
 **OTLP Setup**: OpenTelemetry SDK in all services, OTLP/gRPC collector
 
 ### Architecture
@@ -168,7 +168,7 @@ Service B (Payment Service):
 def verify_context_propagation(trace):
     root = trace.root_span
     visited = set()
-    
+
     def dfs(span, expected_ctx):
         if span.trace_id != expected_ctx.trace_id:
             return False  # Context violation
@@ -323,9 +323,9 @@ def verify_span_tree(trace):
 
 ### System Overview
 
-**Company**: Global financial services provider  
-**Scale**: 200+ microservices, 5M+ transactions/day  
-**Technology Stack**: Java, Scala, Go  
+**Company**: Global financial services provider
+**Scale**: 200+ microservices, 5M+ transactions/day
+**Technology Stack**: Java, Scala, Go
 **OTLP Setup**: OTLP/HTTP with mTLS, strict compliance requirements
 
 ### Compliance Requirements
@@ -363,7 +363,7 @@ Span:
 ```rust
 fn validate_pii_compliance(span: &Span) -> Vec<ComplianceViolation> {
     let mut violations = vec![];
-    
+
     // Check for email patterns
     for (key, value) in &span.attributes {
         if key.contains("email") || value.contains('@') {
@@ -372,7 +372,7 @@ fn validate_pii_compliance(span: &Span) -> Vec<ComplianceViolation> {
                 reason: "Email address detected",
             });
         }
-        
+
         // Check for SSN patterns
         if SSN_REGEX.is_match(value) {
             violations.push(ComplianceViolation::HighlySensitive {
@@ -381,7 +381,7 @@ fn validate_pii_compliance(span: &Span) -> Vec<ComplianceViolation> {
             });
         }
     }
-    
+
     violations
 }
 ```
@@ -420,9 +420,9 @@ fn compute_trace_hash(trace: &Trace) -> TraceHash {
         let hash = sha256(serialize(span));
         span_hashes.push(hash);
     }
-    
+
     let root_hash = merkle_root(&span_hashes);
-    
+
     TraceHash {
         trace_id: trace.trace_id,
         root_hash,
@@ -440,9 +440,9 @@ fn compute_trace_hash(trace: &Trace) -> TraceHash {
 
 ### System Overview
 
-**Company**: Industrial IoT platform  
-**Scale**: 1,000+ devices, 100K+ events/second  
-**Technology Stack**: Rust, C++, Python  
+**Company**: Industrial IoT platform
+**Scale**: 1,000+ devices, 100K+ events/second
+**Technology Stack**: Rust, C++, Python
 **OTLP Setup**: Edge collectors, satellite uplink
 
 ### Unique Challenges
@@ -479,7 +479,7 @@ T2 (12:00:10): Connectivity lost, spans buffered locally
 
 T3 (14:05:30): Connectivity restored, spans exported
   Problem: Collector receives spans in reverse chronological order
-  
+
 Received order:
   1. aaa001 (child)
   2. aaa000 (parent)  ← Parent arrives AFTER child
@@ -493,16 +493,16 @@ def verify_causal_order(spans):
     received_order = {}
     for i, span in enumerate(spans):
         received_order[span.span_id] = i
-    
+
     for span in spans:
         if span.parent_span_id:
             parent_order = received_order.get(span.parent_span_id)
             child_order = received_order[span.span_id]
-            
+
             if parent_order > child_order:
                 # Parent received after child - causality violation
                 return False
-    
+
     return True
 ```
 
@@ -526,7 +526,7 @@ impl TraceAssembler {
         self.pending_spans.insert(span.span_id, span);
         self.try_assemble_traces();
     }
-    
+
     fn try_assemble_traces(&mut self) {
         // Build dependency graph
         let mut graph = DependencyGraph::new();
@@ -536,7 +536,7 @@ impl TraceAssembler {
                 graph.add_edge(parent, span.span_id);
             }
         }
-        
+
         // Topological sort to get correct order
         if let Ok(sorted) = graph.topological_sort() {
             // All dependencies satisfied, assemble trace
@@ -564,13 +564,13 @@ fn should_sample(span: &Span) -> bool {
     if span.status.code == StatusCode::Error {
         return true;
     }
-    
+
     // Sample slow requests
     let duration_ms = span.duration().as_millis();
     if duration_ms > 1000 {
         return true;
     }
-    
+
     // Sample 1% of normal traffic
     hash_sample(span.trace_id, 0.01)
 }
@@ -589,9 +589,9 @@ fn should_sample(span: &Span) -> bool {
 
 ### System Overview
 
-**Company**: Video streaming service  
-**Scale**: 300+ microservices, 50M+ requests/day  
-**Technology Stack**: Go, Node.js, Rust  
+**Company**: Video streaming service
+**Scale**: 300+ microservices, 50M+ requests/day
+**Technology Stack**: Go, Node.js, Rust
 **OTLP Setup**: High-throughput OTLP/gRPC
 
 ### Traffic Patterns
@@ -634,13 +634,13 @@ def analyze_sampling_bias(traces, sample_rate):
     """Detect sampling bias against error traces"""
     total_errors = 0
     sampled_errors = 0
-    
+
     for trace in traces:
         if trace.has_error():
             total_errors += 1
             if trace.is_sampled():
                 sampled_errors += 1
-    
+
     error_coverage = sampled_errors / total_errors
     if error_coverage < 0.95:  # Less than 95% error coverage
         return SamplingBiasViolation(
@@ -666,19 +666,19 @@ func (s *IntelligentSampler) ShouldSample(span *Span) bool {
     if span.Status.Code == codes.Error {
         return true
     }
-    
+
     // Sample based on code criticality
     criticality := s.codeKnowledge.GetCriticality(span.Name)
     if criticality > 0.8 {
         return true
     }
-    
+
     // Sample anomalies
     expectedLatency := s.latencyModel.Predict(span)
     if span.Duration > expectedLatency * 2 {
         return true  // Anomalously slow
     }
-    
+
     // Probabilistic sampling for normal traffic
     return rand.Float64() < 0.001  // 0.1%
 }
@@ -696,9 +696,9 @@ func (s *IntelligentSampler) ShouldSample(span *Span) bool {
 
 ### System Overview
 
-**Company**: Healthcare provider  
-**Scale**: 150+ microservices, 1M+ requests/day  
-**Technology Stack**: Java, .NET, Python  
+**Company**: Healthcare provider
+**Scale**: 150+ microservices, 1M+ requests/day
+**Technology Stack**: Java, .NET, Python
 **OTLP Setup**: On-premise, HIPAA compliant
 
 ### Compliance Requirements
@@ -736,14 +736,14 @@ Span:
 def validate_hipaa_compliance(span):
     """Validate span doesn't contain PHI"""
     violations = []
-    
+
     # Check span name for PHI
     if contains_personal_name(span.name):
         violations.append(HIPAAViolation(
             field="span.name",
             reason="Personal name detected",
         ))
-    
+
     # Check attributes for PHI
     phi_attributes = [
         "patient.name",
@@ -753,14 +753,14 @@ def validate_hipaa_compliance(span):
         "patient.email",
         "patient.phone",
     ]
-    
+
     for attr in phi_attributes:
         if attr in span.attributes:
             violations.append(HIPAAViolation(
                 field=f"attributes.{attr}",
                 reason="PHI attribute present",
             ))
-    
+
     return violations
 ```
 
@@ -795,7 +795,7 @@ impl AuditTraceArchive {
     fn new(trace: Trace, retention_years: u32) -> Self {
         let encrypted = aes256_gcm_encrypt(&serialize(&trace));
         let retention = now() + Duration::years(retention_years);
-        
+
         Self {
             trace_id: trace.trace_id,
             encrypted_data: encrypted,
@@ -803,7 +803,7 @@ impl AuditTraceArchive {
             retention_until: retention,
         }
     }
-    
+
     fn access(&mut self, user: &User, reason: &str) -> Result<Trace> {
         // Log access
         self.access_log.push(AccessRecord {
@@ -811,7 +811,7 @@ impl AuditTraceArchive {
             timestamp: now(),
             reason: reason.to_string(),
         });
-        
+
         // Decrypt and return
         let decrypted = aes256_gcm_decrypt(&self.encrypted_data)?;
         Ok(deserialize(&decrypted))
@@ -930,6 +930,6 @@ The framework proved its value in:
 
 ---
 
-**Document Status**: Complete Case Studies  
-**Last Updated**: October 17, 2025  
+**Document Status**: Complete Case Studies
+**Last Updated**: October 17, 2025
 **Ready for**: Paper appendix and evaluation section

@@ -13,6 +13,7 @@ tags:
   - docker
 status: published
 ---
+
 # Azure Functions语义约定详解
 
 > **Serverless计算**: Azure Functions完整Tracing与Metrics规范
@@ -256,4 +257,3 @@ Azure Functions最佳实践:
 
 **文档状态**: ✅ 完成
 **适用场景**: Serverless应用、事件处理、微服务
-

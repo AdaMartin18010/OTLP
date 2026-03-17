@@ -19,6 +19,7 @@ tags:
   - docker
 status: published
 ---
+
 # 时序异常检测实战指南 - Prophet/LSTM/Isolation Forest
 
 **文档版本**: v1.0
@@ -1394,5 +1395,3 @@ is_anomaly = scores < threshold
 **最后更新**: 2025-10-09
 **状态**: ✅ 已完成
 **下一版本**: 将在2025 Q1增加多模态异常检测
-
-
