@@ -1,7 +1,7 @@
 ﻿---
 title: 📚 OTLP 知识宇宙导航 v2.0
 description: 📚 OTLP 知识宇宙导航 v2.0 详细指南
-version: OTLP v1.10.0
+version: OTLP v1.9.0
 date: 2026-03-17
 author: OTLP项目团队
 category: 参考资料
@@ -41,7 +41,7 @@ status: published
 
 ### 02. 标准规范
 
-- [02_标准规范_语义约定](02_标准规范_语义约定/) - Semantic Conventions v1.41.0
+- [02_标准规范_语义约定](02_标准规范_语义约定/) - Semantic Conventions v1.40.0
 
 ### 03. 核心实现
 
@@ -108,8 +108,8 @@ status: published
 
 ### 最新更新
 
-- OTLP v1.10.0 更新说明
-- Semantic Conventions v1.41.0
+- OTLP v1.9.0 更新说明
+- Semantic Conventions v1.40.0
 - Collector v0.147.0
 - GenAI语义约定完整指南
 

@@ -1,7 +1,7 @@
 ﻿---
 title: Profiles 性能分析完整指南 - 连续性能剖析与 OTLP 集成
 description: Profiles 性能分析完整指南 - 连续性能剖析与 OTLP 集成 详细指南和最佳实践
-version: OTLP v1.10.0
+version: OTLP v1.9.0
 date: 2026-03-17
 author: OTLP项目团队
 category: 参考资料
