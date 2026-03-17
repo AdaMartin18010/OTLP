@@ -21,12 +21,12 @@ status: published
 
 # OTLP 统一理论框架 - 完整导航
 
-> **文档版本**: 3.0.0  
-> **OTLP版本**: v1.10.0  
-> **规范版本**: OpenTelemetry Specification v1.55.0  
-> **语义约定**: Semantic Conventions v1.40.0  
-> **最后更新**: 2026年3月17日  
-> **维护者**: OTLP理论研究团队  
+> **文档版本**: 3.0.0
+> **OTLP版本**: v1.10.0
+> **规范版本**: OpenTelemetry Specification v1.55.0
+> **语义约定**: Semantic Conventions v1.40.0
+> **最后更新**: 2026年3月17日
+> **维护者**: OTLP理论研究团队
 
 ---
 
@@ -60,9 +60,24 @@ status: published
     - [第七部分: 分布式系统OTLP形式模型](#第七部分-分布式系统otlp形式模型)
   - [4. 理论维度关联矩阵](#4-理论维度关联矩阵)
   - [5. 按问题域索引](#5-按问题域索引)
+    - [性能分析与优化](#性能分析与优化)
+    - [故障诊断与根因分析](#故障诊断与根因分析)
+    - [可靠性与容错](#可靠性与容错)
+    - [分布式系统分析](#分布式系统分析)
+    - [自动化运维](#自动化运维)
   - [6. 学习路径](#6-学习路径)
+    - [入门路径 (理解OTLP基础)](#入门路径-理解otlp基础)
+    - [进阶路径 (深入系统分析)](#进阶路径-深入系统分析)
+    - [专家路径 (理论研究与创新)](#专家路径-理论研究与创新)
   - [7. 相关资源](#7-相关资源)
+    - [项目内理论文档](#项目内理论文档)
+    - [外部学术参考](#外部学术参考)
   - [8. 综合总结](#8-综合总结)
+    - [8.1 理论框架的完整性](#81-理论框架的完整性)
+    - [8.2 OTLP形式化语义的核心洞见](#82-otlp形式化语义的核心洞见)
+    - [8.3 理论到实践的映射](#83-理论到实践的映射)
+    - [8.4 未来研究方向](#84-未来研究方向)
+    - [8.5 致谢](#85-致谢)
 
 ---
 
@@ -166,6 +181,7 @@ pub enum SpanKind {
 ```
 
 **类型理论视角**：
+
 - `Span` 是 **Product Type**（积类型），包含多个字段的复合结构
 - `SpanKind` 是 **Sum Type**（和类型），表示互斥的变体
 - `Option<SpanID>` 使用 **Maybe Monad** 处理可选的父Span
@@ -316,7 +332,7 @@ children(p, spans) = {s ∈ spans | s.parentId = Just(p.spanId)}
 
 ### 第一部分: 形式化基础与三流分析
 
-**📄 文档**: [`OTLP_UNIFIED_THEORETICAL_FRAMEWORK.md`](./OTLP_UNIFIED_THEORETICAL_FRAMEWORK.md)
+**📄 文档**: [`OTLP_UNIFIED_THEORETICAL_FRAMEWORK.md`](./01_理论_OTLP统一理论框架第一部分.md)
 
 **🎯 核心内容**:
 
@@ -347,6 +363,7 @@ interleave = ...
 ```
 
 **🎓 适用场景**:
+
 - 理解OTLP的数学基础
 - 程序行为的形式化分析
 - 控制流和数据流追踪
@@ -356,7 +373,7 @@ interleave = ...
 
 ### 第二部分: 并发理论与分布式系统
 
-**📄 文档**: [`OTLP_UNIFIED_THEORETICAL_FRAMEWORK_PART2.md`](./OTLP_UNIFIED_THEORETICAL_FRAMEWORK_PART2.md)
+**📄 文档**: [`OTLP_UNIFIED_THEORETICAL_FRAMEWORK_PART2.md`](./02_理论_OTLP统一理论框架第二部分.md)
 
 **🎯 核心内容**:
 
@@ -391,6 +408,7 @@ updateVC vc (ReceiveEvent p q t) = insert p t (max (vc!p) (vc!q) + 1) vc
 ```
 
 **🎓 适用场景**:
+
 - 并发程序的形式化验证
 - 分布式追踪的因果关系分析
 - 共识协议的追踪和调试
@@ -400,7 +418,7 @@ updateVC vc (ReceiveEvent p q t) = insert p t (max (vc!p) (vc!q) + 1) vc
 
 ### 第三部分: 容错机制与故障分析
 
-**📄 文档**: [`OTLP_UNIFIED_THEORETICAL_FRAMEWORK_PART3.md`](./OTLP_UNIFIED_THEORETICAL_FRAMEWORK_PART3.md)
+**📄 文档**: [`OTLP_UNIFIED_THEORETICAL_FRAMEWORK_PART3.md`](./03_理论_OTLP统一理论框架第三部分.md)
 
 **🎯 核心内容**:
 
@@ -440,6 +458,7 @@ transition HalfOpen Failure = Open
 ```
 
 **🎓 适用场景**:
+
 - 故障检测和诊断
 - 系统可靠性评估
 - 根因分析和问题定位
@@ -449,7 +468,7 @@ transition HalfOpen Failure = Open
 
 ### 第四部分: Rust异步与多维度数据分析
 
-**📄 文档**: [`OTLP_UNIFIED_THEORETICAL_FRAMEWORK_PART4.md`](./OTLP_UNIFIED_THEORETICAL_FRAMEWORK_PART4.md)
+**📄 文档**: [`OTLP_UNIFIED_THEORETICAL_FRAMEWORK_PART4.md`](./04_理论_OTLP统一理论框架第四部分.md)
 
 **🎯 核心内容**:
 
@@ -473,7 +492,7 @@ pub enum Poll<T> {
 // Future作为单子
 impl<T> Monad for Future<T> {
     fn return(v: T) -> Self { async { v }.boxed() }
-    
+
     fn bind<F, B>(self, f: F) -> Future<B>
     where F: FnOnce(T) -> Future<B> {
         async { f(self.await).await }.boxed()
@@ -495,6 +514,7 @@ dice     :: DataCube -> [(Dimension, Range)] -> DataCube  -- 切块
 ```
 
 **🎓 适用场景**:
+
 - Rust异步程序的追踪
 - 异步性能优化
 - 多维度数据分析
@@ -504,7 +524,7 @@ dice     :: DataCube -> [(Dimension, Range)] -> DataCube  -- 切块
 
 ### 第五部分: 自动化运维与自适应控制
 
-**📄 文档**: [`OTLP_UNIFIED_THEORETICAL_FRAMEWORK_PART5.md`](./OTLP_UNIFIED_THEORETICAL_FRAMEWORK_PART5.md)
+**📄 文档**: [`OTLP_UNIFIED_THEORETICAL_FRAMEWORK_PART5.md`](./05_理论_OTLP统一理论框架第五部分.md)
 
 **🎯 核心内容**:
 
@@ -550,6 +570,7 @@ autonomicLoop mapek = forever $ do
 ```
 
 **🎓 适用场景**:
+
 - 自动化运维决策
 - 预测性维护
 - 智能扩缩容
@@ -609,6 +630,7 @@ data FixSuggestion
 ```
 
 **🎓 适用场景**:
+
 - AI自动审查文档
 - 结构一致性验证
 - 内容完整性检查
@@ -666,6 +688,7 @@ data TraceAlgebra
 ```
 
 **🎓 适用场景**:
+
 - OTLP协议形式化验证
 - 分布式系统属性证明
 - AI自我审查系统构建
@@ -834,29 +857,33 @@ P7 │形式│ 5   5   4   3   3   4   -              │
 | 文档 | 路径 | 主题 | 相关维度 |
 |------|------|------|----------|
 | 形式化语义计算模型 | [`FORMAL_SEMANTIC_COMPUTATIONAL_MODEL.md`](./FORMAL_SEMANTIC_COMPUTATIONAL_MODEL.md) | 类型系统, 操作语义 | P1, P7 |
-| 控制流执行流数据流分析 | [`CONTROL_FLOW_EXECUTION_DATA_FLOW_ANALYSIS.md`](./CONTROL_FLOW_EXECUTION_DATA_FLOW_ANALYSIS.md) | CFG, DFA, 三流分析 | P1 |
+| 控制流执行流数据流分析 | [`CONTROL_FLOW_EXECUTION_DATA_FLOW_ANALYSIS.md`](./01_控制流_执行流数据流分析.md) | CFG, DFA, 三流分析 | P1 |
 | 图灵可计算性与并发 | [`TURING_COMPUTABILITY_CONCURRENCY_MODEL.md`](./TURING_COMPUTABILITY_CONCURRENCY_MODEL.md) | 图灵机, 并发模型 | P2 |
-| 分布式系统理论 | [`DISTRIBUTED_SYSTEMS_THEORY.md`](./DISTRIBUTED_SYSTEMS_THEORY.md) | CAP, 一致性, 共识 | P2, P7 |
+| 分布式系统理论 | [`DISTRIBUTED_SYSTEMS_THEORY.md`](./02_分布式_分布式系统理论.md) | CAP, 一致性, 共识 | P2, P7 |
 | 集成理论框架 | [`INTEGRATED_THEORETICAL_OPERATIONAL_FRAMEWORK.md`](./INTEGRATED_THEORETICAL_OPERATIONAL_FRAMEWORK.md) | 综合理论体系 | All |
 
 ### 外部学术参考
 
 **形式化方法**:
+
 - Pierce, B. C. (2002). *Types and Programming Languages*. MIT Press.
-- Milewski, B. (2017). *Category Theory for Programmers*. 
+- Milewski, B. (2017). *Category Theory for Programmers*.
 - Nielson, F., & Nielson, H. R. (2007). *Semantics with Applications*. Springer.
 
 **并发与分布式**:
+
 - Hoare, C. A. R. (1985). *Communicating Sequential Processes*. Prentice Hall.
 - Milner, R. (1999). *Communicating and Mobile Systems: The π-Calculus*. Cambridge.
 - Tanenbaum, A. S., & Van Steen, M. (2007). *Distributed Systems: Principles and Paradigms*.
 - Kleppmann, M. (2017). *Designing Data-Intensive Applications*. O'Reilly.
 
 **容错与可靠性**:
+
 - Koren, I., & Krishna, C. M. (2020). *Fault-Tolerant Systems*. Elsevier.
 - Cachin, C., et al. (2011). *Introduction to Reliable and Secure Distributed Programming*. Springer.
 
 **控制理论与自动化**:
+
 - Hellerstein, J. L., et al. (2004). *Feedback Control of Computing Systems*. IEEE.
 - IBM (2006). *An Architectural Blueprint for Autonomic Computing*.
 
@@ -930,8 +957,7 @@ AI审查               ───────→ 智能运维
 
 ---
 
-**文档版本**: 3.0.0  
-**最后更新**: 2026年3月17日  
-**维护者**: OTLP理论研究团队  
+**文档版本**: 3.0.0
+**最后更新**: 2026年3月17日
+**维护者**: OTLP理论研究团队
 **许可证**: CC BY-SA 4.0
-

@@ -126,9 +126,9 @@ examples/
 
 **For Researchers**:
 
-1. Review [Formal Verification](./02_THEORETICAL_FRAMEWORK/OTLP_UNIFIED_THEORETICAL_FRAMEWORK.md)
+1. Review [Formal Verification](./02_THEORETICAL_FRAMEWORK/01_理论_OTLP统一理论框架第一部分.md)
 2. Study [Cutting-Edge Sampling Techniques](./05_采样与性能/04_前沿采样技术_2025.md)
-3. Read [Self-Aware Framework](./02_THEORETICAL_FRAMEWORK/SELF_AWARENESS_SELF_OPS_FRAMEWORK.md)
+3. Read [Self-Aware Framework](./02_THEORETICAL_FRAMEWORK/06_运维_自我感知与自主运维框架.md)
 
 ---
 
@@ -164,7 +164,7 @@ examples/
 
 #### Unified Theoretical Framework
 
-**File**: [02_THEORETICAL_FRAMEWORK/OTLP_UNIFIED_THEORETICAL_FRAMEWORK.md](./02_THEORETICAL_FRAMEWORK/OTLP_UNIFIED_THEORETICAL_FRAMEWORK.md)
+**File**: [02_THEORETICAL_FRAMEWORK/OTLP_UNIFIED_THEORETICAL_FRAMEWORK.md](./02_THEORETICAL_FRAMEWORK/01_理论_OTLP统一理论框架第一部分.md)
 
 **Content**:
 
@@ -175,7 +175,7 @@ examples/
 
 #### Self-Aware and Self-Ops Framework
 
-**File**: [02_THEORETICAL_FRAMEWORK/SELF_AWARENESS_SELF_OPS_FRAMEWORK.md](./02_THEORETICAL_FRAMEWORK/SELF_AWARENESS_SELF_OPS_FRAMEWORK.md)
+**File**: [02_THEORETICAL_FRAMEWORK/SELF_AWARENESS_SELF_OPS_FRAMEWORK.md](./02_THEORETICAL_FRAMEWORK/06_运维_自我感知与自主运维框架.md)
 
 **Content**:
 
