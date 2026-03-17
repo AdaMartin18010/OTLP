@@ -1,7 +1,7 @@
 ﻿---
 title: GenAI语义约定完整实现示例
 description: GenAI语义约定完整实现示例 详细指南和最佳实践
-version: OTLP v1.9.0
+version: OTLP v1.10.0
 date: 2026-03-17
 author: OTLP项目团队
 category: 前沿技术
@@ -18,7 +18,7 @@ status: published
 ---
 # GenAI语义约定完整实现示例
 
-> **规范版本**: Semantic Conventions v1.40.0
+> **规范版本**: Semantic Conventions v1.41.0
 > **稳定性**: Development (LLM), Draft (Agent)
 > **文档状态**: ✅ 已对齐
 
@@ -64,7 +64,7 @@ def chat_completion_with_full_telemetry(
 ) -> dict:
     """
     带完整可观测性的Chat Completion调用
-    符合Semantic Conventions v1.40.0
+    符合Semantic Conventions v1.41.0
     """
 
     with tracer.start_as_current_span("gen_ai.chat") as span:
@@ -499,5 +499,5 @@ service:
 
 **文档版本**: v1.0
 **更新日期**: 2026年3月16日
-**规范版本**: Semantic Conventions v1.40.0
+**规范版本**: Semantic Conventions v1.41.0
 **维护者**: OTLP项目团队

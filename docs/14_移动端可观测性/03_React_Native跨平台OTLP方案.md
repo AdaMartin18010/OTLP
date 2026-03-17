@@ -1,7 +1,7 @@
----
+﻿---
 title: React Native跨平台OTLP方案
 description: React Native应用集成OpenTelemetry的跨平台方案，包含Native Bridge、Expo支持和性能优化
-version: OTLP v1.9.0 / React Native v0.73+
+version: OTLP v1.10.0 / React Native v0.73+
 date: 2026-03-17
 author: OTLP项目团队
 category: 移动端可观测性
@@ -16,7 +16,7 @@ status: published
 
 # React Native跨平台OTLP方案
 
-> **版本**: OTLP v1.9.0 / React Native v0.73+
+> **版本**: OTLP v1.10.0 / React Native v0.73+
 > **最后更新**: 2026-03-17
 > **阅读时间**: 约20分钟
 

@@ -1,7 +1,7 @@
----
+﻿---
 title: OTLP数据模型语义完整性形式化论证
 description: 从形式化角度论证OTLP数据模型的语义完整性，包括完备性、一致性、最小性和可扩展性证明
-version: OTLP v1.9.0 / Semantic Conventions v1.40.0
+version: OTLP v1.10.0 / Semantic Conventions v1.41.0
 date: 2026-03-17
 author: OTLP项目团队
 category: 理论基础
@@ -16,7 +16,7 @@ status: published
 
 # OTLP数据模型语义完整性形式化论证
 
-> **版本**: OTLP v1.9.0 / Semantic Conventions v1.40.0
+> **版本**: OTLP v1.10.0 / Semantic Conventions v1.41.0
 > **最后更新**: 2026-03-17
 > **阅读时间**: 约40分钟
 

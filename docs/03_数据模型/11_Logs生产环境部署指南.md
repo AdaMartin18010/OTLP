@@ -1,7 +1,7 @@
 ﻿---
 title: OTLP Logs 生产环境部署指南
 description: OTLP Logs 生产环境部署指南 详细指南和最佳实践
-version: OTLP v1.9.0
+version: OTLP v1.10.0
 date: 2026-03-17
 author: OTLP项目团队
 category: 核心实现
@@ -96,18 +96,18 @@ status: published
 
 ```text
 Timeline:
-2021-07: OTLP v1.9.0 - Logs初始支持 (Experimental)
+2021-07: OTLP v1.10.0 - Logs初始支持 (Experimental)
          ↓
-2023-02: OTLP v1.9.0 - Logs升级为Stable
+2023-02: OTLP v1.10.0 - Logs升级为Stable
          - 协议稳定
          - 基础功能完备
          ↓
-2024-03: OTLP v1.9.0 - Logs达到GA (生产就绪) 🎉
+2024-03: OTLP v1.10.0 - Logs达到GA (生产就绪) 🎉
          - 企业级特性完善
          - 性能优化
          - 主流后端全面支持
          ↓
-2024-09: OTLP v1.9.0 - Logs持续增强
+2024-09: OTLP v1.10.0 - Logs持续增强
          - 与Traces/Metrics深度关联
          - 更好的性能
          ↓
@@ -2723,4 +2723,4 @@ ORDER BY timestamp;
 
 ---
 
-*本指南基于OTLP v1.9.0标准编写,力求全面覆盖生产环境部署的各个方面。*
+*本指南基于OTLP v1.10.0标准编写,力求全面覆盖生产环境部署的各个方面。*

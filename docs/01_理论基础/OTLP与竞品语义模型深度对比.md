@@ -1,7 +1,7 @@
----
+﻿---
 title: OTLP与竞品语义模型深度对比
 description: OTLP与OpenTracing、OpenCensus、OpenMetrics、Prometheus等观测数据模型的语义层面深度对比分析
-version: OTLP v1.9.0
+version: OTLP v1.10.0
 date: 2026-03-17
 author: OTLP项目团队
 category: 理论基础
@@ -16,7 +16,7 @@ status: published
 
 # OTLP与竞品语义模型深度对比
 
-> **版本**: OTLP v1.9.0
+> **版本**: OTLP v1.10.0
 > **对比范围**: OpenTracing, OpenCensus, OpenMetrics, Prometheus, Jaeger, Zipkin
 > **最后更新**: 2026-03-17
 > **阅读时间**: 约35分钟
@@ -49,7 +49,7 @@ status: published
 │                 • OpenTracing + OpenCensus 合并                 │
 │                 • Trace/Metric/Log 统一模型                     │
 │                                                                 │
-│  2024 ─────── OTLP v1.9.0 (当前)                               │
+│  2024 ─────── OTLP v1.10.0 (当前)                               │
 │                 • 完整信号集                                    │
 │                 • 成熟Semantic Conventions                      │
 │                                                                 │

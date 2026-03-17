@@ -1,7 +1,7 @@
----
+﻿---
 title: OTLP异常检测与根因分析实战
 description: 基于OTLP数据的异常检测方法与实践，包含统计方法、机器学习方法、时序异常检测、分布式追踪异常分析和根因分析(RCA)方法论
-version: OTLP v1.9.0
+version: OTLP v1.10.0
 date: 2026-03-17
 author: OTLP项目团队
 category: 数据分析与洞察
@@ -16,7 +16,7 @@ status: published
 
 # OTLP异常检测与根因分析实战
 
-> **版本**: OTLP v1.9.0
+> **版本**: OTLP v1.10.0
 > **最后更新**: 2026-03-17
 > **阅读时间**: 约50分钟
 

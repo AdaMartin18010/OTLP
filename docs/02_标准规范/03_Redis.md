@@ -1,7 +1,7 @@
 ﻿---
 title: Redis 语义约定
 description: Redis 语义约定 详细指南和最佳实践
-version: OTLP v1.9.0
+version: OTLP v1.10.0
 date: 2026-03-17
 author: OTLP项目团队
 category: 标准规范
@@ -16,7 +16,7 @@ status: published
 # Redis 语义约定
 
 > **最后更新**: 2025年10月8日
-> **规范版本**: OpenTelemetry Semantic Conventions v1.40.0.0
+> **规范版本**: OpenTelemetry Semantic Conventions v1.41.0.0
 > **目标读者**: 后端工程师、可观测性工程师
 
 ---

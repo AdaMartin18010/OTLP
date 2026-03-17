@@ -1,7 +1,7 @@
 ﻿---
 title: OTLP Arrow完整指南：高效压缩的新一代传输格式
 description: OTLP Arrow完整指南：高效压缩的新一代传输格式 详细指南和最佳实践
-version: OTLP v1.9.0
+version: OTLP v1.10.0
 date: 2026-03-17
 author: OTLP项目团队
 category: 前沿技术

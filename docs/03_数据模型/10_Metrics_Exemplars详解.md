@@ -1,7 +1,7 @@
 ﻿---
 title: Metrics Exemplars 详解
 description: Metrics Exemplars 详解 详细指南和最佳实践
-version: OTLP v1.9.0
+version: OTLP v1.10.0
 date: 2026-03-17
 author: OTLP项目团队
 category: 核心实现
@@ -149,15 +149,15 @@ Exemplars像"具体案例":
 Timeline:
 2020-11: OpenMetrics提出Exemplars概念
          ↓
-2021-06: OTLP v1.9.0引入Exemplars (Experimental)
+2021-06: OTLP v1.10.0引入Exemplars (Experimental)
          - 仅支持Histogram
          - API不稳定
          ↓
-2023-02: OTLP v1.9.0 (仍为Experimental)
+2023-02: OTLP v1.10.0 (仍为Experimental)
          - 扩展到所有Metric类型
          - 改进采样策略
          ↓
-2024-09: OTLP v1.9.0 → Stable 🎉
+2024-09: OTLP v1.10.0 → Stable 🎉
          - API稳定,生产可用
          - 完整的Trace关联
          - 优化存储效率

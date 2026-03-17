@@ -72,7 +72,7 @@ examples/
 ### 1. Latest Standards (2025)
 
 - ✅ **OTLP 1.0.0**: Stable version released August 2023
-- ✅ **Semantic Conventions v1.40.0.0+**: Latest semantic conventions
+- ✅ **Semantic Conventions v1.41.0.0+**: Latest semantic conventions
 - ✅ **OTLP Arrow**: 2025 Beta version (60-80% bandwidth savings)
 - ✅ **Cutting-Edge Research**: Tracezip & Autoscope (2025 papers)
 

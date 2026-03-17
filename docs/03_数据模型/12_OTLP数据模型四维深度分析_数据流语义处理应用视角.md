@@ -1,7 +1,7 @@
 ﻿---
 title: OTLP数据模型四维深度分析：数据流、语义、处理与应用视角
 description: OTLP数据模型四维深度分析：数据流、语义、处理与应用视角 详细指南和最佳实践
-version: OTLP v1.9.0
+version: OTLP v1.10.0
 date: 2026-03-17
 author: OTLP项目团队
 category: 核心实现

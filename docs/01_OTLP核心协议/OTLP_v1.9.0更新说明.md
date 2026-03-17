@@ -1,7 +1,7 @@
 ﻿---
 title: OTLP Protocol Buffers v1.9.0 更新说明
 description: OTLP Protocol Buffers v1.9.0 更新说明 详细指南和最佳实践
-version: OTLP v1.9.0
+version: OTLP v1.10.0
 date: 2026-03-17
 author: OTLP项目团队
 category: 标准规范
@@ -90,7 +90,7 @@ message ProfileContainer {
 
 #### 影响
 
-- Collector v0.148.0+ 支持Profiles接收和导出
+- Collector v0.117.0+ 支持Profiles接收和导出
 - 新增`profiles`流水线类型
 - 与Trace的关联机制
 
@@ -366,7 +366,7 @@ exporters:
 ## 七、参考资源
 
 - [OTLP Protobuf Repository](https://github.com/open-telemetry/opentelemetry-proto)
-- [OTLP v1.9.0 Release Notes](https://github.com/open-telemetry/opentelemetry-proto/releases/tag/v1.9.0)
+- [OTLP v1.10.0 Release Notes](https://github.com/open-telemetry/opentelemetry-proto/releases/tag/v1.9.0)
 - [Protocol Buffers Versioning](https://protobuf.dev/overview/#versioning)
 
 ---

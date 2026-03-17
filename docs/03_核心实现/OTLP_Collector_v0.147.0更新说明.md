@@ -1,7 +1,7 @@
 ﻿---
 title: OTLP Collector v0.147.0 更新说明
 description: OTLP Collector v0.147.0 更新说明 详细指南和最佳实践
-version: OTLP v1.9.0
+version: OTLP v1.10.0
 date: 2026-03-17
 author: OTLP项目团队
 category: 核心实现
@@ -31,7 +31,7 @@ status: published
 
 ```text
 ┌─────────────────────────────────────────────────────────────────┐
-│              OTLP Collector v0.148.0 → v0.147.0                 │
+│              OTLP Collector v0.117.0 → v0.147.0                 │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
 │  版本跨度:     34个版本                                          │
@@ -206,9 +206,9 @@ factory := xprocessor.NewFactory()
 
 ## 二、主要新特性
 
-### 2.1 Semantic Conventions v1.40.0.0
+### 2.1 Semantic Conventions v1.41.0.0
 
-Collector现在使用Semantic Conventions v1.40.0.0，包含：
+Collector现在使用Semantic Conventions v1.41.0.0，包含：
 
 - GenAI语义约定增强
 - 数据库语义约定更新
@@ -453,7 +453,7 @@ curl http://localhost:13133/health
 ---
 
 **更新完成**: 2026年3月16日
-**下次检查**: Collector v0.148.0+
+**下次检查**: Collector v0.117.0+
 **维护团队**: OTLP工程小组
 
 ---

@@ -1,4 +1,4 @@
-# ✅ OTLP 项目文档格式统一完成报告
+﻿# ✅ OTLP 项目文档格式统一完成报告
 
 > **执行日期**: 2026年3月17日
 > **任务级别**: 格式统一与标准化
@@ -46,7 +46,7 @@
 ---
 title: OTLP协议概述
 description: OTLP协议概述详细指南和最佳实践
-version: OTLP v1.9.0
+version: OTLP v1.10.0
 date: 2026-03-17
 author: OTLP项目团队
 category: 标准规范
@@ -106,7 +106,7 @@ status: published
 ---
 title: 文档标题
 description: 文档简短描述
-version: OTLP v1.9.0
+version: OTLP v1.10.0
 date: YYYY-MM-DD
 author: OTLP项目团队
 category: 分类
@@ -118,7 +118,7 @@ status: published
 
 # 文档标题
 
-> **版本**: OTLP v1.9.0
+> **版本**: OTLP v1.10.0
 > **最后更新**: YYYY-MM-DD
 > **阅读时间**: 约X分钟
 

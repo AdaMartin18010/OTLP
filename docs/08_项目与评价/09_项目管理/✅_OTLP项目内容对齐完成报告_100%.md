@@ -1,7 +1,7 @@
 ﻿---
 title: OTLP项目内容对齐完成报告
 description: OTLP项目内容对齐完成报告 详细指南和最佳实践
-version: OTLP v1.9.0
+version: OTLP v1.10.0
 date: 2026-03-17
 author: OTLP项目团队
 category: 项目管理
@@ -178,7 +178,7 @@ docs/
 ## 参考资源
 
 - [OpenTelemetry官方文档](https://opentelemetry.io/docs/)
-- [Semantic Conventions v1.40.0](https://github.com/open-telemetry/semantic-conventions/releases/tag/v1.40.0)
+- [Semantic Conventions v1.41.0](https://github.com/open-telemetry/semantic-conventions/releases/tag/v1.40.0)
 - [Collector v0.147.0](https://github.com/open-telemetry/opentelemetry-collector/releases/tag/v0.147.0)
 - [OTLP Protocol v1.9.0](https://github.com/open-telemetry/opentelemetry-proto/releases/tag/v1.9.0)
 

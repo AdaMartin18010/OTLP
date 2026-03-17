@@ -1,7 +1,7 @@
 ﻿---
 title: Collector Profiles配置指南
 description: Collector Profiles配置指南 详细指南和最佳实践
-version: OTLP v1.9.0
+version: OTLP v1.10.0
 date: 2026-03-17
 author: OTLP项目团队
 category: 前沿技术
@@ -19,7 +19,7 @@ status: published
 ---
 # Collector Profiles配置指南
 
-> **适用版本**: OpenTelemetry Collector v0.148.0+
+> **适用版本**: OpenTelemetry Collector v0.117.0+
 > **配置难度**: 中级
 > **预计时间**: 30分钟
 

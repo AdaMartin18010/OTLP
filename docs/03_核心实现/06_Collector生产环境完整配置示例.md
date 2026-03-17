@@ -1,7 +1,7 @@
 ﻿---
 title: OpenTelemetry Collector 生产环境完整配置示例
 description: OpenTelemetry Collector 生产环境完整配置示例 详细指南和最佳实践
-version: OTLP v1.9.0
+version: OTLP v1.10.0
 date: 2026-03-17
 author: OTLP项目团队
 category: 核心实现
@@ -20,7 +20,7 @@ status: published
 ---
 # OpenTelemetry Collector 生产环境完整配置示例
 
-> **适用版本**: OpenTelemetry Collector v0.148.0+
+> **适用版本**: OpenTelemetry Collector v0.117.0+
 > **配置类型**: 生产级高可用部署
 > **最后更新**: 2025年10月8日
 

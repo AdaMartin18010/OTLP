@@ -1,7 +1,7 @@
----
+﻿---
 title: iOS平台OTLP完整接入指南
 description: iOS应用集成OpenTelemetry OTLP协议的完整实践指南，包含Swift SDK、性能优化和最佳实践
-version: OTLP v1.9.0 / OpenTelemetry Swift v1.9.0
+version: OTLP v1.10.0 / OpenTelemetry Swift v1.9.0
 date: 2026-03-17
 author: OTLP项目团队
 category: 移动端可观测性
@@ -16,7 +16,7 @@ status: published
 
 # iOS平台OTLP完整接入指南
 
-> **版本**: OTLP v1.9.0 / OpenTelemetry Swift v1.9.0
+> **版本**: OTLP v1.10.0 / OpenTelemetry Swift v1.9.0
 > **最后更新**: 2026-03-17
 > **阅读时间**: 约25分钟
 

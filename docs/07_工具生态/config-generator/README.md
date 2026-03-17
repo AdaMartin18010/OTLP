@@ -1,7 +1,7 @@
 ﻿# OpenTelemetry Collector 配置生成器
 
 > **Version**: 1.0.0
-> **基于**: OTLP v1.9.0, Collector v0.148.0
+> **基于**: OTLP v1.10.0, Collector v0.117.0
 > **类型**: 交互式 Web 应用 (纯前端)
 
 ---
@@ -520,7 +520,7 @@ curl http://localhost:8888/metrics
 
 **初始版本**:
 
-- ✅ 支持 OTLP v1.9.0 所有特性
+- ✅ 支持 OTLP v1.10.0 所有特性
 - ✅ Profiles信号支持 (v1.3.0新增)
 - ✅ zstd压缩支持 (v1.3.0新增)
 - ✅ 3种部署模式: Agent, Gateway, Hybrid

@@ -1,7 +1,7 @@
 ﻿---
 title: GenAI Observability: 生成式AI可观测性
 description: GenAI Observability: 生成式AI可观测性 详细指南和最佳实践
-version: OTLP v1.9.0
+version: OTLP v1.10.0
 date: 2026-03-17
 author: OTLP项目团队
 category: 前沿技术

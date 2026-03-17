@@ -1,7 +1,7 @@
----
+﻿---
 title: 工具生态 - 完整指南
 description: OpenTelemetry工具生态完整导航，包含SDK指南、Collector生态、可视化工具和测试工具
-version: OTLP v1.9.0
+version: OTLP v1.10.0
 date: 2026-03-17
 author: OTLP项目团队
 category: 工具生态

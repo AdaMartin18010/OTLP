@@ -1,7 +1,7 @@
 ﻿---
 title: GenAI语义约定完整指南
 description: GenAI语义约定完整指南 详细指南和最佳实践
-version: OTLP v1.9.0
+version: OTLP v1.10.0
 date: 2026-03-17
 author: OTLP项目团队
 category: 前沿技术
@@ -18,7 +18,7 @@ status: published
 ---
 # GenAI语义约定完整指南
 
-> **文档版本**: v1.0 (基于OpenTelemetry Semantic Conventions v1.40.0+)
+> **文档版本**: v1.0 (基于OpenTelemetry Semantic Conventions v1.41.0+)
 > **稳定性**: Development (发展中)
 > **适用范围**: LLM应用、AI Agent、RAG系统
 > **创建日期**: 2026年3月15日
@@ -895,7 +895,7 @@ span.set_attribute("gen_ai.tool.arguments", json.dumps({"location": "NYC"}))
 ## 6. Agent语义约定 (v1.40 Draft)
 
 > **状态**: Draft (草案阶段)
-> **版本**: Semantic Conventions v1.40.0+
+> **版本**: Semantic Conventions v1.41.0+
 > **来源**: 基于Google AI Agent白皮书
 
 ### 6.1 概述
@@ -956,4 +956,4 @@ with tracer.start_as_current_span("gen_ai.agent.tool") as span:
 
 **文档版本**: v1.1
 **更新日期**: 2026年3月16日
-**状态**: 已对齐OpenTelemetry Semantic Conventions v1.40.0
+**状态**: 已对齐OpenTelemetry Semantic Conventions v1.41.0

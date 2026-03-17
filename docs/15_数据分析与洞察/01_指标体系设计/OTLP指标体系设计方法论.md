@@ -1,7 +1,7 @@
----
+﻿---
 title: OTLP指标体系设计方法论
 description: 基于OTLP数据的指标体系设计方法论，包含USE方法、RED方法、四个黄金信号等经典方法论的系统化实践
-version: OTLP v1.9.0
+version: OTLP v1.10.0
 date: 2026-03-17
 author: OTLP项目团队
 category: 数据分析与洞察
@@ -16,7 +16,7 @@ status: published
 
 # OTLP指标体系设计方法论
 
-> **版本**: OTLP v1.9.0
+> **版本**: OTLP v1.10.0
 > **最后更新**: 2026-03-17
 > **阅读时间**: 约40分钟
 

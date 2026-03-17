@@ -1,7 +1,7 @@
 ﻿---
 title: 多模态LLM可观测性分析指南
 description: 多模态LLM可观测性分析指南 详细指南和最佳实践
-version: OTLP v1.9.0
+version: OTLP v1.10.0
 date: 2026-03-17
 author: OTLP项目团队
 category: 项目管理

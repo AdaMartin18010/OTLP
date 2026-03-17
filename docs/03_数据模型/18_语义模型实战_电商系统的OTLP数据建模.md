@@ -1,7 +1,7 @@
 ﻿---
 title: OTLP语义模型实战：电商系统的OTLP数据建模
 description: OTLP语义模型实战：电商系统的OTLP数据建模 详细指南和最佳实践
-version: OTLP v1.9.0
+version: OTLP v1.10.0
 date: 2026-03-17
 author: OTLP项目团队
 category: 核心实现

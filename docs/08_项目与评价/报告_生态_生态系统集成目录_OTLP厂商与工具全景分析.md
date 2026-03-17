@@ -1,7 +1,7 @@
 ﻿---
 title: 生态系统集成目录_OTLP厂商与工具全景分析
 description: 生态系统集成目录_OTLP厂商与工具全景分析 详细指南和最佳实践
-version: OTLP v1.9.0
+version: OTLP v1.10.0
 date: 2026-03-17
 author: OTLP项目团队
 category: 项目管理

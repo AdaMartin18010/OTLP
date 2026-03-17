@@ -1,7 +1,7 @@
 ﻿---
 title: OTLP知识宇宙 - 主题导航
 description: OTLP知识宇宙 - 主题导航 详细指南
-version: OTLP v1.9.0
+version: OTLP v1.10.0
 date: 2026-03-17
 author: OTLP项目团队
 category: 参考资料
@@ -88,7 +88,7 @@ OTLP知识宇宙
 
 ## 关键更新亮点
 
-### Semantic Conventions v1.40.0
+### Semantic Conventions v1.41.0
 
 - **Agent语义约定**: Draft状态，新增Agent Span类型
 - **成本追踪**: gen_ai.cost.currency, gen_ai.cost.amount
