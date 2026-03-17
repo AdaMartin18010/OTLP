@@ -1,7 +1,7 @@
 ﻿---
 title: OTLP知识宇宙 - 主题导航
 description: OTLP知识宇宙 - 主题导航 详细指南
-version: OTLP v1.9.0
+version: OTLP v1.10.0
 date: 2026-03-17
 author: OTLP项目团队
 category: 参考资料
@@ -38,7 +38,7 @@ OTLP知识宇宙
 
 | 组件/规范 | 项目版本 | 最新版本 | 状态 | 文档 |
 |:----------|:--------:|:--------:|:----:|:-----|
-| **OTLP Protocol** | v1.9.0 | **v1.9.0** | ✅ | [01_OTLP核心协议/](docs/01_OTLP核心协议/) |
+| **OTLP Protocol** | v1.10.0 | **v1.9.0** | ✅ | [01_OTLP核心协议/](docs/01_OTLP核心协议/) |
 | **Semantic Conventions** | v1.40.0 | **v1.40.0** | ✅ | [02_标准规范/](docs/02_标准规范/) |
 | **Collector** | v0.147.0 | **v0.147.0** | ✅ | [03_核心实现/](docs/03_核心实现/) |
 | **GenAI Conventions** | Development | **Development** | ✅ | [05_前沿技术/](docs/05_前沿技术/) |

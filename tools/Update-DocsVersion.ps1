@@ -215,20 +215,20 @@ function Get-VersionReplacementRules {
         Description = "OpenTelemetry Specification v1.5x.0 → OpenTelemetry Specification v$SpecVersion"
     }
     
-    # 规则9: 表格中的版本对齐状态
+    # 规则9: 表格中的版本对齐状态 (项目版本列)
     $rules += @{
         Name = "表格版本对齐"
-        Pattern = '(?i)(\|\s*OTLP\s+Protocol\s*\|\s*v?)1\.9\.0(\s*\|)'
+        Pattern = '(?i)(\|\s*\*\*OTLP\s+Protocol\*\*\s*\|\s*v?)1\.9\.0(\s*\|)'
         Replacement = "`${1}$OTLPVersion`${2}"
         Description = "表格中OTLP版本更新"
     }
     
-    # 规则10: 状态徽章或标签
+    # 规则10: YAML frontmatter中纯版本号
     $rules += @{
-        Name = "状态徽章"
-        Pattern = '(?i)(?:v)?1\.9\.0(.*?)(?:✅|🎉|⭐|最新|current)'
-        Replacement = "v$OTLPVersion`${1}`${2}"
-        Description = "版本状态徽章更新"
+        Name = "YAML版本"
+        Pattern = '(?m)^version:\s*OTLP\s+v1\.9\.0$'
+        Replacement = "version: OTLP v$OTLPVersion"
+        Description = "YAML frontmatter版本更新"
     }
     
     return $rules

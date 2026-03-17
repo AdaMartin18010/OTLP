@@ -19,7 +19,7 @@ status: published
 
 > **文档版本**: v1.0.0
 > **创建日期**: 2025年10月9日
-> **对标标准**: OTLP v1.10.0 + Semantic Conventions v1.41.0.0
+> **对标标准**: OTLP v1.10.0 + Semantic Conventions v1.40.0
 > **理论基础**: 形式化方法、类型理论、关系代数、分布式系统理论
 
 ---
@@ -1601,7 +1601,7 @@ def process():
 ## 参考文献
 
 1. **OTLP Specification v1.3.0**, OpenTelemetry, 2024
-2. **Semantic Conventions v1.41.0.0**, OpenTelemetry, 2025
+2. **Semantic Conventions v1.40.0**, OpenTelemetry, 2025
 3. **W3C Trace Context**, W3C Recommendation, 2020
 4. **Dapper, a Large-Scale Distributed Systems Tracing Infrastructure**, Google, 2010
 5. **Monarch: Google's Planet-Scale In-Memory Time Series Database**, VLDB 2020
