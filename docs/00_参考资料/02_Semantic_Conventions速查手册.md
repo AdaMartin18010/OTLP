@@ -11,6 +11,7 @@ tags:
   - observability
 status: published
 ---
+
 # � Semantic Conventions速查手册
 
 > **版本**: v1.29.0
@@ -634,4 +635,3 @@ NoSQL:
 **最后更新**: 2025年10月9日
 **上一篇**: [OTLP协议速查手册](./01_OTLP协议速查手册.md)
 **下一篇**: [Collector配置速查手册](./03_Collector配置速查手册.md)
-

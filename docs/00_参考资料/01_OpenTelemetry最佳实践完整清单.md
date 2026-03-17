@@ -11,6 +11,7 @@ tags:
   - observability
 status: published
 ---
+
 # OpenTelemetry最佳实践完整清单
 
 > **实践指南**: 生产级OpenTelemetry部署与运维
@@ -1424,4 +1425,3 @@ status: published
 **文档状态**: ✅ 完成
 **适用场景**: 企业级OpenTelemetry生产部署
 **持续更新**: 根据最新最佳实践持续迭代
-

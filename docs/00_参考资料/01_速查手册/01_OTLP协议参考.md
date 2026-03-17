@@ -11,6 +11,7 @@ tags:
   - observability
 status: published
 ---
+
 # � OTLP协议速查手册
 
 > **版本**: v1.3.0
@@ -576,4 +577,3 @@ logging.basicConfig(level=logging.DEBUG)
 
 **最后更新**: 2025年10月9日
 **下一篇**: [Semantic Conventions速查手册](./02_Semantic_Conventions速查手册.md)
-

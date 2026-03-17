@@ -10,6 +10,7 @@ tags:
   - observability
 status: published
 ---
+
 # OTLP 知识宇宙导航 v2.0
 
 > **版本**: v2.0 (重构版)
@@ -117,4 +118,3 @@ status: published
 
 **维护团队**: OTLP项目团队
 **最后更新**: 2026年03月17日
-
